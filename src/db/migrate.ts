@@ -18,7 +18,7 @@ export default async function migrateDb(): Promise<void> {
       CREATE TABLE IF NOT EXISTS refresh_tokens (
         id            INT AUTO_INCREMENT PRIMARY KEY,
         user_id       VARCHAR(255) NOT NULL,
-        token_hash    CHAR(64) NOT NULL,          -- store only a SHA‑256 (or bcrypt) hash
+        token_hash    VARCHAR(255) NOT NULL,
         issued_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         expires_at    DATETIME     NOT NULL,
         revoked_at    DATETIME     NULL,

@@ -1,7 +1,8 @@
-import {NextAuthOptions} from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import migrateDb from "@/db/migrate";
-import {addRefreshTokenDb, addUserDb} from "@/db/client";
+import { addRefreshTokenDb, addUserDb, retrieveUserRolesDb } from "@/db/client";
+import { encryptToken } from "@/lib/cryptoUtils";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -24,7 +25,9 @@ export const authOptions: NextAuthOptions = {
         try {
           await migrateDb();
           await addUserDb(account.providerAccountId, user.name!, user.email!);
-          await addRefreshTokenDb(account.providerAccountId, account.refresh_token!, new Date(account.expires_at! * 1000));
+
+          const refreshToken = encryptToken(account.refresh_token!);
+          await addRefreshTokenDb(account.providerAccountId, refreshToken, new Date(account.expires_at! * 1000));
 
         } catch (error) {
           console.error("Database error:", error)
@@ -32,6 +35,19 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return true
+    },
+    async session({ session, token }) {
+      try {
+        const roles = await retrieveUserRolesDb(token.sub!);
+        session.user =  {
+          ...session.user,
+          roles: roles
+        };
+        return session;
+      } catch (error) {
+        console.error("Database error:", error)
+        return session
+      }
     }
   }
 }

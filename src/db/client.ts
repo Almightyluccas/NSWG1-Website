@@ -32,3 +32,22 @@ export const addRefreshTokenDb = async (userId: string, tokenHash: string, expir
     connection.release();
   }
 }
+
+export const retrieveUserRolesDb = async (userId: string): Promise<string[]> => {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(`
+      SELECT role FROM users WHERE id = ?
+    `, [userId]);
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      const rolesString = (rows[0] as { roles: string }).roles;
+      return rolesString.split(",").map(role => role.trim());
+    }
+    return [];
+  } catch (error) {
+    return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
