@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -9,6 +8,7 @@ import { Menu, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/auth/user-menu"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -16,6 +16,7 @@ export function Navbar() {
   const [isUnitsDropdownOpen, setIsUnitsDropdownOpen] = useState(false)
   const [isMobileUnitsOpen, setIsMobileUnitsOpen] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -136,9 +137,11 @@ export function Navbar() {
             <MobileNavLink href="/gallery" onClick={() => setIsMobileMenuOpen(false)}>
               Gallery
             </MobileNavLink>
-            <Button className="bg-accent hover:bg-accent-darker text-black w-full mt-2" onClick={handleJoinClick}>
-              Join Now
-            </Button>
+            {session?.user.roles.includes('guest') && (
+              <Button className="bg-accent hover:bg-accent-darker text-black w-full mt-2" onClick={handleJoinClick}>
+                Join Now
+              </Button>
+            )}
           </div>
         </div>
       )}

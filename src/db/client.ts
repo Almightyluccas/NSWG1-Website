@@ -1,5 +1,9 @@
 import pool from "@/db/connection";
 
+interface UserRow {
+  role: string | null;
+}
+
 export const addUserDb = async (id: string, username: string, email: string): Promise<void> => {
   const connection = await pool.getConnection();
   try {
@@ -41,8 +45,8 @@ export const retrieveUserRolesDb = async (userId: string): Promise<string[]> => 
     `, [userId]);
 
     if (Array.isArray(rows) && rows.length > 0) {
-      const rolesString = (rows[0] as { roles: string }).roles;
-      return rolesString.split(",").map(role => role.trim());
+      const roleValue = (rows[0] as UserRow).role;
+      return roleValue ? roleValue.split(",").map((r: string) => r.trim()) : [];
     }
     return [];
   } catch (error) {

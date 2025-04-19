@@ -1,15 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
+import { User, LogOut, Settings, UserPlus } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import {signOut, useSession} from "next-auth/react";
@@ -21,13 +14,14 @@ interface UserMenuProps {
 export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   const {data: session} = useSession();
 
-
   return (
     <>
       <div className="flex items-center gap-4">
-        <Button onClick={onJoinClickAction} className="bg-accent hover:bg-accent-darker text-black hidden md:flex">
-          Join Now
-        </Button>
+        {(!session || session?.user?.roles.includes('guest')) && (
+          <Button onClick={onJoinClickAction} className="bg-accent hover:bg-accent-darker text-black hidden md:flex">
+            Join Now
+          </Button>
+        )}
 
         {session ? (
           <DropdownMenu>
@@ -44,9 +38,6 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                   <span>
                     {session.user?.name}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-zinc-400">
-                    {/*{user.roles.map((role) => role.charAt(0).toUpperCase() + role.slice(1)).join(", ")}*/}
-                  </span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -58,12 +49,12 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              {/*{!hasRole("member") && (*/}
-              {/*  <DropdownMenuItem onClick={onJoinClickAction}>*/}
-              {/*    <UserPlus className="mr-2 h-4 w-4" />*/}
-              {/*    <span>Apply to Join</span>*/}
-              {/*  </DropdownMenuItem>*/}
-              {/*)}*/}
+              {session.user.roles.includes('guest') && (
+                <DropdownMenuItem onClick={onJoinClickAction}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  <span>Apply to Join</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut()}>
                 <LogOut className="mr-2 h-4 w-4" />
