@@ -49,7 +49,7 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              {session.user.roles.includes('guest') && (
+              {session.user.roles.includes('guesst') && (
                 <DropdownMenuItem onClick={onJoinClickAction}>
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Apply to Join</span>
