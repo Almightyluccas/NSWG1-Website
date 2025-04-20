@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Palette, Moon, Sun, Plus } from "lucide-react"
-import { ThemeOption, useTheme} from "@/components/theme-provider" // Updated import path to the combined provider
+import { ThemeOption, useTheme} from "@/components/theme-provider"
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"

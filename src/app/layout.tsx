@@ -5,6 +5,8 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import SessionWrapper from "@/components/auth/sessionWrapper";
+import  { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,15 +18,16 @@ export const metadata: Metadata = {
   description: "Elite tactical team in Arma 3, where immersive simulations meet real-world tactics.",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await getServerSession(authOptions);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans`}>
-        <SessionWrapper>
+        <SessionWrapper session={session}>
           <ThemeProvider>
             {children}
             <ThemeSwitcher />
