@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, UserPlus } from "lucide-react"
+import { User, LogOut, Settings, UserPlus, ShieldUser} from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import {signOut, useSession} from "next-auth/react";
@@ -45,11 +45,19 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
+              {["admin", "superAdmin"].some(role => session.user.roles.includes(role)) && (
+                <Link href="/admin" className="w-full">
+                  <DropdownMenuItem>
+                    <ShieldUser className="mr-2 h-4 w-4" />
+                    <span>Admin Dashboard</span>
+                  </DropdownMenuItem>
+                </Link>
+              )}
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              {session.user.roles.includes('guesst') && (
+              {session.user.roles.includes('guest') && (
                 <DropdownMenuItem onClick={onJoinClickAction}>
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Apply to Join</span>
