@@ -9,12 +9,15 @@ import { Button } from "@/components/ui/button"
 import { UserMenu } from "@/components/auth/user-menu"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import RoleGuard from "@/components/auth/role-guard";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUnitsDropdownOpen, setIsUnitsDropdownOpen] = useState(false)
+  const [isPerscomDropdownOpen, setIsPerscomDropdownOpen] = useState(false)
   const [isMobileUnitsOpen, setIsMobileUnitsOpen] = useState(false)
+  const [isMobilePerscomOpen, setIsMobilePerscomOpen] = useState(false)
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -81,6 +84,57 @@ export function Navbar() {
             </div>
 
             <NavLink href="/gallery">Gallery</NavLink>
+
+
+            {session && (
+              <>
+                <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
+                  <NavLink href="/attendance">Attendance</NavLink>
+                  <div
+                    className="relative group"
+                    onMouseEnter={() => setIsPerscomDropdownOpen(true)}
+                    onMouseLeave={() => setIsPerscomDropdownOpen(false)}
+                  >
+                    <button className="text-gray-700 dark:text-zinc-300 hover:text-accent transition-colors relative group flex items-center">
+                      PERSCOM
+                      <ChevronDown className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"></span>
+                    </button>
+
+                    {isPerscomDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-zinc-700">
+                        <Link
+                          href="/perscom/roster"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Roster
+                        </Link>
+                        <Link
+                          href="/perscom/awards"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Awards
+                        </Link>
+                        <Link
+                          href="/perscom/ranks"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Ranks
+                        </Link>
+                        <Link
+                          href="/perscom/qualifications"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Qualifications
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </RoleGuard>
+              </>
+
+            )}
+
             <UserMenu onJoinClickAction={handleJoinClick} />
           </nav>
 
@@ -137,10 +191,65 @@ export function Navbar() {
             <MobileNavLink href="/gallery" onClick={() => setIsMobileMenuOpen(false)}>
               Gallery
             </MobileNavLink>
-            {session?.user.roles.includes('guest') && (
-              <Button className="bg-accent hover:bg-accent-darker text-black w-full mt-2" onClick={handleJoinClick}>
-                Join Now
-              </Button>
+
+            {session && (
+              <>
+                <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
+                  <MobileNavLink href="/attendance" onClick={() => setIsMobileMenuOpen(false)}>
+                    Attendance
+                  </MobileNavLink>
+
+                  <div>
+                    <button
+                      className="flex items-center justify-between w-full text-gray-700 dark:text-zinc-300 hover:text-accent transition-colors py-2 border-b border-gray-200 dark:border-zinc-800"
+                      onClick={() => setIsMobilePerscomOpen(!isMobilePerscomOpen)}
+                    >
+                      <span>PERSCOM</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isMobilePerscomOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {isMobilePerscomOpen && (
+                      <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
+                        <Link
+                          href="/perscom/roster"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Roster
+                        </Link>
+                        <Link
+                          href="/perscom/awards"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Awards
+                        </Link>
+                        <Link
+                          href="/perscom/ranks"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Ranks
+                        </Link>
+                        <Link
+                          href="/perscom/qualifications"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Qualifications
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </RoleGuard>
+                <RoleGuard roles={session.user.roles} allowedRoles={['guest']} hide={true}>
+                  <Button className="bg-accent hover:bg-accent-darker text-black w-full mt-2" onClick={handleJoinClick}>
+                    Join Now
+                  </Button>
+                </RoleGuard>
+              </>
             )}
           </div>
         </div>

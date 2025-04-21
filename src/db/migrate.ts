@@ -7,10 +7,14 @@ export default async function migrateDb(): Promise<void> {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(255) PRIMARY KEY,
-        username VARCHAR(255) NOT NULL,
+        perscom_id INT NULL UNIQUE,
+        steam_id VARCHAR(255) NULL UNIQUE,
+        discord_username VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NULL,
+        date_of_birth DATE NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        role SET ('guest','member','160th','tacdevron','admin','superAdmin') DEFAULT 'guest'
+        role SET ('guest','applicant','candidate','greenTeam','member','160th','tacdevron','admin','superAdmin') DEFAULT 'guest'
       )
     `);
 
@@ -25,7 +29,6 @@ export default async function migrateDb(): Promise<void> {
         FOREIGN KEY (user_id) REFERENCES users(id)
       );    
     `)
-
 
   } finally {
     connection.release();

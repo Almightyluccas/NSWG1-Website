@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import migrateDb from "@/db/migrate";
-import { addRefreshTokenDb, addUserDb, retrieveUserRolesDb } from "@/db/client";
+import {addRefreshTokenDb, addUserDb, retrieveUserInfoDb } from "@/db/client";
 import { encryptToken } from "@/lib/cryptoUtils";
 
 export const authOptions: NextAuthOptions = {
@@ -36,9 +36,13 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       try {
-        const roles = await retrieveUserRolesDb(token.sub!);
+        const {roles, perscomId, name} = await retrieveUserInfoDb(token.sub!);
         session.user =  {
           ...session.user,
+          discordName: session.user.name,
+          name: name ? name : session.user.name,
+          perscomId: perscomId ? perscomId : undefined,
+          id: token.sub,
           roles: roles
         };
         return session;

@@ -1,19 +1,37 @@
 import pool from "@/db/connection";
 
-interface UserRow {
-  role: string | null;
-}
-
-export const addUserDb = async (id: string, username: string, email: string): Promise<void> => {
+export const addUserDb = async (id: string, discord_username: string, email: string): Promise<void> => {
   const connection = await pool.getConnection();
   try {
     await connection.query(`
-      INSERT IGNORE INTO users (id, username, email)
+      INSERT IGNORE INTO users (id, discord_username, email)
       VALUES (?, ?, ?)
       ON DUPLICATE KEY UPDATE
-        username = VALUES(username),
+        discord_username = VALUES(discord_username),
         email = VALUES(email)
-    `, [id, username, email]);
+    `, [id, discord_username, email]);
+
+  } catch (error) {
+    return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
+
+export const updateUserAfterApplicationDb = async (
+  id: string,
+  perscom_id: number,
+  name: string,
+  steam_id: string,
+  date_of_birth: Date
+): Promise<void> => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(`
+        UPDATE users
+        SET perscom_id = ?, name = ?, date_of_birth = ?, steam_id = ?, role = 'applicant'
+        WHERE id = ?
+    `, [perscom_id, name, date_of_birth, steam_id, id]);
 
   } catch (error) {
     return Promise.reject(error);
@@ -37,21 +55,36 @@ export const addRefreshTokenDb = async (userId: string, tokenHash: string, expir
   }
 }
 
-export const retrieveUserRolesDb = async (userId: string): Promise<string[]> => {
+export const retrieveUserInfoDb = async (userId: string): Promise<{
+  roles: string[];
+  perscomId: string | null;
+  name: string | null;
+}> => {
   const connection = await pool.getConnection();
   try {
-    const [rows] = await connection.query(`
-      SELECT role FROM users WHERE id = ?
-    `, [userId]);
+    const [rows] = await connection.query(
+      `
+          SELECT role, perscom_id, name
+          FROM users
+          WHERE id = ?
+      `,
+      [userId]
+    );
 
     if (Array.isArray(rows) && rows.length > 0) {
-      const roleValue = (rows[0] as UserRow).role;
-      return roleValue ? roleValue.split(",").map((r: string) => r.trim()) : [];
+      const { role, perscom_id, name } = rows[0] as {
+        role: string | null;
+        perscom_id: string | null;
+        name: string | null;
+      };
+      const roles = role ? role.split(",").map((r: string) => r.trim()) : [];
+      return { roles, perscomId: perscom_id, name };
     }
-    return [];
+    return { roles: [], perscomId: null, name: null };
   } catch (error) {
     return Promise.reject(error);
   } finally {
     connection.release();
   }
-}
+};
+
