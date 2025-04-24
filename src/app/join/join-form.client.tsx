@@ -66,7 +66,6 @@ export default function JoinFormClient() {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    // Clear error for this field when user starts typing
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev }
@@ -79,7 +78,6 @@ export default function JoinFormClient() {
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    // Clear error for this field when user selects an option
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev }
@@ -92,7 +90,6 @@ export default function JoinFormClient() {
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }))
 
-    // Clear error for this field when user checks the box
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev }
@@ -125,6 +122,7 @@ export default function JoinFormClient() {
 
     return errors
   }
+  // TODO: fix form validation especially for name to match regex
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

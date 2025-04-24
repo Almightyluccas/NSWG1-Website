@@ -14,12 +14,10 @@ import { createPerscomUser, createApplicationSubmission } from "@/lib/perscomApi
 import { updateUserAfterApplicationDb } from "@/db/client";
 
 
-export async function submitApplication(formData: FormData, id: string, discordName: string) {
+export async function submitApplication(formData: FormData, user_id: string, discordName: string) {
   const session = await getServerSession(authOptions)
 
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
+  if (!session) throw new Error("Not authenticated");
 
   const formEntries = Object.fromEntries(formData);
   const data = {
@@ -39,6 +37,7 @@ export async function submitApplication(formData: FormData, id: string, discordN
 
   const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
   const createPerscomUserResponse: PerscomUserResponse = await createPerscomUser(perscomUser);
+  if (!createPerscomUserResponse) throw new Error("Failed to create perscom user");
 
   const applicationResponse: ApplicationSubmissionResponse = await createApplicationSubmission(
     {
@@ -58,18 +57,15 @@ export async function submitApplication(formData: FormData, id: string, discordN
       confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: "yes",
     }
   );
-  console.log(applicationResponse);
-  //save applicationResponse to db
+  if (!applicationResponse) throw new Error("Failed to create application submission");
 
-  await updateUserAfterApplicationDb(id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
+  await updateUserAfterApplicationDb(user_id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
 }
 
 export default async function JoinPage() {
   const session = getServerSession(authOptions)
 
-  if (!session) {
-    redirect("/login");
-  }
+  if (!session) redirect("/login");
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-zinc-900">

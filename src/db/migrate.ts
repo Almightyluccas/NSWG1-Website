@@ -14,7 +14,7 @@ export default async function migrateDb(): Promise<void> {
         date_of_birth DATE NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        role SET ('guest','applicant','candidate','greenTeam','member','160th','tacdevron','admin','superAdmin') DEFAULT 'guest'
+        role SET ('guest','applicant','candidate','greenTeam','member','160th','tacdevron','instructor','admin','superAdmin') DEFAULT 'guest'
       )
     `);
 
@@ -29,6 +29,24 @@ export default async function migrateDb(): Promise<void> {
         FOREIGN KEY (user_id) REFERENCES users(id)
       );    
     `)
+
+    // await connection.query(`
+    //   CREATE TABLE IF NOT EXISTS leave_of_absence (
+    //
+    //   )
+    // `)
+
+    // await connection.query(`
+    //   CREATE TABLE IF NOT EXISTS images (
+    //
+    //   );
+    // `)
+    //
+    // await connection.query(`
+    //   CREATE TABLE IF NOT EXISTS videos (
+    //
+    //   );
+    // `)
 
   } finally {
     connection.release();

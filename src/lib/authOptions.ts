@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "discord") {
         try {
-          await migrateDb();
+          await migrateDb(); //TODO: Remove this when finished with development
           await addUserDb(account.providerAccountId, user.name!, user.email!);
 
           const refreshToken = encryptToken(account.refresh_token!);

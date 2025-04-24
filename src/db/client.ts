@@ -88,3 +88,19 @@ export const retrieveUserInfoDb = async (userId: string): Promise<{
   }
 };
 
+export const updateUserRolePerscomIdDb = async (role: string, perscomId: number): Promise<void> => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(`
+      UPDATE users
+      SET role = ?
+      WHERE perscom_id = ?
+    `, [role, perscomId]);
+
+  } catch (error) {
+    return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
+

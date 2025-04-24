@@ -40,7 +40,7 @@ const mockAttendanceData = {
     { date: "2025-04-18", status: "present", event: "Operation" },
     { date: "2025-05-02", status: "present", event: "Operation" },
   ],
-  ".luccas.": [
+  "L. Graterol": [
     { date: "2025-04-01", status: "absent", event: "Weekly Training" },
     { date: "2025-04-08", status: "present", event: "Weekly Training" },
     { date: "2025-04-15", status: "present", event: "Weekly Training" },
@@ -75,7 +75,7 @@ const mockUsers = [
     position: "Operator",
   },
   {
-    id: ".luccas.",
+    id: "L. Graterol",
     username: "RecruitCharlie",
     discriminator: "9012",
     avatar: "https://cdn.discordapp.com/embed/avatars/2.png",

@@ -20,6 +20,7 @@
 # production
 /build
 public
+errors
 # misc
 .DS_Store
 *.pem
