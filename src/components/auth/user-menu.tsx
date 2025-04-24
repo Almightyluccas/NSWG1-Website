@@ -11,6 +11,8 @@ interface UserMenuProps {
   onJoinClickAction: () => void
 }
 
+//TODO: Add roleGuard
+
 export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   const {data: session} = useSession();
 
@@ -45,7 +47,7 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              {["admin", "superAdmin"].some(role => session.user.roles.includes(role)) && (
+              {["admin", "superAdmin", "instructor"].some(role => session.user.roles.includes(role)) && (
                 <Link href="/admin" className="w-full">
                   <DropdownMenuItem>
                     <ShieldUser className="mr-2 h-4 w-4" />
