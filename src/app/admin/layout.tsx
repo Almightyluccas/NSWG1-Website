@@ -3,6 +3,7 @@ import { AdminSidebar } from "@/components/admin/sidebar"
 import { AdminHeader } from "@/components/admin/header"
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 
+// TODO: Use perscom Webhook to setup notifications
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (

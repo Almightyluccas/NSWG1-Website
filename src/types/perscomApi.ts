@@ -4,34 +4,168 @@ export interface CreatePerscomUser {
 }
 
 export interface PerscomUserResponse {
-  data: {
-    id: number;
-    name: string;
-    email: string;
-    email_verified_at: string | null;
-    phone_number: string | null;
-    position_id: number | null;
-    rank_id: number | null;
-    specialty_id: number | null;
-    status_id: number | null;
-    unit_id: number | null;
-    unit_slot_id: number | null;
-    approved: boolean;
-    notes: string | null;
-    notes_updated_at: string | null;
-    profile_photo: string | null;
-    cover_photo: string | null;
-    last_seen_at: string | null;
-    discord_user_id: string | null;
-    created_at: string;
-    updated_at: string;
-    last_assignment_change_date: string | null;
-    last_rank_change_date: string | null;
-    online: boolean;
-    profile_photo_url: string;
-    cover_photo_url: string | null;
-    label: string;
-  }
+  id: number;
+  name: string;
+  email: string;
+  email_verified_at: string;
+  phone_number: string | null;
+  position_id: number;
+  rank_id: number;
+  specialty_id: number | null;
+  status_id: number;
+  unit_id: number;
+  unit_slot_id: number | null;
+  approved: boolean;
+  notes: string | null;
+  notes_updated_at: string | null;
+  profile_photo: string | null;
+  cover_photo: string;
+  last_seen_at: string;
+  discord_user_id: string | null;
+  created_at: string;
+  updated_at: string;
+  no_fields: null;
+  last_assignment_change_date: string;
+  last_rank_change_date: string;
+  online: boolean;
+  profile_photo_url: string;
+  cover_photo_url: string;
+  label: string;
+  assignment_records?: AssignmentRecord[];
+  attachments?: [] | null;
+  award_records?: AwardRecord[];
+  combat_records?: CombatRecord[];
+  fields?: [] | null;
+  position?: Position;
+  primary_assignment_records?: AssignmentRecord[];
+  qualification_records?: QualificationRecord[];
+  rank?: Rank;
+  rank_records?: RankRecord[];
+  secondary_assignment_records?: AssignmentRecord[];
+  service_records?: [] | null;
+  specialty?: [] | null;
+  status?: Status;
+  unit?: Unit;
+}
+
+export interface AssignmentRecord {
+  id: number;
+  user_id: number;
+  status_id: number;
+  unit_id: number;
+  position_id: number;
+  specialty_id: number;
+  unit_slot_id: number | null;
+  document_id: number | null;
+  author_id: number | null;
+  type: string;
+  text: string | null;
+  created_at: string;
+  updated_at: string;
+  document_parsed: null;
+  label: string;
+  document: null;
+}
+
+export interface AwardRecord {
+  id: number;
+  user_id: number;
+  award_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+  created_at: string;
+  updated_at: string;
+  document_parsed: null;
+  label: string;
+  document: null;
+}
+
+export interface CombatRecord {
+  id: number;
+  user_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+  created_at: string;
+  updated_at: string;
+  document_parsed: null;
+  label: string;
+  document: null;
+}
+
+export interface QualificationRecord {
+  id: number;
+  user_id: number;
+  qualification_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+  created_at: string;
+  updated_at: string;
+  document_parsed: null;
+  label: string;
+  document: null;
+}
+
+export interface RankRecord {
+  id: number;
+  user_id: number;
+  rank_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+  type: number;
+  created_at: string;
+  updated_at: string;
+  document_parsed: null;
+  label: string;
+  document: null;
+}
+
+export interface Position {
+  id: number;
+  name: string;
+  description: string | null;
+  order: number;
+  created_at: string;
+  updated_at: string;
+  label: string;
+}
+
+export interface Rank {
+  id: number;
+  name: string;
+  description: string | null;
+  abbreviation: string;
+  paygrade: string;
+  order: number;
+  created_at: string;
+  updated_at: string;
+  label: string;
+}
+
+export interface Status {
+  id: number;
+  name: string;
+  color: string;
+  order: number;
+  created_at: string;
+  updated_at: string;
+  label: string;
+}
+
+export interface Unit {
+  id: number;
+  name: string;
+  description: string | null;
+  empty: null;
+  order: number;
+  hidden: boolean;
+  icon: string | null;
+  created_at: string;
+  updated_at: string;
+  label: string;
 }
 
 export interface ApplicationSubmission {

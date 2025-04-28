@@ -100,6 +100,8 @@ export const changeSubmissionStatus = async (applicationId: number, status: 'Den
   }
 };
 
+//TODO: add caching
+
 export const changeUserApprovedBoolean = async (approved: boolean, perscomId: number, name: string, email: string): Promise<void> => {
   const response = await fetch(`${process.env.PERSCOM_API_URL}/users/${perscomId}`, {
     method: "PATCH",
@@ -110,5 +112,43 @@ export const changeUserApprovedBoolean = async (approved: boolean, perscomId: nu
     body: JSON.stringify({name: name, email: email, approved: approved}),
   });
   if (!response.ok) throw new Error("Failed to change user approved status");
-
 }
+
+export const getUsers = async (): Promise<PerscomUserResponse[]> => {
+  const urlParameters = `include=assignment_records,attachments,award_records,combat_records,fields,position,primary_assignment_records,qualification_records,rank,rank_records,secondary_assignment_records,service_records,specialty,status,unit`
+  const response = await fetch(`${process.env.PERSCOM_API_URL}/users?${urlParameters}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch users");
+
+  const initialResponse: PaginatedResponse<PerscomUserResponse> = await response.json();
+  const lastPage = initialResponse.meta.last_page;
+
+  const pagePromises: Promise<PaginatedResponse<PerscomUserResponse>>[] = [];
+  for (let i = 1; i <= lastPage; i++) {
+    const pagePromise = fetch(`${process.env.PERSCOM_API_URL}/users?page=${i}&${urlParameters}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => {
+      if (!response.ok) throw new Error(`Failed to fetch applications page ${i}`);
+      return response.json() as Promise<PaginatedResponse<PerscomUserResponse>>;
+    });
+    console.log(pagePromise)
+    pagePromises.push(pagePromise);
+  }
+
+  const pageResponses = await Promise.all(pagePromises);
+
+  const data: PerscomUserResponse[] = [];
+  pageResponses.forEach(pageResponse => {
+    data.push(...pageResponse.data);
+  });
+  return data;
+};

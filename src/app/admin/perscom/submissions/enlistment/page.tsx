@@ -1,6 +1,6 @@
 "use server"
 
-import { ApplicationsTable } from "@/app/admin/perscom/submissions/enlistment/appications.client";
+import { ApplicationsTable } from "@/app/admin/perscom/submissions/enlistment/applications.client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";

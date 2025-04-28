@@ -150,7 +150,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                 </RoleGuard>
                 <li>
                   <Link
-                    href="/admin/perscom/users"
+                    href="/admin/perscom/members"
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                       pathname === "/admin/perscom/users"
@@ -159,7 +159,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                     )}
                   >
                     <UserCheck className="h-4 w-4" />
-                    Users
+                    Members
                   </Link>
                 </li>
 
