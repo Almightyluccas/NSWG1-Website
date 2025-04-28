@@ -21,7 +21,6 @@ export default async function ServerRoleGuard({
   }
 
   const roles = session.user.roles ?? []
-  console.log(roles)
   const isAllowed = allowedRoles.some(r => roles.includes(r))
 
   if (!isAllowed && hide) {

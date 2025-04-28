@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PerscomUserResponse } from "@/types/perscomApi";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/ui/pagination";
 
 
 interface MembersTableProps {
@@ -82,6 +82,16 @@ export const MembersTable = ({ members }: MembersTableProps) => {
     setSelectedUser(user)
     setIsUserDetailsOpen(true)
   }
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsUserDetailsOpen(open);
+    if (!open) {
+      setSelectedUser(null);
+      document.body.focus();
+      setTimeout(() => {
+        document.body.style.pointerEvents = "auto";
+      }, 100);
+    }
+  };
 
   const toggleFilterSection = (section: 'status' | 'position' | 'unit') => {
     setExpandedFilterSection(expandedFilterSection === section ? null : section);
@@ -310,34 +320,14 @@ export const MembersTable = ({ members }: MembersTableProps) => {
         </div>
       </div>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationPrevious
-            href="#"
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-          />
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <PaginationItem key={page}>
-              <PaginationLink
-                href="#"
-                isActive={page === currentPage}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          <PaginationNext
-            href="#"
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          />
-        </PaginationContent>
-      </Pagination>
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {selectedUser && (
-        <Dialog open={isUserDetailsOpen} onOpenChange={setIsUserDetailsOpen}>
+        <Dialog open={isUserDetailsOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent className="w-[90vw] md:w-[50vw] !max-w-none">
             <DialogHeader>
               <DialogTitle>User Details</DialogTitle>

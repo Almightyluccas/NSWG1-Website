@@ -7,7 +7,7 @@ import {useState} from "react";
 import { ApplicationData } from "@/types/perscomApi";
 import RoleGuard from "@/components/auth/role-guard";
 import {useSession} from "next-auth/react";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { PaginationBar } from "@/components/ui/pagination";
 import {acceptApplication, rejectApplication} from "@/app/admin/perscom/submissions/enlistment/page";
 import {
   DropdownMenu,
@@ -82,6 +82,16 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
     setSelectedApplication(application)
     setIsApplicationDetailsOpen(true)
   }
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsApplicationDetailsOpen(open);
+    if (!open) {
+      setSelectedApplication(null);
+      document.body.focus();
+      setTimeout(() => {
+        document.body.style.pointerEvents = "auto";
+      }, 100);
+    }
+  };
   const isAccepted = (application: ApplicationData) => {
     return application.statuses && application.statuses.length > 0 && application.statuses[0].name === 'Accepted';
   };
@@ -299,31 +309,11 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
             </div>
           )}
         </div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationPrevious
-              href="#"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            />
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  href="#"
-                  isActive={page === currentPage}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationNext
-              href="#"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            />
-          </PaginationContent>
-        </Pagination>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
 
 
         {/*
@@ -443,7 +433,7 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
             </DialogContent>
           </Dialog>
         )}
-        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <Dialog open={showConfirmDialog} onOpenChange={handleDialogOpenChange}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirm Action</DialogTitle>

@@ -1,4 +1,5 @@
 import pool from "@/db/connection";
+import { UserInformation, UserRole } from "@/types/database";
 
 export const addUserDb = async (id: string, discord_username: string, email: string): Promise<void> => {
   const connection = await pool.getConnection();
@@ -87,6 +88,40 @@ export const retrieveUserInfoDb = async (userId: string): Promise<{
     connection.release();
   }
 };
+
+export const getAllUsersDb = async (): Promise<UserInformation[]> => {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(`
+      SELECT id, perscom_id, steam_id, discord_username, name, date_of_birth, email, created_at, role
+      FROM users
+    `);
+
+    if (!Array.isArray(rows)) {
+      return [];
+    }
+
+    return rows.map((row: any) => {
+      const user: UserInformation = {
+        id: row.id,
+        perscom_id: row.perscom_id,
+        steam_id: row.steam_id,
+        discord_username: row.discord_username,
+        name: row.name,
+        date_of_birth: row.date_of_birth ? new Date(row.date_of_birth) : null,
+        email: row.email,
+        created_at: new Date(row.created_at),
+        role: row.role ? row.role.split(",").map((r: string) => r.trim() as UserRole) : []
+      };
+      return user;
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
+
 
 export const updateUserRolePerscomIdDb = async (role: string, perscomId: number): Promise<void> => {
   const connection = await pool.getConnection();

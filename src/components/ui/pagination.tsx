@@ -6,6 +6,53 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
+const PaginationBar = ({
+  currentPage,
+  totalPages,
+  onPageChange
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationPrevious
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            onPageChange(currentPage - 1);
+          }}
+          disabled={currentPage === 1}
+        />
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <PaginationItem key={page}>
+            <PaginationLink
+              href="#"
+              isActive={page === currentPage}
+              onClick={(e) => {
+                e.preventDefault();
+                onPageChange(page);
+              }}
+            >
+              {page}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+        <PaginationNext
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            onPageChange(currentPage + 1);
+          }}
+          disabled={currentPage === totalPages}
+        />
+      </PaginationContent>
+    </Pagination>
+  );
+};
+
 const Pagination = ({
   className,
   ...props
@@ -124,4 +171,5 @@ export {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationBar
 }

@@ -1,9 +1,14 @@
 import pool from './connection';
 import {PoolConnection} from "mysql2/promise";
+import { UserRole } from "@/types/database";
 
 export default async function migrateDb(): Promise<void> {
   const connection: PoolConnection = await pool.getConnection();
   try {
+    const roleValues = Object.values(UserRole)
+      .map(role => `'${role}'`)
+      .join(',');
+
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(255) PRIMARY KEY,
@@ -14,7 +19,7 @@ export default async function migrateDb(): Promise<void> {
         date_of_birth DATE NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        role SET ('guest','applicant','candidate','greenTeam','member','160th','tacdevron','instructor','admin','superAdmin') DEFAULT 'guest'
+        role SET (${roleValues}) DEFAULT '${UserRole.guest}'
       )
     `);
 
