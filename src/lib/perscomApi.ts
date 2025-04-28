@@ -5,7 +5,28 @@ import {
   CreatePerscomUser,
   PaginatedResponse,
   PerscomUserResponse,
+  RankInformation,
 } from "@/types/perscomApi";
+
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const cache: {
+  users?: CacheEntry<PerscomUserResponse[]>;
+  ranks?: CacheEntry<RankInformation[]>;
+} = {};
+
+const isCacheValid = <T>(cacheEntry: CacheEntry<T> | undefined): boolean => {
+  if (!cacheEntry) return false;
+  const now = Date.now();
+  return now - cacheEntry.timestamp < CACHE_DURATION_MS;
+};
+
+
 
 export const createPerscomUser = async (data: CreatePerscomUser): Promise<PerscomUserResponse> => {
   const response = await fetch(`${process.env.PERSCOM_API_URL}/users`, {
@@ -100,8 +121,6 @@ export const changeSubmissionStatus = async (applicationId: number, status: 'Den
   }
 };
 
-//TODO: add caching
-
 export const changeUserApprovedBoolean = async (approved: boolean, perscomId: number, name: string, email: string): Promise<void> => {
   const response = await fetch(`${process.env.PERSCOM_API_URL}/users/${perscomId}`, {
     method: "PATCH",
@@ -114,8 +133,12 @@ export const changeUserApprovedBoolean = async (approved: boolean, perscomId: nu
   if (!response.ok) throw new Error("Failed to change user approved status");
 }
 
-export const getUsers = async (): Promise<PerscomUserResponse[]> => {
-  const urlParameters = `include=assignment_records,attachments,award_records,combat_records,fields,position,primary_assignment_records,qualification_records,rank,rank_records,secondary_assignment_records,service_records,specialty,status,unit`
+export const getUsers = async (forceRefresh: boolean = false): Promise<PerscomUserResponse[]> => {
+  if (!forceRefresh && isCacheValid(cache.users)) {
+    return cache.users!.data;
+  }
+
+  const urlParameters = `include=assignment_records,attachments,award_records,combat_records,fields,position,primary_assignment_records,qualification_records,rank,rank_records,secondary_assignment_records,service_records,specialty,status,unit`;
   const response = await fetch(`${process.env.PERSCOM_API_URL}/users?${urlParameters}`, {
     method: "GET",
     headers: {
@@ -137,10 +160,9 @@ export const getUsers = async (): Promise<PerscomUserResponse[]> => {
         "Content-Type": "application/json",
       },
     }).then(response => {
-      if (!response.ok) throw new Error(`Failed to fetch applications page ${i}`);
+      if (!response.ok) throw new Error(`Failed to fetch users page ${i}`);
       return response.json() as Promise<PaginatedResponse<PerscomUserResponse>>;
     });
-    console.log(pagePromise)
     pagePromises.push(pagePromise);
   }
 
@@ -150,5 +172,67 @@ export const getUsers = async (): Promise<PerscomUserResponse[]> => {
   pageResponses.forEach(pageResponse => {
     data.push(...pageResponse.data);
   });
+
+  cache.users = {
+    data,
+    timestamp: Date.now()
+  };
+
   return data;
+};
+
+export const getRanks = async (forceRefresh: boolean = false): Promise<RankInformation[]> => {
+  if (!forceRefresh && isCacheValid(cache.ranks)) {
+    return cache.ranks!.data;
+  }
+
+  const response = await fetch(`${process.env.PERSCOM_API_URL}/ranks?include=image`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) throw new Error("Failed to fetch Ranks");
+
+  const initialResponse: PaginatedResponse<RankInformation> = await response.json();
+  const lastPage = initialResponse.meta.last_page;
+
+  const pagePromises: Promise<PaginatedResponse<RankInformation>>[] = [];
+  for (let i = 1; i <= lastPage; i++) {
+    const pagePromise = fetch(`${process.env.PERSCOM_API_URL}/ranks?page=${i}&include=image`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => {
+      if (!response.ok) throw new Error(`Failed to fetch ranks page ${i}`);
+      return response.json() as Promise<PaginatedResponse<RankInformation>>;
+    });
+    pagePromises.push(pagePromise);
+  }
+
+  const pageResponses = await Promise.all(pagePromises);
+
+  const data: RankInformation[] = [];
+  pageResponses.forEach(pageResponse => {
+    data.push(...pageResponse.data);
+  });
+
+  cache.ranks = {
+    data,
+    timestamp: Date.now()
+  };
+
+  return data;
+};
+
+export const refreshCache = async (cacheKey?: 'users' | 'ranks'): Promise<void> => {
+  if (!cacheKey || cacheKey === 'users') {
+    await getUsers(true);
+  }
+  if (!cacheKey || cacheKey === 'ranks') {
+    await getRanks(true);
+  }
 };

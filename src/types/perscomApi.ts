@@ -3,6 +3,33 @@ export interface CreatePerscomUser {
   email: string,
 }
 
+export interface RankImage {
+  "id": number,
+  "name": string | null,
+  "description": string | null,
+  "filename": string,
+  "model_type": string,
+  "model_id": number,
+  "path": string,
+  "created_at": string,
+  "updated_at": string,
+  "image_url": string,
+  "label": string
+}
+
+export interface RankInformation {
+  "id": number,
+  "name": string,
+  "description": string,
+  "abbreviation": string,
+  "paygrade": string,
+  "order": number,
+  "created_at": string,
+  "updated_at": string,
+  "label": string,
+  "image": RankImage
+}
+
 export interface PerscomUserResponse {
   id: number;
   name: string;
