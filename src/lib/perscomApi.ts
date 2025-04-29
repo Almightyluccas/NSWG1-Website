@@ -66,12 +66,18 @@ export const createApplicationSubmission = async (data: ApplicationSubmission): 
 }
 
 export const getApplications = async (): Promise<ApplicationData[]> => {
-  const response = await fetch(`${process.env.PERSCOM_API_URL}/submissions?include=statuses`, {
+  const timestamp = Date.now();
+
+  const response = await fetch(`${process.env.PERSCOM_API_URL}/submissions?include=statuses&_t=${timestamp}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
       "Content-Type": "application/json",
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
     },
+    cache: 'no-store',
+    next: { revalidate: 0 },
   });
 
   if (!response.ok) throw new Error("Failed to fetch applications");
@@ -81,12 +87,16 @@ export const getApplications = async (): Promise<ApplicationData[]> => {
 
   const pagePromises: Promise<PaginatedResponse<ApplicationData>>[] = [];
   for (let i = 1; i <= lastPage; i++) {
-    const pagePromise = fetch(`${process.env.PERSCOM_API_URL}/submissions?page=${i}&include=statuses`, {
+    const pagePromise = fetch(`${process.env.PERSCOM_API_URL}/submissions?page=${i}&include=statuses&_t=${timestamp}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${process.env.PERSCOM_API_KEY}`,
         "Content-Type": "application/json",
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
       },
+      cache: 'no-store',
+      next: { revalidate: 0 },
     }).then(response => {
       if (!response.ok) throw new Error(`Failed to fetch applications page ${i}`);
       return response.json() as Promise<PaginatedResponse<ApplicationData>>;
@@ -106,6 +116,7 @@ export const getApplications = async (): Promise<ApplicationData[]> => {
 
 export const changeSubmissionStatus = async (applicationId: number, status: 'Denied' | 'Accepted'): Promise<void> => {
   const statusId = status === 'Denied' ? 8 : 7;
+  console.log(statusId)
   const response = await fetch(`${process.env.PERSCOM_API_URL}/submissions/${applicationId}/statuses/attach`, {
     method: "POST",
     headers: {

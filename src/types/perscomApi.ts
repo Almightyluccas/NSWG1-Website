@@ -24,10 +24,23 @@ export interface Image extends BaseEntity {
   image_url: string;
 }
 
+
+
 export interface Status extends BaseEntity {
   name: string;
   color: string;
   order: number;
+}
+
+export interface LeaveApplication  extends BaseEntity {
+  form_id: number;
+  user_id: number;
+  first_name: string;
+  email_address?: string;
+  date_of_leave?: string;
+  date_of_return?: string;
+  reason_for_leave?: string;
+  statuses: Array<Status>;
 }
 
 export interface Unit extends BaseEntity {

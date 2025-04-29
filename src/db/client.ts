@@ -97,9 +97,7 @@ export const getAllUsersDb = async (): Promise<UserInformation[]> => {
       FROM users
     `);
 
-    if (!Array.isArray(rows)) {
-      return [];
-    }
+    if (!Array.isArray(rows)) return [];
 
     return rows.map((row: any) => {
       const user: UserInformation = {
@@ -117,6 +115,126 @@ export const getAllUsersDb = async (): Promise<UserInformation[]> => {
     });
   } catch (error) {
     return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
+
+export const getUserCountWithTrendDb = async (): Promise<{
+  currentCount: number;
+  percentChange: number;
+  isPositive: boolean;
+}> => {
+  const connection = await pool.getConnection();
+  try {
+    // Get current and previous month/year
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    let previousMonth = currentMonth - 1;
+    let previousYear = currentYear;
+    if (previousMonth === 0) {
+      previousMonth = 12;
+      previousYear -= 1;
+    }
+
+    const [currentResult] = await connection.query(`
+      SELECT COUNT(*) as count
+      FROM users
+      WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
+    `, [currentMonth, currentYear]);
+
+    const [previousResult] = await connection.query(`
+      SELECT COUNT(*) as count
+      FROM users
+      WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
+    `, [previousMonth, previousYear]);
+
+    const currentCount = Array.isArray(currentResult) && currentResult.length > 0 ?
+      (currentResult[0] as { count: number }).count : 0;
+
+    const previousCount = Array.isArray(previousResult) && previousResult.length > 0 ?
+      (previousResult[0] as { count: number }).count : 0;
+
+    let percentChange = 0;
+    if (previousCount > 0) {
+      percentChange = ((currentCount - previousCount) / previousCount) * 100;
+    } else if (currentCount > 0) {
+      percentChange = 100;
+    }
+
+    return {
+      currentCount,
+      percentChange: Math.abs(Math.round(percentChange)),
+      isPositive: percentChange >= 0
+    };
+  } catch (error) {
+    console.error("Error calculating user trend:", error);
+    return { currentCount: 0, percentChange: 0, isPositive: true };
+  } finally {
+    connection.release();
+  }
+}
+
+
+
+export const getRecentUsersDb = async (limit: number): Promise<UserInformation[]> => {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.query(`
+        SELECT u.id, u.perscom_id, u.steam_id, u.discord_username, u.name, u.date_of_birth,
+               u.email, u.created_at, u.role, i.image_url
+        FROM users u
+                 LEFT JOIN images i ON u.profile_image_id = i.id
+        ORDER BY u.created_at DESC
+        LIMIT ?
+    `, [limit]);
+
+    if (!Array.isArray(rows)) return [];
+
+    return rows.map((row: any) => {
+      const user: UserInformation = {
+        id: row.id,
+        perscom_id: row.perscom_id,
+        steam_id: row.steam_id,
+        discord_username: row.discord_username,
+        name: row.name,
+        date_of_birth: row.date_of_birth ? new Date(row.date_of_birth) : null,
+        email: row.email,
+        created_at: new Date(row.created_at),
+        role: row.role ? row.role.split(",").map((r: string) => r.trim() as UserRole) : [],
+        imageUrl: row.image_url || null
+      };
+      return user;
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  } finally {
+    connection.release();
+  }
+}
+
+export async function saveUserProfileImageDb(userId: string, imageUrl: string): Promise<number | null> {
+  const connection = await pool.getConnection();
+  try {
+    const [imageResult] = await connection.query(
+      `INSERT INTO images (user_id, image_url, image_type, reference_id, reference_type)
+       VALUES (?, ?, 'profile', ?, 'user')`,
+      [userId, imageUrl, userId]
+    );
+
+    const imageId = (imageResult as any).insertId;
+
+    await connection.query(
+      `UPDATE users SET profile_image_id = ? WHERE id = ?`,
+      [imageId, userId]
+    );
+
+    return imageId;
+  } catch (error) {
+    console.error("Error saving profile image:", error);
+    return null;
   } finally {
     connection.release();
   }

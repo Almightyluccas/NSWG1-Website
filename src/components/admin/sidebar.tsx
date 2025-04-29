@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { useSession } from "next-auth/react";
 import RoleGuard from "@/components/auth/role-guard";
+import { UserRole } from "@/types/database";
 
 interface SidebarProps {
   className?: string
@@ -132,7 +133,7 @@ export function AdminSidebar({ className }: SidebarProps) {
 
             {perscomOpen && (
               <ul className="mt-1 ml-4 space-y-1">
-                <RoleGuard roles={session?.user.roles || []} allowedRoles={['admin', 'superAdmin'] } hide={true}>
+                <RoleGuard roles={session?.user.roles || []} allowedRoles={[UserRole.developer] } hide={true}>
                   <li>
                     <Link
                       href="/admin/perscom/configuration"
@@ -206,121 +207,125 @@ export function AdminSidebar({ className }: SidebarProps) {
                             Leave of Absence
                           </Link>
                         </li>
-                        <li>
-                          <Link
-                            href="/admin/perscom/submissions/all"
-                            className={cn(
-                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                              pathname === "/admin/perscom/submissions/all"
-                                ? "bg-accent text-black"
-                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                            )}
-                          >
-                            All Submissions
-                          </Link>
-                        </li>
+                        <RoleGuard roles={session?.user.roles || []} allowedRoles={[UserRole.developer]} hide={true}>
+                          <li>
+                            <Link
+                              href="/admin/perscom/submissions/all"
+                              className={cn(
+                                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                pathname === "/admin/perscom/submissions/all"
+                                  ? "bg-accent text-black"
+                                  : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                              )}
+                            >
+                              All Submissions
+                            </Link>
+                          </li>
+                        </RoleGuard>
+
                       </RoleGuard>
                     </ul>
                   )}
                 </li>
-
-                <li>
-                  <div
-                    className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-zinc-700"
-                    onClick={() => setOrganizationOpen(!organizationOpen)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Building2 className="h-4 w-4" />
-                      <span>Organization</span>
+                <RoleGuard roles={session?.user.roles || []} allowedRoles={[UserRole.developer]} hide={true}>
+                  <li>
+                    <div
+                      className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-zinc-700"
+                      onClick={() => setOrganizationOpen(!organizationOpen)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-4 w-4" />
+                        <span>Organization</span>
+                      </div>
+                      <ChevronDown
+                        className={cn("h-4 w-4 transition-transform", organizationOpen ? "transform rotate-180" : "")}
+                      />
                     </div>
-                    <ChevronDown
-                      className={cn("h-4 w-4 transition-transform", organizationOpen ? "transform rotate-180" : "")}
-                    />
-                  </div>
 
-                  {organizationOpen && (
-                    <ul className="mt-1 ml-4 space-y-1">
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/units"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/units"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Units
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/positions"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/positions"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Positions
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/specialties"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/specialties"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Specialties
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/statuses"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/statuses"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Statuses
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/awards"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/awards"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Awards
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          href="/admin/perscom/organization/qualifications"
-                          className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                            pathname === "/admin/perscom/organization/qualifications"
-                              ? "bg-accent text-black"
-                              : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
-                          )}
-                        >
-                          Qualifications
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
+                    {organizationOpen && (
+                      <ul className="mt-1 ml-4 space-y-1">
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/units"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/units"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Units
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/positions"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/positions"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Positions
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/specialties"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/specialties"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Specialties
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/statuses"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/statuses"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Statuses
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/awards"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/awards"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Awards
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/admin/perscom/organization/qualifications"
+                            className={cn(
+                              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                              pathname === "/admin/perscom/organization/qualifications"
+                                ? "bg-accent text-black"
+                                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                            )}
+                          >
+                            Qualifications
+                          </Link>
+                        </li>
+                      </ul>
+                    )}
+                  </li>
+                </RoleGuard>
               </ul>
             )}
           </li>

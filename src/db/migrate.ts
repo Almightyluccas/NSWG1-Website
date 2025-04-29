@@ -19,7 +19,9 @@ export default async function migrateDb(): Promise<void> {
         date_of_birth DATE NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        role SET (${roleValues}) DEFAULT '${UserRole.guest}'
+        role SET (${roleValues}) DEFAULT '${UserRole.guest}',
+        profile_image_id INT NULL,
+        FOREIGN KEY (profile_image_id) REFERENCES images(id)   
       )
     `);
 
@@ -41,11 +43,18 @@ export default async function migrateDb(): Promise<void> {
     //   )
     // `)
 
-    // await connection.query(`
-    //   CREATE TABLE IF NOT EXISTS images (
-    //
-    //   );
-    // `)
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(255) NULL,  -- NULL allowed for system images
+        image_url VARCHAR(255) NOT NULL,
+        image_type ENUM('profile', 'system', 'content', 'banner') NOT NULL,
+        reference_id VARCHAR(255) NULL, -- ID of the entity this image relates to
+        reference_type VARCHAR(50) NULL, -- Type of entity (user, unit, rank, etc.)
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+    `)
     //
     // await connection.query(`
     //   CREATE TABLE IF NOT EXISTS videos (

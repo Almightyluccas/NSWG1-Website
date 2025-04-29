@@ -1,18 +1,10 @@
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
-
-interface User {
-  id: string,
-  username: string,
-  discriminator: string,
-  avatar: string,
-  roles: string[],
-  joinedAt: Date
-}
+import { UserInformation } from "@/types/database";
 
 interface RecentUsersTableProps {
-  users: User[]
+  users: UserInformation[]
 }
 
 export function RecentUsersTable({ users }: RecentUsersTableProps) {
@@ -43,15 +35,15 @@ export function RecentUsersTable({ users }: RecentUsersTableProps) {
                 <div className="flex items-center">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3">
                     <Image
-                      src={user.avatar || "/placeholder.svg"}
-                      alt={user.username}
+                      src={user.imageUrl || "/placeholder.svg"}
+                      alt={user.name || "User Avatar"}
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div>
                     <div className="font-medium">
-                      {user.username}
+                      {user.name || user.discord_username}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-zinc-400">ID: {user.id}</div>
                   </div>
@@ -59,7 +51,7 @@ export function RecentUsersTable({ users }: RecentUsersTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex flex-wrap gap-1">
-                  {user.roles.map((role) => (
+                  {user.role.map((role) => (
                     <Badge key={role} variant="outline" className="capitalize">
                       {role}
                     </Badge>
@@ -67,7 +59,7 @@ export function RecentUsersTable({ users }: RecentUsersTableProps) {
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">
-                {formatDistanceToNow(user.joinedAt, { addSuffix: true })}
+                {formatDistanceToNow(user.created_at, { addSuffix: true })}
               </td>
             </tr>
           ))}

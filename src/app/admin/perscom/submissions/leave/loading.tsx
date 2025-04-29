@@ -1,3 +1,4 @@
+// src/app/admin/perscom/submissions/leave/loading.tsx
 "use client"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, Search } from "lucide-react";
@@ -5,17 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export default function Loading()  {
+export default function Loading() {
   const placeholderRows = Array(5).fill(0);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Enlistment Applications</h1>
-        <p className="text-gray-500 dark:text-zinc-400">Review and process new enlistment applications.</p>
+        <h1 className="text-2xl font-bold">Leave of absence requests</h1>
+        <p className="text-gray-500 dark:text-zinc-400">Review and process new LOA requests.</p>
       </div>
-      <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm">
 
+      <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm">
         <div className="p-6 border-b border-gray-200 dark:border-zinc-700 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
@@ -87,4 +88,4 @@ export default function Loading()  {
       </div>
     </div>
   );
-};
+}

@@ -10,6 +10,7 @@ import { UserMenu } from "@/components/auth/user-menu"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import RoleGuard from "@/components/auth/role-guard";
+import Image from "next/image";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -44,6 +45,14 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center">
+            <div className="mr-4">
+              <Image
+                src={"/images/nswg1-emblem.png"}
+                alt={"NSWG1 Emblem"}
+                width={50}
+                height={50}
+              />
+            </div>
             <span className="text-2xl font-bold">
               <span className="text-accent">NSWG</span>1
             </span>

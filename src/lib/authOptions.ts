@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import migrateDb from "@/db/migrate";
-import {addRefreshTokenDb, addUserDb, retrieveUserInfoDb } from "@/db/client";
+import {addRefreshTokenDb, addUserDb, retrieveUserInfoDb, saveUserProfileImageDb } from "@/db/client";
 import { encryptToken } from "@/lib/cryptoUtils";
 
 export const authOptions: NextAuthOptions = {
@@ -23,6 +23,7 @@ export const authOptions: NextAuthOptions = {
         try {
           await migrateDb(); //TODO: Remove this when finished with development
           await addUserDb(account.providerAccountId, user.name!, user.email!);
+          await saveUserProfileImageDb(account.providerAccountId, user.image!);
 
           const refreshToken = encryptToken(account.refresh_token!);
           await addRefreshTokenDb(account.providerAccountId, refreshToken, new Date(account.expires_at! * 1000));

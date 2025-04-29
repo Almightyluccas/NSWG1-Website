@@ -411,7 +411,7 @@ export const UserProfile = ({
                             </div>
                           </div>
                           <p className="text-sm text-gray-500 dark:text-zinc-400">
-                            Changed on {record.date}
+                            Promoted on {record.date}
                           </p>
                           {record.text && (
                             <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtmlClient(record.text)}</p>

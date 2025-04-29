@@ -22,4 +22,5 @@ export interface UserInformation {
   email: string;
   created_at: Date;
   role: UserRole[];
+  imageUrl?: string | null;
 }
