@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["https://4a0e-179-82-0-26.ngrok-free.app"],
   images: {
     remotePatterns: [
       {
@@ -12,10 +13,15 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "perscom.s3.amazonaws.com",
         pathname: "/**",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+        pathname: "/**",
+      },
+
     ]
   }
-  /* config options here */
 };
 
 export default nextConfig;

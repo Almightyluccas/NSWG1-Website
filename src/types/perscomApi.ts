@@ -1,37 +1,116 @@
-export interface CreatePerscomUser {
-  name: string,
-  email: string,
-}
-
-export interface RankImage {
-  "id": number,
-  "name": string | null,
-  "description": string | null,
-  "filename": string,
-  "model_type": string,
-  "model_id": number,
-  "path": string,
-  "created_at": string,
-  "updated_at": string,
-  "image_url": string,
-  "label": string
-}
-
-export interface RankInformation {
-  "id": number,
-  "name": string,
-  "description": string,
-  "abbreviation": string,
-  "paygrade": string,
-  "order": number,
-  "created_at": string,
-  "updated_at": string,
-  "label": string,
-  "image": RankImage
-}
-
-export interface PerscomUserResponse {
+export interface BaseEntity {
   id: number;
+  created_at: string;
+  updated_at: string;
+  label: string;
+}
+
+export interface BaseRecord extends BaseEntity {
+  user_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+  document_parsed: null | string;
+  document: null;
+}
+
+export interface Image extends BaseEntity {
+  name: string | null;
+  description: string | null;
+  filename: string;
+  model_type: string;
+  model_id: number;
+  path: string;
+  image_url: string;
+}
+
+export interface Status extends BaseEntity {
+  name: string;
+  color: string;
+  order: number;
+}
+
+export interface Unit extends BaseEntity {
+  name: string;
+  description: string | null;
+  empty: null;
+  order: number;
+  hidden: boolean;
+  icon: string | null;
+}
+
+export interface Position extends BaseEntity {
+  name: string;
+  description: string | null;
+  order: number;
+}
+
+export interface Specialty extends BaseEntity {
+  name: string;
+  abbreviation: string;
+  description: string;
+  order: number;
+}
+
+export interface Rank extends BaseEntity {
+  name: string;
+  description: string | null;
+  abbreviation: string;
+  paygrade: string;
+  order: number;
+  image?: Image;
+}
+
+export interface Award extends BaseEntity {
+  name: string;
+  description: string;
+  order: number;
+  image?: Image;
+}
+
+export interface Qualification extends BaseEntity {
+  name: string;
+  description: string;
+  order: number;
+  image?: Image;
+}
+
+export interface AwardRecord extends BaseRecord {
+  award_id: number;
+}
+
+export type CombatRecord = BaseRecord
+
+export interface QualificationRecord extends BaseRecord {
+  qualification_id: number;
+}
+
+export interface RankRecord extends BaseRecord {
+  rank_id: number;
+  type: number;
+}
+
+export interface AssignmentRecord extends BaseRecord {
+  status_id: number;
+  unit_id: number;
+  position_id: number;
+  specialty_id: number;
+  unit_slot_id: number | null;
+  type: string;
+  author?: PerscomUserResponse;
+  position?: Position;
+  specialty?: Specialty;
+  status?: Status;
+  unit?: Unit;
+  user?: PerscomUserResponse;
+}
+
+export interface CreatePerscomUser {
+  name: string;
+  email: string;
+}
+
+export interface PerscomUserResponse extends BaseEntity {
   name: string;
   email: string;
   email_verified_at: string;
@@ -49,15 +128,12 @@ export interface PerscomUserResponse {
   cover_photo: string;
   last_seen_at: string;
   discord_user_id: string | null;
-  created_at: string;
-  updated_at: string;
   no_fields: null;
   last_assignment_change_date: string;
   last_rank_change_date: string;
   online: boolean;
   profile_photo_url: string;
   cover_photo_url: string;
-  label: string;
   assignment_records?: AssignmentRecord[];
   attachments?: [] | null;
   award_records?: AwardRecord[];
@@ -70,129 +146,9 @@ export interface PerscomUserResponse {
   rank_records?: RankRecord[];
   secondary_assignment_records?: AssignmentRecord[];
   service_records?: [] | null;
-  specialty?: [] | null;
+  specialty?: Specialty | null;
   status?: Status;
   unit?: Unit;
-}
-
-export interface AssignmentRecord {
-  id: number;
-  user_id: number;
-  status_id: number;
-  unit_id: number;
-  position_id: number;
-  specialty_id: number;
-  unit_slot_id: number | null;
-  document_id: number | null;
-  author_id: number | null;
-  type: string;
-  text: string | null;
-  created_at: string;
-  updated_at: string;
-  document_parsed: null;
-  label: string;
-  document: null;
-}
-
-export interface AwardRecord {
-  id: number;
-  user_id: number;
-  award_id: number;
-  document_id: number | null;
-  author_id: number;
-  text: string | null;
-  created_at: string;
-  updated_at: string;
-  document_parsed: null;
-  label: string;
-  document: null;
-}
-
-export interface CombatRecord {
-  id: number;
-  user_id: number;
-  document_id: number | null;
-  author_id: number;
-  text: string | null;
-  created_at: string;
-  updated_at: string;
-  document_parsed: null;
-  label: string;
-  document: null;
-}
-
-export interface QualificationRecord {
-  id: number;
-  user_id: number;
-  qualification_id: number;
-  document_id: number | null;
-  author_id: number;
-  text: string | null;
-  created_at: string;
-  updated_at: string;
-  document_parsed: null;
-  label: string;
-  document: null;
-}
-
-export interface RankRecord {
-  id: number;
-  user_id: number;
-  rank_id: number;
-  document_id: number | null;
-  author_id: number;
-  text: string | null;
-  type: number;
-  created_at: string;
-  updated_at: string;
-  document_parsed: null;
-  label: string;
-  document: null;
-}
-
-export interface Position {
-  id: number;
-  name: string;
-  description: string | null;
-  order: number;
-  created_at: string;
-  updated_at: string;
-  label: string;
-}
-
-export interface Rank {
-  id: number;
-  name: string;
-  description: string | null;
-  abbreviation: string;
-  paygrade: string;
-  order: number;
-  created_at: string;
-  updated_at: string;
-  label: string;
-}
-
-export interface Status {
-  id: number;
-  name: string;
-  color: string;
-  order: number;
-  created_at: string;
-  updated_at: string;
-  label: string;
-}
-
-export interface Unit {
-  id: number;
-  name: string;
-  description: string | null;
-  empty: null;
-  order: number;
-  hidden: boolean;
-  icon: string | null;
-  created_at: string;
-  updated_at: string;
-  label: string;
 }
 
 export interface ApplicationSubmission {
@@ -212,7 +168,22 @@ export interface ApplicationSubmission {
   confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: string;
 }
 
-export interface PaginatedResponse <T> {
+export interface ApplicationData extends ApplicationSubmission, BaseEntity {
+  statuses?: Status[];
+}
+
+export interface ApplicationSubmissionResponse {
+  data: {
+    id: number;
+    form_id: number;
+    user_id: number;
+    label: string;
+    created_at: string;
+    updated_at: string;
+  }
+}
+
+export interface PaginatedResponse<T> {
   data: T[];
   links: {
     first: string;
@@ -234,47 +205,4 @@ export interface PaginatedResponse <T> {
     to: number;
     total: number;
   };
-}
-
-export interface ApplicationData {
-  id: number;
-  form_id: number;
-  user_id: number;
-  created_at: string;
-  updated_at: string;
-  arma_3_id: string;
-  first_name: string;
-  discord_name: string;
-  date_of_birth: string;
-  email_address: string;
-  previous_unit: string;
-  preferred_position: string;
-  what_is_your_time_zone: string;
-  arma_experience_in_hours: number;
-  why_do_you_want_to_join_red_squadron: string;
-  what_makes_you_more_capable_than_other_candidates: string;
-  confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: string;
-  label: string;
-  statuses?: StatusData[];
-}
-
-export interface StatusData {
-  id: number;
-  name: string;
-  color: string;
-  order: number;
-  created_at: string;
-  updated_at: string;
-  label: string;
-}
-
-export interface ApplicationSubmissionResponse {
-  data: {
-    id: number;
-    form_id: number;
-    user_id: number;
-    label: string;
-    created_at: string;
-    updated_at: string;
-  }
 }

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Home, LogOut, Settings, User, Bell } from "lucide-react"
+import { LogOut, Settings, User, Bell } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 export function AdminHeader() {
@@ -72,7 +72,7 @@ export function AdminHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer">
+                <Link href={`/perscom/user/${session?.user.perscomId}`} className="w-full">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>

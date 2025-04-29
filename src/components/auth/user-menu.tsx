@@ -43,10 +43,13 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
+              <Link href={`/perscom/user/${session.user.perscomId}`} className="w-full">
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+              </Link>
+
               {["admin", "superAdmin", "instructor"].some(role => session.user.roles.includes(role)) && (
                 <Link href="/admin" className="w-full">
                   <DropdownMenuItem>

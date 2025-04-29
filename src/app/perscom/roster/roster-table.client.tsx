@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import Link from "next/link";
-import {PerscomUserResponse, RankInformation} from "@/types/perscomApi";
+import {PerscomUserResponse, Rank} from "@/types/perscomApi";
 import Image from "next/image";
 
 interface Personnel {
@@ -30,9 +30,10 @@ interface MainUnit {
 
 interface RosterTableProps {
   members: PerscomUserResponse[]
-  ranks: RankInformation[]
+  ranks: Rank[]
 }
 
+//TODO: test if comparison if faster in backend or frontend
 export const RosterTable = ({ members, ranks }: RosterTableProps) => {
   const [selectedMainUnit, setSelectedMainUnit] = useState<string>("tacdevron");
   const [mainUnits, setMainUnits] = useState<MainUnit[]>([]);
@@ -124,7 +125,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
     if (unitsWithPersonnel.length > 0 && !unitsWithPersonnel.some(unit => unit.id === selectedMainUnit)) {
       setSelectedMainUnit(unitsWithPersonnel[0].id);
     }
-  }, [members, selectedMainUnit]);
+  }, [members, ranks, selectedMainUnit]);
 
   const currentMainUnit = mainUnits.find((unit) => unit.id === selectedMainUnit);
 
