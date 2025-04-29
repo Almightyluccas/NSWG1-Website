@@ -41,13 +41,13 @@ export default function Home() {
               </h1>
               <div className="h-1 w-24 bg-accent my-6"></div>
               <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl">
-                Tactical operations where precision, strategy, and unmatched expertise converge.
+                Tactical operations built on precision, planning, and proven skill.
                 <span className="block mt-2 italic text-gray-400">The Only Easy Day Was Yesterday</span>
               </p>
 
               <div className="flex flex-wrap gap-4 mt-8">
                 <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
-                  Join Our Forces <ChevronRight className="ml-2 h-4 w-4" />
+                  Recruitment <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="border-gray-600 hover:bg-gray-800 text-white">
                   Learn More
@@ -70,21 +70,21 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <StatCard
               icon={<Shield className="h-10 w-10 text-accent" />}
-              number="5+"
+              number="3+"
               label="Years of Excellence"
-              description="Setting the standard in tactical operations since 2019"
+              description="Setting the standard in tactical operations since 2022"
             />
             <StatCard
               icon={<Target className="h-10 w-10 text-accent" />}
               number="100+"
-              label="Successful Missions"
+              label="Successful Operations"
               description="Precision execution across diverse operational environments"
             />
             <StatCard
               icon={<Users className="h-10 w-10 text-accent" />}
-              number="100%"
-              label="Success Rate"
-              description="Consistent operational excellence across all missions"
+              number="90%"
+              label="Participation Rate"
+              description="Consistent engagement from our personnel drives the operational precision and strategic advantage that distinguish us from our counterparts."
             />
           </div>
         </div>
