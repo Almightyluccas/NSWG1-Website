@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
-const KEY = process.env.NEXTAUTH_SECRET as string; // Must be a 64\u2011character hex string (32 bytes)
+const KEY = process.env.NEXTAUTH_SECRET as string;
 const IV_LENGTH = 16;
 
 if (!KEY || KEY.length !== 64) {

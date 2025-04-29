@@ -139,7 +139,7 @@ export function Navbar() {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center md:hidden bg">
             <UserMenu onJoinClickAction={handleJoinClick} />
             <button className="ml-4" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

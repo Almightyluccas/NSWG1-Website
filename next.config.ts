@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["https://4a0e-179-82-0-26.ngrok-free.app"],
+  // allowedDevOrigins: ["https://4a0e-179-82-0-26.ngrok-free.app"],
   images: {
     remotePatterns: [
       {

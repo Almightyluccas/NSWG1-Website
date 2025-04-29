@@ -17,6 +17,7 @@ import {AwardDetailModal} from "@/components/perscom/award-detail-modal";
 import {PerscomUserResponse} from "@/types/perscomApi";
 import {useState} from "react";
 import Image from "next/image";
+import { sanitizeHtmlClient } from "@/lib/sanitizeHtmlClient";
 
 function calculateTimeDifference(startDate: string, endDate: string | null = null) {
   const start = new Date(startDate)
@@ -86,12 +87,7 @@ export const UserProfile = ({
   const awardRecords = user.award_records || []
   const qualificationRecords = user.qualification_records || []
 
-  const sanitizeHtml = (html: string | null): string => {
-    if (!html) return "";
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = html;
-    return tempElement.textContent || tempElement.innerText || "";
-  };
+
 
   const openAwardModal = (record: any) => {
     const awardImage = awardImages.find(img => img.id === record.award_id);
@@ -99,7 +95,7 @@ export const UserProfile = ({
       ...record,
       imageUrl: awardImage?.imageUrl || "/placeholder.svg",
       name: awardImage?.name || "Unknown Award",
-      sanitizedText: sanitizeHtml(record.text),
+      sanitizedText: sanitizeHtmlClient(record.text),
       formattedDate: new Date(record.created_at).toLocaleDateString()
     };
     setSelectedAward(awardDetails);
@@ -261,7 +257,7 @@ export const UserProfile = ({
                                 </span>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-zinc-300 line-clamp-2">{sanitizeHtml(record.text) || "No description available."}</p>
+                            <p className="text-sm text-gray-600 dark:text-zinc-300 line-clamp-2">{sanitizeHtmlClient(record.text) || "No description available."}</p>
                           </div>
                         );
                       })}
@@ -335,7 +331,7 @@ export const UserProfile = ({
                             Recorded on {record.date}
                           </p>
                           {record.text && (
-                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtml(record.text)}</p>
+                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtmlClient(record.text)}</p>
                           )}
                         </div>
                       ))}
@@ -418,7 +414,7 @@ export const UserProfile = ({
                             Changed on {record.date}
                           </p>
                           {record.text && (
-                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtml(record.text)}</p>
+                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtmlClient(record.text)}</p>
                           )}
                         </div>
                       ))}
@@ -493,7 +489,7 @@ export const UserProfile = ({
                             Assigned on {record.date}
                           </p>
                           {record.text && (
-                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtml(record.text)}</p>
+                            <p className="text-sm text-gray-600 dark:text-zinc-300 mt-1">{sanitizeHtmlClient(record.text)}</p>
                           )}
                         </div>
                       ))}
