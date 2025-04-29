@@ -41,7 +41,7 @@ export default function Home() {
               </h1>
               <div className="h-1 w-24 bg-accent my-6"></div>
               <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl">
-                Elite tactical operations where precision, strategy, and unmatched expertise converge.
+                Tactical operations where precision, strategy, and unmatched expertise converge.
                 <span className="block mt-2 italic text-gray-400">The Only Easy Day Was Yesterday</span>
               </p>
 
