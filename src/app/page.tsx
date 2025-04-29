@@ -37,7 +37,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-bold mb-2 leading-tight text-white">
                 <span className="text-accent">NAVAL</span> SPECIAL
                 <br />
-                WARFARE GROUP ONE
+                Hello
               </h1>
               <div className="h-1 w-24 bg-accent my-6"></div>
               <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl">
