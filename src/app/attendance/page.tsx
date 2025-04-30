@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { AttendanceCalendar } from "@/components/attendance/calendar"
-import { AttendanceStats } from "@/components/attendance/stats"
+// import { AttendanceStats } from "@/components/attendance/stats"
 import { UserSelector } from "@/components/attendance/user-selector"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -14,8 +14,27 @@ import { FadeIn } from "@/components/fade-in"
 import { useSession } from "next-auth/react"
 
 // Mock attendance data
-const mockAttendanceData = {
-  // User ID -> attendance records
+interface AttendanceRecord {
+  date: string;
+  status: "present" | "absent" | "late" | "excused";
+  event: string;
+}
+
+interface AttendanceData {
+  [userId: string]: AttendanceRecord[];
+}
+
+interface User {
+  id: string;
+  username: string;
+  discriminator: string;
+  avatar: string;
+  name: string;
+  unit: string;
+  position: string;
+}
+
+const mockAttendanceData: AttendanceData = {
   "123456789": [
     { date: "2025-04-01", status: "present", event: "Weekly Training" },
     { date: "2025-04-08", status: "present", event: "Weekly Training" },
@@ -23,10 +42,10 @@ const mockAttendanceData = {
     { date: "2025-04-22", status: "present", event: "Weekly Training" },
     { date: "2025-04-29", status: "late", event: "Weekly Training" },
     { date: "2025-05-06", status: "present", event: "Weekly Training" },
-    { date: "2025-05-13", status: "LOA", event: "Weekly Training" },
+    { date: "2025-05-13", status: "excused", event: "Weekly Training" },
     { date: "2025-04-04", status: "present", event: "Operation" },
     { date: "2025-04-18", status: "present", event: "Operation" },
-    { date: "2025-05-02", status: "absent", event: "Operation" },
+    { date: "2025-05-02", status: "absent", event: "Operation" }
   ],
   "knight0923": [
     { date: "2025-04-01", status: "present", event: "Weekly Training" },
@@ -38,7 +57,7 @@ const mockAttendanceData = {
     { date: "2025-05-13", status: "present", event: "Weekly Training" },
     { date: "2025-04-04", status: "absent", event: "Operation" },
     { date: "2025-04-18", status: "present", event: "Operation" },
-    { date: "2025-05-02", status: "present", event: "Operation" },
+    { date: "2025-05-02", status: "present", event: "Operation" }
   ],
   "L. Graterol": [
     { date: "2025-04-01", status: "absent", event: "Weekly Training" },
@@ -47,15 +66,14 @@ const mockAttendanceData = {
     { date: "2025-04-22", status: "present", event: "Weekly Training" },
     { date: "2025-04-29", status: "absent", event: "Weekly Training" },
     { date: "2025-05-06", status: "present", event: "Weekly Training" },
-    { date: "2025-05-13", status: "LOA", event: "Weekly Training" },
+    { date: "2025-05-13", status: "excused", event: "Weekly Training" },
     { date: "2025-04-04", status: "present", event: "Operation" },
     { date: "2025-04-18", status: "absent", event: "Operation" },
-    { date: "2025-05-02", status: "present", event: "Operation" },
-  ],
-}
+    { date: "2025-05-02", status: "present", event: "Operation" }
+  ]
+};
 
-// Mock user data
-const mockUsers = [
+const mockUsers: User[] = [
   {
     id: "123456789",
     username: "CommanderAlpha",
@@ -83,7 +101,7 @@ const mockUsers = [
     unit: "Pending Assignment",
     position: "Recruit",
   },
-]
+];
 
 export default function AttendancePage() {
   const { data: session } = useSession();
@@ -185,9 +203,9 @@ export default function AttendancePage() {
                       <AttendanceCalendar attendanceData={attendanceData} />
                     </TabsContent>
 
-                    <TabsContent value="statistics" className="space-y-4">
-                      <AttendanceStats attendanceData={attendanceData} />
-                    </TabsContent>
+                    {/*<TabsContent value="statistics" className="space-y-4">*/}
+                    {/*  <AttendanceStats attendanceData={attendanceData} />*/}
+                    {/*</TabsContent>*/}
                   </Tabs>
                 </div>
               </div>
