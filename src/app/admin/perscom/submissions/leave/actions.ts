@@ -1,3 +1,5 @@
+"use server"
+
 import { changeSubmissionStatus } from "@/lib/perscomApi";
 import { revalidatePath } from "next/cache";
 
