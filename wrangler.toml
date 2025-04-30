@@ -4,8 +4,5 @@ compatibility_date = "2025-04-30"
 [site]
 bucket = "out"
 
-[build]
-command = "npm run build"
-
 [env.production]
 workers_dev = true
