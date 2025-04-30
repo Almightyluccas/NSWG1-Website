@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation"
 import { FadeIn } from "@/components/fade-in"
 import { useSession } from "next-auth/react"
 
-// Mock attendance data
 interface AttendanceRecord {
   date: string;
   status: "present" | "absent" | "late" | "excused";
