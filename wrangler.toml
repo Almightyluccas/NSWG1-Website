@@ -1,8 +1,0 @@
-name = "nswg1-website"
-compatibility_date = "2025-04-30"
-
-[site]
-bucket = "out"
-
-[env.production]
-workers_dev = true
