@@ -1,3 +1,5 @@
+"use server"
+
 import { ApplicationSubmissionResponse, CreatePerscomUser, PerscomUserResponse } from "@/types/perscomApi";
 import { createPerscomUser, createApplicationSubmission } from "@/lib/perscomApi";
 import { updateUserAfterApplicationDb } from "@/db/client";
