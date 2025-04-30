@@ -12,9 +12,9 @@ const AWARDS_PER_PAGE = 9
 export default async function AwardsPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
-  const currentPage = Number(searchParams.page) || 1
+  const currentPage = Number((await searchParams).page) || 1
 
   const allAwards: Award[] = await getAwards()
 

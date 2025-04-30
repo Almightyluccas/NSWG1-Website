@@ -12,9 +12,9 @@ const QUALIFICATIONS_PER_PAGE = 18
 export default async function QualificationsPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
-  const currentPage = Number(searchParams.page) || 1
+  const currentPage = Number((await searchParams).page) || 1
 
   const qualifications: Qualification[] = await getQualifications()
 

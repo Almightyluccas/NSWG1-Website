@@ -11,10 +11,10 @@ const RANKS_PER_PAGE = 12
 export default async function RanksPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
   const ranks: Rank[] = await getRanks()
-  const currentPage = Number(searchParams.page) || 1
+  const currentPage = Number((await searchParams).page) || 1
 
   const totalRanks = ranks.length
   const totalPages = Math.ceil(totalRanks / RANKS_PER_PAGE)
