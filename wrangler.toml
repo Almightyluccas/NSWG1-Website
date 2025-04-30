@@ -6,6 +6,7 @@ bucket = "out"
 
 [build]
 command = "npm run build"
+main = "workers-site/index.js"
 
 [env.production]
 workers_dev = true
