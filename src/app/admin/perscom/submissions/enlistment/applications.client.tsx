@@ -8,7 +8,7 @@ import { ApplicationData } from "@/types/perscomApi";
 import RoleGuard from "@/components/auth/role-guard";
 import {useSession} from "next-auth/react";
 import { PaginationBar } from "@/components/ui/pagination";
-import {acceptApplication, rejectApplication} from "@/app/admin/perscom/submissions/enlistment/page";
+import {acceptApplication, rejectApplication} from "./actions";
 import {
   DropdownMenu,
   DropdownMenuContent,

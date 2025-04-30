@@ -9,24 +9,6 @@ import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 
 
-export async function acceptApplication(submissionId: number, perscomId: number, name: string, email: string) {
-  console.log(submissionId);
-  await changeSubmissionStatus(submissionId, 'Accepted');
-  await updateUserRolePerscomIdDb('member', perscomId);
-  await changeUserApprovedBoolean(true, perscomId, name, email);
-  revalidatePath('/admin/perscom/submissions/enlistment');
-  //TODO: add sending message to discord
-}
-
-export async function rejectApplication(submissionId: number, perscomId: number) {
-  console.log(submissionId);
-  await changeSubmissionStatus(submissionId, 'Denied');
-  await updateUserRolePerscomIdDb('guest', perscomId);
-  revalidatePath('/admin/perscom/submissions/enlistment');
-  //TODO: add sending message to discord
-}
-
-
 
 export default async function EnlistmentApplicationsPage() {
   const applications: ApplicationData[] = await getApplications()

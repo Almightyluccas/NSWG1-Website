@@ -7,7 +7,7 @@ import { useState } from "react";
 import RoleGuard from "@/components/auth/role-guard";
 import { useSession } from "next-auth/react";
 import { PaginationBar } from "@/components/ui/pagination";
-import { acceptApplication, rejectApplication } from "@/app/admin/perscom/submissions/leave/page";
+import { acceptApplication, rejectApplication } from "./actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
