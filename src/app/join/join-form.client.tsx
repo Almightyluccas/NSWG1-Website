@@ -12,7 +12,7 @@ import React, {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useSession} from "next-auth/react";
 import {FadeIn} from "@/components/fade-in";
-import { submitApplication } from "@/app/join/page";
+import { submitApplication } from "./action";
 
 const unitOptions = [
   { value: "tf160th", label: "Task Force 160th (Aviation)" },
