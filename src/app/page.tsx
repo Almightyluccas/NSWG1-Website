@@ -114,10 +114,10 @@ export default function Home() {
                 <div className="h-1 w-24 bg-accent mb-8"></div>
                 <p className="text-lg text-zinc-300 mb-6">
                   At the heart of NSWG-1 lies a commitment to unparalleled realism. As a dedicated representation of the
-                  Naval Special Warfare Group One, we meticulously replicate every aspect of elite military operations.
+                  Naval Special Warfare Group One, we meticulously replicate every aspect of military operations.
                 </p>
                 <p className="text-lg text-zinc-300 mb-8">
-                  From authentic tactics and procedures to precise equipment and environmental details, our unit ensures
+                  From tactics and procedures to precise equipment and environmental details, our unit ensures
                   that every mission and training scenario mirrors real-world conditions.
                 </p>
                 <Button className="bg-accent hover:bg-accent-darker text-black">Discover Our Approach</Button>
