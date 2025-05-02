@@ -1,6 +1,15 @@
 "use server"
 import { perscom } from '@/lib/perscom/api'
-import { Award, Position, Qualification, Rank, Unit } from "@/types/perscomApi";
+import {
+  Award, CreateAssignmentRecord,
+  CreateAwardRecord,
+  CreateCombatRecord, CreateQualificationRecord,
+  CreateRankRecord,
+  Position,
+  Qualification,
+  Rank,
+  Unit
+} from "@/types/perscomApi";
 
 export interface UpdateMemberData {
   units: Unit[]
@@ -9,6 +18,14 @@ export interface UpdateMemberData {
   awards: Award[]
   qualifications: Qualification[]
 }
+
+type UpdateMemberPayload =
+  | { type: 'award', data: CreateAwardRecord }
+  | { type: 'combat', data: CreateCombatRecord }
+  | { type: 'rank', data: CreateRankRecord }
+  | { type: 'assignment', data: CreateAssignmentRecord }
+  | { type: 'qualification', data: CreateQualificationRecord }
+  | { type: 'unit', data: any };
 
 export async function fetchMemberUpdateData(): Promise<UpdateMemberData> {
   try {
@@ -24,4 +41,35 @@ export async function fetchMemberUpdateData(): Promise<UpdateMemberData> {
     console.error('Failed to fetch member update data:', error)
     throw new Error('Failed to fetch required data')
   }
+}
+
+export async function updateMember(payload: UpdateMemberPayload): Promise<void> {
+  switch (payload.type) {
+    case 'award':
+      await perscom.post.userAward(payload.data);
+      break
+    case 'combat':
+      await perscom.post.userCombatRecord(payload.data);
+
+      break
+    case 'rank':
+      await perscom.post.userRankRecord(payload.data);
+
+      break
+    case 'assignment':
+      await perscom.post.userAssignment(payload.data);
+
+      break
+    case 'qualification':
+      await perscom.post.userQualification(payload.data);
+
+      break
+    case 'unit':
+      //TODO: Implement unit update.
+
+      break
+  }
+
+
+
 }

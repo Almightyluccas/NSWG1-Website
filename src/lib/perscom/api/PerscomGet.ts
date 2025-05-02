@@ -52,9 +52,7 @@ export class PerscomGet {
   }
 
   async users(forceRefresh = false): Promise<PerscomUserResponse[]> {
-    if (!forceRefresh && this.isCacheValid('users')) {
-      return this.cache.users.data
-    }
+    if (!forceRefresh && this.isCacheValid('users')) return this.cache.users.data
 
     const includes = [
       'assignment_records', 'attachments', 'award_records',
@@ -70,9 +68,7 @@ export class PerscomGet {
   }
 
   async applications(forceRefresh = false): Promise<ApplicationData[]> {
-    if (!forceRefresh && this.isCacheValid('applications')) {
-      return this.cache.applications.data
-    }
+    if (!forceRefresh && this.isCacheValid('applications')) return this.cache.applications.data
 
     const data = await this.fetchPaginated<ApplicationData>('/submissions', ['statuses'])
     this.cache.applications = { data, timestamp: Date.now() }
@@ -80,10 +76,7 @@ export class PerscomGet {
   }
 
   async ranks(forceRefresh = false): Promise<Rank[]> {
-    if (!forceRefresh && this.isCacheValid('ranks')) {
-      console.log('Using cached ranks data')
-      return this.cache.ranks.data
-    }
+    if (!forceRefresh && this.isCacheValid('ranks')) return this.cache.ranks.data
 
     const data = await this.fetchPaginated<Rank>('/ranks', ['image'])
     this.cache.ranks = { data, timestamp: Date.now() }
@@ -91,9 +84,7 @@ export class PerscomGet {
   }
 
   async units(forceRefresh = false): Promise<Unit[]> {
-    if (!forceRefresh && this.isCacheValid('units')) {
-      return this.cache.units.data
-    }
+    if (!forceRefresh && this.isCacheValid('units')) return this.cache.units.data
 
     const data = await this.fetchPaginated<Unit>('/units')
     this.cache.units = { data, timestamp: Date.now() }
@@ -101,9 +92,7 @@ export class PerscomGet {
   }
 
   async positions(forceRefresh = false): Promise<Position[]> {
-    if (!forceRefresh && this.isCacheValid('positions')) {
-      return this.cache.positions.data
-    }
+    if (!forceRefresh && this.isCacheValid('positions')) return this.cache.positions.data
 
     const data = await this.fetchPaginated<Position>('/positions')
     this.cache.positions = { data, timestamp: Date.now() }
@@ -111,20 +100,15 @@ export class PerscomGet {
   }
 
   async awards(forceRefresh = false): Promise<Award[]> {
-    if (!forceRefresh && this.isCacheValid('awards')) {
-      return this.cache.awards.data
-    }
+    if (!forceRefresh && this.isCacheValid('awards')) return this.cache.awards.data
 
     const data = await this.fetchPaginated<Award>('/awards', ['image'])
     this.cache.awards = { data, timestamp: Date.now() }
     return data
-
   }
 
   async combatRecords(forceRefresh = false): Promise<CombatRecord[]> {
-    if (!forceRefresh && this.isCacheValid('combatRecords')) {
-      return this.cache.combatRecords.data
-    }
+    if (!forceRefresh && this.isCacheValid('combatRecords')) return this.cache.combatRecords.data
 
     const data = await this.fetchPaginated<CombatRecord>('/combat_records', ['image'])
     this.cache.combatRecords = { data, timestamp: Date.now() }
@@ -132,9 +116,8 @@ export class PerscomGet {
   }
 
   async assignments(forceRefresh = false): Promise<AssignmentRecord[]> {
-    if (!forceRefresh && this.isCacheValid('assignments')) {
-      return this.cache.assignments.data
-    }
+    if (!forceRefresh && this.isCacheValid('assignments')) return this.cache.assignments.data
+
     const includes = [
       "author", "position", "specialty", "status", "unit", "user", "document"
     ]
@@ -144,9 +127,7 @@ export class PerscomGet {
   }
 
   async qualifications(forceRefresh = false): Promise<Qualification[]> {
-    if (!forceRefresh && this.isCacheValid('qualifications')) {
-      return this.cache.qualifications.data
-    }
+    if (!forceRefresh && this.isCacheValid('qualifications')) return this.cache.qualifications.data
 
     const data = await this.fetchPaginated<Qualification>('/qualifications', ['image'])
     this.cache.qualifications = { data, timestamp: Date.now() }

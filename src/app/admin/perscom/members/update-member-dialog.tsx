@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { PerscomUserResponse } from "@/types/perscomApi"
-import { fetchMemberUpdateData, UpdateMemberData } from "./action"
+import { fetchMemberUpdateData, updateMember, UpdateMemberData } from "./action"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 import Image from "next/image";
@@ -98,8 +98,7 @@ export function UpdateMemberDialog({
         //TODO: need to check how to actually update someones unit.
       }
 
-      console.log(payload)
-
+      await updateMember(selectedTab, payload)
       toast.success('Member updated successfully')
       onOpenChangeAction(false)
     } catch (error) {
