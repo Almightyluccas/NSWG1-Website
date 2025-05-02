@@ -12,9 +12,10 @@ import type { PerscomClient } from './PerscomClient'
 const CACHE_DURATION_MS = 5 * 60 * 1000
 
 export class PerscomGet {
-  private cache: Record<string, { data: any; timestamp: number }> = {}
-
-  constructor(private client: PerscomClient) {}
+  constructor(
+    private client: PerscomClient,
+    private cache: Record<string, { data: any; timestamp: number }> = {}
+  ) {}
 
   private isCacheValid(key: string): boolean {
     const entry = this.cache[key]
