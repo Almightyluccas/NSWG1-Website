@@ -14,6 +14,13 @@ export interface BaseRecord extends BaseEntity {
   document: null;
 }
 
+export interface BaseCreateRecord {
+  user_id: number;
+  document_id: number | null;
+  author_id: number;
+  text: string | null;
+}
+
 export interface Image extends BaseEntity {
   name: string | null;
   description: string | null;
@@ -79,6 +86,42 @@ export interface Award extends BaseEntity {
   order: number;
   image?: Image;
 }
+
+export interface CreateAwardRecord extends BaseCreateRecord{
+  award_id: number;
+}
+
+export type CreateCombatRecord = BaseCreateRecord
+
+export enum RankRecordType {
+  Promotion = 0,
+  Demotion = 1,
+  Lateral = 2,
+  Transfer = 3,
+}
+export interface CreateRankRecord extends BaseCreateRecord {
+  rank_id: number;
+  type: RankRecordType;
+}
+
+export interface CreateAssignmentRecord extends BaseCreateRecord {
+  status_id: number | null;
+  unit_id: number | null;
+  position_id: number | null;
+  specialty_id: number | null;
+  type: 'primary' | 'secondary';
+}
+
+export interface CreateQualificationRecord extends BaseCreateRecord {
+  qualification_id: number;
+}
+
+export interface UpdateUserUnit {
+  user_id: number;
+  unit_id: number;
+  name: string;
+}
+
 
 export interface Qualification extends BaseEntity {
   name: string;

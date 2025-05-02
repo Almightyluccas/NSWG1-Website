@@ -80,6 +80,7 @@ export class PerscomGet {
 
   async ranks(forceRefresh = false): Promise<Rank[]> {
     if (!forceRefresh && this.isCacheValid('ranks')) {
+      console.log('Using cached ranks data')
       return this.cache.ranks.data
     }
 

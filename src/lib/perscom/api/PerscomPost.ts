@@ -1,7 +1,7 @@
-import type {
+import {
   ApplicationSubmission,
-  ApplicationSubmissionResponse,
-  CreatePerscomUser,
+  ApplicationSubmissionResponse, CreateAssignmentRecord, CreateAwardRecord, CreateCombatRecord,
+  CreatePerscomUser, CreateQualificationRecord, CreateRankRecord,
   PerscomUserResponse
 } from '@/types/perscomApi'
 import type { PerscomClient } from './PerscomClient'
@@ -22,6 +22,42 @@ export class PerscomPost {
       body: JSON.stringify(data)
     })
   }
+
+  async userAward(data: CreateAwardRecord): Promise<void> {
+    return this.client.fetch<void>(`/users/${data.user_id}/award-records`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async userCombatRecord(data: CreateCombatRecord): Promise<void> {
+    return this.client.fetch<void>(`/users/${data.user_id}/combat-records`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async userRankRecord(data: CreateRankRecord): Promise<void> {
+    return this.client.fetch<void>(`/users/${data.user_id}/rank-records`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async userAssignment(data: CreateAssignmentRecord): Promise<void> {
+    return this.client.fetch<void>(`/users/${data.user_id}/assignment-records`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async userQualification(data: CreateQualificationRecord): Promise<void> {
+    return this.client.fetch<void>(`/users/${data.user_id}/qualification-records`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
 
   async submissionStatus(applicationId: number, status: 'Denied' | 'Accepted'): Promise<void> {
     const statusId = status === 'Denied' ? 8 : 7;

@@ -84,6 +84,10 @@ export const MembersTable = ({ members }: MembersTableProps) => {
     setSelectedUser(user)
     setIsUserDetailsOpen(true)
   }
+  const handleUpdateMemberDetails = (user: PerscomUserResponse) => {
+    setSelectedUser(user)
+    setIsUpdateDialogOpen(true)
+  }
   const handleDialogOpenChange = (open: boolean) => {
     setIsUserDetailsOpen(open);
     if (!open) {
@@ -94,6 +98,17 @@ export const MembersTable = ({ members }: MembersTableProps) => {
       }, 100);
     }
   };
+
+  const handleUpdateMenuOpenChange = (open: boolean) => {
+    setIsUpdateDialogOpen(open);
+    if (!open) {
+      setSelectedUser(null);
+      document.body.focus();
+      setTimeout(() => {
+        document.body.style.pointerEvents = "auto";
+      }, 100);
+    }
+  }
 
   const toggleFilterSection = (section: 'status' | 'position' | 'unit') => {
     setExpandedFilterSection(expandedFilterSection === section ? null : section);
@@ -294,7 +309,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleViewDetails(user)}>View Details</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setIsUpdateDialogOpen(true)}>Update Member</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleUpdateMemberDetails(user)}>Update Member</DropdownMenuItem>
                       {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -305,11 +320,6 @@ export const MembersTable = ({ members }: MembersTableProps) => {
           </table>
         </div>
 
-        <UpdateMemberDialog
-          open={isUpdateDialogOpen}
-          onOpenChangeAction={setIsUpdateDialogOpen}
-          member={selectedUser}
-        />
 
         {filteredUsers.length === 0 && (
           <div className="p-6 text-center">
@@ -333,8 +343,17 @@ export const MembersTable = ({ members }: MembersTableProps) => {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+      {selectedUser && (
+        <UpdateMemberDialog
+          open={isUpdateDialogOpen}
+          onOpenChangeAction={handleUpdateMenuOpenChange}
+          member={selectedUser}
+        />
+      )}
 
       {selectedUser && (
+
+
         <Dialog open={isUserDetailsOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent className="w-[90vw] md:w-[50vw] !max-w-none">
             <DialogHeader>
