@@ -1,17 +1,15 @@
 "use server"
 
 import { ApplicationsTable } from "@/app/admin/perscom/submissions/enlistment/applications.client";
-import { getApplications, changeUserApprovedBoolean, changeSubmissionStatus } from "@/lib/perscomApi";
 import { ApplicationData } from "@/types/perscomApi";
-import { updateUserRolePerscomIdDb } from "@/db/client";
-import { revalidatePath } from 'next/cache';
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
+import { perscom } from "@/lib/perscom/api";
 
 
 
 export default async function EnlistmentApplicationsPage() {
-  const applications: ApplicationData[] = await getApplications()
+  const applications: ApplicationData[] = await perscom.get.applications()
     .then(applications => applications.filter(app => app.form_id === 1))
     .then(filtered => filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 

@@ -3,20 +3,20 @@ import { AdminStatCard } from "@/components/admin/stat-card"
 import { RecentUsersTable } from "@/components/admin/recent-users-table"
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserInformation, UserRole } from "@/types/database";
-import { getUserCountWithTrendDb, getRecentUsersDb } from "@/db/client";
-import { getApplications, getUsers } from "@/lib/perscomApi";
+import { perscom } from "@/lib/perscom/api";
+import { database } from "@/database";
 
 
 export default async function AdminDashboard() {
   const recentUsersLimit = 10;
-  const recentUsers: UserInformation[] = await getRecentUsersDb(recentUsersLimit)
-  const newUsersThisMonth  = await getUserCountWithTrendDb();
-  const pendingApplications = await getApplications().then(applications => {
+  const recentUsers: UserInformation[] = await database.get.recentUsers(recentUsersLimit)
+  const newUsersThisMonth  = await database.get.userCount();
+  const pendingApplications = await perscom.get.applications().then(applications => {
     return applications.filter(application => {
       return Array.isArray(application.statuses) && application.statuses.length === 0;
     }).length;
   });
-  const totalUsers = await getUsers().then(users => { return users.length})
+  const totalUsers = await perscom.get.users().then(users => { return users.length})
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.admin, UserRole.developer, UserRole.superAdmin, UserRole.instructor]}>

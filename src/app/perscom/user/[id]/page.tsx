@@ -2,8 +2,8 @@ import Link from "next/link"
 import { UserProfile } from "./user-profile.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
-import {getUsers, getAwards, getRanks, getQualifications, getAssignments } from "@/lib/perscomApi";
-import { AssignmentRecord, Award, Qualification, Rank } from "@/types/perscomApi";
+import { AssignmentRecord, Award, PerscomUserResponse, Qualification, Rank } from "@/types/perscomApi";
+import { perscom } from "@/lib/perscom/api";
 
 interface UserProfilePageProps {
   params: Promise<{ id: string }>
@@ -12,11 +12,11 @@ interface UserProfilePageProps {
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const { id } = await params;
-  const allUsers = await getUsers();
-  const allAwards: Award[] = await getAwards();
-  const allRanks: Rank[] = await getRanks();
-  const allQualifications: Qualification[] = await getQualifications();
-  const allAssignments: AssignmentRecord[] = await getAssignments();
+  const allUsers: PerscomUserResponse[] = await perscom.get.users();
+  const allAwards: Award[] = await perscom.get.awards();
+  const allRanks: Rank[] = await perscom.get.ranks();
+  const allQualifications: Qualification[] = await perscom.get.qualifications();
+  const allAssignments: AssignmentRecord[] = await perscom.get.assignments();
   // const allCombatRecords: BaseRecord[] = await getCombatRecords();
   const user = allUsers.find(user => user.id.toString() === id);
   console.log(user)

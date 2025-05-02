@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/authOptions"
+import { UserRole } from "@/types/database"
 
 interface ServerRoleGuardProps {
   allowedRoles: string[]
@@ -21,7 +22,8 @@ export default async function ServerRoleGuard({
   }
 
   const roles = session.user.roles ?? []
-  const isAllowed = allowedRoles.some(r => roles.includes(r))
+  const effectiveRoles = [...allowedRoles, UserRole.developer]
+  const isAllowed = effectiveRoles.some(r => roles.includes(r))
 
   if (!isAllowed && hide) {
     return null

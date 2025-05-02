@@ -1,8 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import migrateDb from "@/db/migrate";
-import {addRefreshTokenDb, addUserDb, retrieveUserInfoDb, saveUserProfileImageDb } from "@/db/client";
 import { encryptToken } from "@/lib/cryptoUtils";
+import { database } from "@/database";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -21,12 +20,12 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "discord") {
         try {
-          await migrateDb(); //TODO: Remove this when finished with development
-          await addUserDb(account.providerAccountId, user.name!, user.email!);
-          await saveUserProfileImageDb(account.providerAccountId, user.image!);
+          await database.migrate.migrate(); //TODO: Remove this when finished with development
+          await database.post.user(account.providerAccountId, user.name!, user.email!);
+          await database.post.userProfileImage(account.providerAccountId, user.image!);
 
           const refreshToken = encryptToken(account.refresh_token!);
-          await addRefreshTokenDb(account.providerAccountId, refreshToken, new Date(account.expires_at! * 1000));
+          await database.post.refreshToken(account.providerAccountId, refreshToken, new Date(account.expires_at! * 1000));
 
         } catch (error) {
           console.error("Database error:", error)
@@ -37,7 +36,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       try {
-        const {roles, perscomId, name} = await retrieveUserInfoDb(token.sub!);
+        const {roles, perscomId, name} = await database.get.userInfo(token.sub!);
         session.user =  {
           ...session.user,
           discordName: session.user.name,

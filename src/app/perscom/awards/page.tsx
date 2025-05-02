@@ -1,11 +1,11 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAwards } from "@/lib/perscomApi"
 import { Award } from "@/types/perscomApi"
 import { UserRole } from "@/types/database"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import Image from "next/image"
 import { sanitizeHtmlServer } from "@/lib/sanitizeHtmlClient";
+import { perscom } from "@/lib/perscom/api";
 
 const AWARDS_PER_PAGE = 9
 
@@ -16,7 +16,7 @@ export default async function AwardsPage({
 }) {
   const currentPage = Number((await searchParams).page) || 1
 
-  const allAwards: Award[] = await getAwards()
+  const allAwards: Award[] = await perscom.get.awards()
 
   const totalAwards = allAwards.length
   const totalPages = Math.ceil(totalAwards / AWARDS_PER_PAGE)

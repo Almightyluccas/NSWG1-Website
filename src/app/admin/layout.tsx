@@ -2,6 +2,7 @@ import type React from "react"
 import { AdminSidebar } from "@/components/admin/sidebar"
 import { AdminHeader } from "@/components/admin/header"
 import ServerRoleGuard from "@/components/auth/server-role-guard";
+import { Toaster } from "sonner";
 
 // TODO: Use perscom Webhook to setup notifications
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,8 +15,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <AdminHeader />
-
-          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+            <Toaster theme="dark" richColors/>
+          </main>
         </div>
       </div>
     </ServerRoleGuard>

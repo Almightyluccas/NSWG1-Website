@@ -25,7 +25,6 @@ export interface Image extends BaseEntity {
 }
 
 
-
 export interface Status extends BaseEntity {
   name: string;
   color: string;

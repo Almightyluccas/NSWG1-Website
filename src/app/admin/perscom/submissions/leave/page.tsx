@@ -1,16 +1,15 @@
 "use server"
 
-import { getApplications, changeSubmissionStatus } from "@/lib/perscomApi";
 import { LeaveApplication } from "@/types/perscomApi";
-import { revalidatePath } from 'next/cache';
 import { UserRole } from "@/types/database";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { LeaveOfAbsenceTable } from "./leave.client";
+import { perscom } from "@/lib/perscom/api";
 
 
 
 export default async function LeaveOfAbsencePage() {
-  const applications = await getApplications()
+  const applications = await perscom.get.applications()
     .then(applications => applications.filter(app => app.form_id === 4))
     .then(filtered => filtered.sort((a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

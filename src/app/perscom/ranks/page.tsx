@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
-import { getRanks } from "@/lib/perscomApi"
 import { Rank } from "@/types/perscomApi"
 import { UserRole } from "@/types/database"
 import Image from "next/image"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { perscom } from "@/lib/perscom/api";
 
 const RANKS_PER_PAGE = 12
 
@@ -13,7 +13,7 @@ export default async function RanksPage({
 }: {
   searchParams: Promise<{ page?: string }>
 }) {
-  const ranks: Rank[] = await getRanks()
+  const ranks: Rank[] = await perscom.get.ranks()
   const currentPage = Number((await searchParams).page) || 1
 
   const totalRanks = ranks.length

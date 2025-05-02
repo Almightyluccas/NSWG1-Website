@@ -1,21 +1,21 @@
 "use server"
 
-import { changeSubmissionStatus, changeUserApprovedBoolean } from "@/lib/perscomApi";
-import { updateUserRolePerscomIdDb } from "@/db/client";
 import { revalidatePath } from 'next/cache';
+import { perscom } from "@/lib/perscom/api";
+import { database } from "@/database";
 
 export async function acceptApplication(submissionId: number, perscomId: number, name: string, email: string) {
-  await changeSubmissionStatus(submissionId, 'Accepted');
-  await updateUserRolePerscomIdDb('member', perscomId);
-  await changeUserApprovedBoolean(true, perscomId, name, email);
+  await perscom.post.submissionStatus(submissionId, 'Accepted');
+  await database.put.userRoleByPerscomId('member', perscomId);
+  await perscom.patch.userApproval(perscomId, true, name, email);
   revalidatePath('/admin/perscom/submissions/enlistment');
   //TODO: add sending message to discord
 }
 
 export async function rejectApplication(submissionId: number, perscomId: number) {
   console.log(submissionId);
-  await changeSubmissionStatus(submissionId, 'Denied');
-  await updateUserRolePerscomIdDb('guest', perscomId);
+  await perscom.post.submissionStatus(submissionId, 'Denied');
+  await database.put.userRoleByPerscomId('guest', perscomId);
   revalidatePath('/admin/perscom/submissions/enlistment');
   //TODO: add sending message to discord
 }

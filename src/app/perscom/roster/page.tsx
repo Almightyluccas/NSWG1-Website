@@ -1,11 +1,12 @@
 import {RosterTable} from "@/app/perscom/roster/roster-table.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
-import {getRanks, getUsers} from "@/lib/perscomApi";
+import { perscom } from "@/lib/perscom/api";
+import { PerscomUserResponse, Rank } from "@/types/perscomApi";
 
 export default async function RosterPage() {
-  const members = await getUsers();
-  const ranks = await getRanks();
+  const members: PerscomUserResponse[] = await perscom.get.users();
+  const ranks: Rank[] = await perscom.get.ranks();
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.member]}>

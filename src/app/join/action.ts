@@ -1,10 +1,10 @@
 "use server"
 
 import { ApplicationSubmissionResponse, CreatePerscomUser, PerscomUserResponse } from "@/types/perscomApi";
-import { createPerscomUser, createApplicationSubmission } from "@/lib/perscomApi";
-import { updateUserAfterApplicationDb } from "@/db/client";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
+import { perscom } from "@/lib/perscom/api";
+import { database } from "@/database";
 
 
 export async function submitApplication(formData: FormData, user_id: string, discordName: string) {
@@ -29,10 +29,10 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   }
 
   const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
-  const createPerscomUserResponse: PerscomUserResponse = await createPerscomUser(perscomUser);
+  const createPerscomUserResponse: PerscomUserResponse = await perscom.post.user(perscomUser);
   if (!createPerscomUserResponse) throw new Error("Failed to create perscom user");
 
-  const applicationResponse: ApplicationSubmissionResponse = await createApplicationSubmission(
+  const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
     {
       form_id: 1,
       user_id: createPerscomUserResponse.id,
@@ -52,5 +52,5 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   );
   if (!applicationResponse) throw new Error("Failed to create application submission");
 
-  await updateUserAfterApplicationDb(user_id, createPerscomUserResponse.id, createPerscomUserResponse.name, data.steamId, data.dateOfBirth)
+  await database.put.userAfterApplication(user_id, createPerscomUserResponse.id, createPerscomUserResponse.name, data.steamId, data.dateOfBirth)
 }

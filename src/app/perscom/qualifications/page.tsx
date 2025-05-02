@@ -2,10 +2,10 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { UserRole } from "@/types/database"
 import { Qualification } from "@/types/perscomApi"
-import { getQualifications } from "@/lib/perscomApi"
 import Image from "next/image"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { sanitizeHtmlServer } from "@/lib/sanitizeHtmlClient"
+import { perscom } from "@/lib/perscom/api";
 
 const QUALIFICATIONS_PER_PAGE = 18
 
@@ -16,7 +16,7 @@ export default async function QualificationsPage({
 }) {
   const currentPage = Number((await searchParams).page) || 1
 
-  const qualifications: Qualification[] = await getQualifications()
+  const qualifications: Qualification[] = await perscom.get.qualifications()
 
   const totalQualifications = qualifications.length
   const totalPages = Math.ceil(totalQualifications / QUALIFICATIONS_PER_PAGE)

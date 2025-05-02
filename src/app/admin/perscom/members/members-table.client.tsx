@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PerscomUserResponse } from "@/types/perscomApi";
 import { PaginationBar } from "@/components/ui/pagination";
+import { UpdateMemberDialog } from "@/app/admin/perscom/members/update-member-dialog";
 
 
 interface MembersTableProps {
@@ -25,6 +26,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [positionFilters, setPositionFilters] = useState<string[]>([]);
   const [unitFilters, setUnitFilters] = useState<string[]>([]);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
   const [expandedFilterSection, setExpandedFilterSection] = useState<'status' | 'position' | 'unit' | null>(null);
 
 
@@ -292,8 +294,8 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleViewDetails(user)}>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit User</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setIsUpdateDialogOpen(true)}>Update Member</DropdownMenuItem>
+                      {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>
@@ -302,6 +304,12 @@ export const MembersTable = ({ members }: MembersTableProps) => {
             </tbody>
           </table>
         </div>
+
+        <UpdateMemberDialog
+          open={isUpdateDialogOpen}
+          onOpenChangeAction={setIsUpdateDialogOpen}
+          member={selectedUser}
+        />
 
         {filteredUsers.length === 0 && (
           <div className="p-6 text-center">

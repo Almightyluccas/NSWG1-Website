@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/database";
 import { PaginationBar } from "@/components/ui/pagination";
 import RoleGuard from "@/components/auth/role-guard";
+import { RoleManager } from "@/app/admin/users/role-manager";
 
 interface UserTableProps {
   users: UserInformation[]
@@ -25,6 +26,7 @@ export const UsersTable = ({ users } : UserTableProps ) => {
   const [selectedUser, setSelectedUser] = useState<UserInformation | null>(null);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
 
   const { data: session } = useSession();
 
@@ -128,12 +130,12 @@ export const UsersTable = ({ users } : UserTableProps ) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3">
-                      {/*<Image*/}
-                      {/*  src={user.avatar || "/placeholder.svg"}*/}
-                      {/*  alt={user.username || 'empty'}*/}
-                      {/*  fill*/}
-                      {/*  className="object-cover"*/}
-                      {/*/>*/}
+                      <Image
+                        src={user.imageUrl || "/placeholder.svg"}
+                        alt={user.name || 'empty'}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                     <div>
                       <div className="font-medium">
@@ -174,8 +176,11 @@ export const UsersTable = ({ users } : UserTableProps ) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleViewDetails(user)}>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit User</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedUser(user);
+                        setIsRoleManagerOpen(true);
+                      }}>Edit Roles</DropdownMenuItem>
+                      {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>
@@ -218,12 +223,12 @@ export const UsersTable = ({ users } : UserTableProps ) => {
               <div className="md:col-span-1">
                 <div className="flex flex-col items-center">
                   <div className="relative h-32 w-32 rounded-full overflow-hidden mb-4">
-                    {/*<Image*/}
-                    {/*  src={selectedUser.avatar || "/placeholder.svg"}*/}
-                    {/*  alt={selectedUser.username}*/}
-                    {/*  fill*/}
-                    {/*  className="object-cover"*/}
-                    {/*/>*/}
+                    <Image
+                      src={selectedUser.imageUrl || "/placeholder.svg"}
+                      alt={selectedUser.name || ''}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <h3 className="text-lg font-bold">
                     {selectedUser.discord_username}
@@ -281,6 +286,15 @@ export const UsersTable = ({ users } : UserTableProps ) => {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+      {selectedUser && (
+        <RoleManager
+          open={isRoleManagerOpen}
+          onOpenChangeAction={setIsRoleManagerOpen}
+          currentRoles={selectedUser.role}
+          userId={selectedUser.id}
+          currentUserRoles={session?.user.roles || []}
+        />
       )}
     </>
   )

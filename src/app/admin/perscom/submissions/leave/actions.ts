@@ -1,11 +1,11 @@
 "use server"
 
-import { changeSubmissionStatus } from "@/lib/perscomApi";
 import { revalidatePath } from "next/cache";
+import { perscom } from "@/lib/perscom/api";
 
 export async function acceptApplication(submissionId: number, perscomId: number, name: string, email: string) {
   console.log(submissionId);
-  await changeSubmissionStatus(submissionId, 'Accepted');
+  await perscom.post.submissionStatus(submissionId, 'Accepted');
   revalidatePath('/admin/perscom/submissions/enlistment');
 
   //TODO: change user in database to be on leave
@@ -14,7 +14,7 @@ export async function acceptApplication(submissionId: number, perscomId: number,
 
 export async function rejectApplication(submissionId: number, perscomId: number) {
   console.log(submissionId);
-  await changeSubmissionStatus(submissionId, 'Denied');
+  await perscom.post.submissionStatus(submissionId, 'Denied');
   revalidatePath('/admin/perscom/submissions/enlistment');
 
   //TODO: change user in database to have denied leave
