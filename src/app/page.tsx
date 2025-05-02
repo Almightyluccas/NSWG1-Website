@@ -8,6 +8,7 @@ import { StatCard } from "@/components/stat-card"
 import { VideoPlayer } from "@/components/video-player"
 import {Footer} from "@/components/footer";
 import {ReadyToJoinSection} from "@/components/ready-to-join-section";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -46,9 +47,12 @@ export default function Home() {
               </p>
 
               <div className="flex flex-wrap gap-4 mt-8">
-                <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
-                  Recruitment <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href="/join">
+                  <Button size="lg" className="bg-accent hover:bg-accent-darker text-black" >
+                    Recruitment <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+
                 <Button size="lg" variant="outline" className="border-gray-600 hover:bg-gray-800 text-white">
                   Learn More
                 </Button>

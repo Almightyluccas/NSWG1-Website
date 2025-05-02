@@ -95,7 +95,6 @@ export function UpdateMemberDialog({
             author_id: session?.user.perscomId
           }
           break
-        //TODO: need to check how to actually update someones unit.
       }
 
       await updateMember({type: selectedTab, data: payload})

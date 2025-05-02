@@ -5,6 +5,7 @@ import {Button} from "@/components/ui/button";
 import React, {useState} from "react";
 import {Dialog, DialogContent} from "@/components/ui/dialog";
 import {RequirementItem} from "@/components/ui/requirment-list-items";
+import Link from "next/link";
 
 
 
@@ -35,9 +36,11 @@ export function ReadyToJoinSection () {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
-                  Enlist Today
-                </Button>
+                <Link href={"/join"}>
+                  <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
+                    Enlist Today
+                  </Button>
+                </Link>
                 <Button onClick={openRequirementsModal} size="lg" variant="outline" className="border-zinc-600 hover:bg-zinc-700">
                   View Requirements
                 </Button>

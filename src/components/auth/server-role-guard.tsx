@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/authOptions"
 import { UserRole } from "@/types/database"
+import { headers } from "next/headers"
 
 interface ServerRoleGuardProps {
   allowedRoles: string[]
@@ -16,9 +17,12 @@ export default async function ServerRoleGuard({
   children,
 }: ServerRoleGuardProps) {
   const session = await getServerSession(authOptions)
+  const headersList = await headers()
+  const fullUrl = headersList.get("x-url") || ""
+  const path = fullUrl ? encodeURIComponent(fullUrl) : ""
 
   if (!session) {
-    redirect("/login")
+    redirect(`/login?callbackUrl=${path}`)
   }
 
   const roles = session.user.roles ?? []
