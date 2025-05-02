@@ -98,7 +98,7 @@ export function UpdateMemberDialog({
         //TODO: need to check how to actually update someones unit.
       }
 
-      await updateMember(selectedTab, payload)
+      await updateMember({type: selectedTab, data: payload})
       toast.success('Member updated successfully')
       onOpenChangeAction(false)
     } catch (error) {
