@@ -8,8 +8,8 @@ import {
   Award, CombatRecord, AssignmentRecord, Qualification
 } from '@/types/perscomApi'
 import type { PerscomClient } from './PerscomClient'
+import { CACHE_DURATION_MS } from './PerscomClient'
 
-const CACHE_DURATION_MS = 5 * 60 * 1000
 
 export class PerscomGet {
   constructor(

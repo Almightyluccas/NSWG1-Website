@@ -9,6 +9,7 @@ interface UserProfilePageProps {
   params: Promise<{ id: string }>
 
 }
+//TODO: Load only what is first seen first so it opens faster then load rest in background.
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const { id } = await params;
