@@ -33,7 +33,7 @@ interface RosterTableProps {
   ranks: Rank[]
 }
 
-//TODO: test if comparison if faster in backend or frontend
+//TODO: tests if comparison if faster in backend or frontend
 export const RosterTable = ({ members, ranks }: RosterTableProps) => {
   const [selectedMainUnit, setSelectedMainUnit] = useState<string>("tacdevron");
   const [mainUnits, setMainUnits] = useState<MainUnit[]>([]);

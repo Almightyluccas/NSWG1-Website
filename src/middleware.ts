@@ -13,23 +13,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({ req: request })
+  const restrictedRoutes = ['/admin', '/comms', '/perscom'];
+  const currentPath = request.nextUrl.pathname + request.nextUrl.search;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-url', currentPath);
 
-  const requestHeaders = new Headers(request.headers)
-  const currentPath = request.nextUrl.pathname + request.nextUrl.search
-  requestHeaders.set('x-url', currentPath)
+  const token = await getToken({ req: request });
+  const isRestricted = restrictedRoutes.some(prefix => request.nextUrl.pathname.startsWith(prefix));
 
-  if (!token && request.nextUrl.pathname.startsWith('/perscom')) {
-    const url = new URL('/login', request.url)
-    url.searchParams.set('callbackUrl', encodeURIComponent(currentPath))
-    return NextResponse.redirect(url)
+  if ((!token || token.error === 'RefreshAccessTokenError') && isRestricted) {
+    const url = new URL('/login', request.url);
+    url.searchParams.set('callbackUrl', encodeURIComponent(currentPath));
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next({
     request: {
       headers: requestHeaders,
     },
-  })
+  });
 }
 
 export const config = {

@@ -34,4 +34,11 @@ export class DatabasePut {
       WHERE id = ?
     `, [roleString, userId])
   }
+
+  async userRefreshToken(userId: string, refreshToken: string | null, expiresAt: number | null ): Promise<void> {
+    await this.client.query(`
+      UPDATE users SET refresh_token = ?, refresh_token_expires_at = DATE_ADD(NOW(), INTERVAL ? SECOND) WHERE id = ?
+      `, [refreshToken, expiresAt, userId]
+    );
+  }
 }

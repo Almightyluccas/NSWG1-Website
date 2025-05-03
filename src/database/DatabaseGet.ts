@@ -104,4 +104,17 @@ export class DatabaseGet {
       isPositive: percentChange >= 0
     }
   }
+
+  async userRefreshToken(userId: string): Promise<string> {
+    const rows = await this.client.query(
+      "SELECT refresh_token FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (!rows || (rows as any[]).length === 0) throw new Error("No refresh token found");
+
+
+    return (rows as any[])[0].refresh_token;
+
+  }
 }

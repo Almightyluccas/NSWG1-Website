@@ -11,11 +11,23 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token
+    async jwt({ token, account, user }) {
+      if (account && user) {
+        if (account.refresh_token) {
+          await database.put.userRefreshToken(user.id, account.refresh_token, account.expires_at || 604800);
+        }
+        return {
+          ...token,
+          access_token: account.access_token,
+          expires_at: Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600)),
+          refresh_token: account.refresh_token,
+          user_id: user.id,
+        };
       }
-      return token;
+
+      if (Date.now() < (token.expires_at as number) * 1000) return token;
+
+      return await refreshAccessToken(token);
     },
     async signIn({ user, account }) {
       if (account?.provider === "discord") {
@@ -60,3 +72,36 @@ export const authOptions: NextAuthOptions = {
 
   }
 }
+
+export async function refreshAccessToken(token: any) {
+  try {
+    const refreshToken = await database.get.userRefreshToken(token.user_id);
+    const url = "https://discord.com/api/oauth2/token";
+    const response = await fetch(url, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID!,
+        client_secret: process.env.DISCORD_CLIENT_SECRET!,
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      }),
+      method: "POST"
+    });
+
+    const refreshedTokens = await response.json();
+    if (!response.ok) throw new Error("Failed to refresh token");
+
+    await database.put.userRefreshToken(token.user_id, refreshedTokens.refresh_token, refreshedTokens.expires_in || 604800);
+
+    return {
+      ...token,
+      access_token: refreshedTokens.access_token,
+      expires_at: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in || 3600)),
+      refresh_token: refreshedTokens.refresh_token,
+    };
+  } catch (error) {
+    console.error("Error refreshing access token", error);
+    await database.put.userRefreshToken(token.user_id, null, null);
+    throw new Error("RefreshAccessTokenError");
+  }
+  }
