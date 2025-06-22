@@ -28,7 +28,7 @@ export default function TF160thPage() {
                         <FadeIn>
                             <div className="flex justify-center mb-8">
                                 <Image
-                                    src="/images/160th-emblem.png"
+                                    src="/images/160th/160th-emblem.png"
                                     alt="160th SOAR Emblem"
                                     width={250}
                                     height={250}

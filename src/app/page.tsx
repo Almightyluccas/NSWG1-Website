@@ -20,7 +20,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-100 dark:to-zinc-900">
             <Image
-                src="/images/hero-background.png"
+                src="/images/tacdev/hero-background.png"
                 alt="Hero background"
                 fill
                 className="object-cover brightness-50"
@@ -98,7 +98,7 @@ export default function Home() {
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/160th-lil-birds-night.jpg"
+            src="/images/160th/160th-lil-birds-night.jpg"
             alt="Military operation"
             fill
             className="object-cover opacity-70"
@@ -130,7 +130,7 @@ export default function Home() {
             </FadeIn>
 
             <FadeIn delay={200}>
-              <VideoPlayer src="/images/bomb.mp4" poster="/images/tactical-training.png" />
+              <VideoPlayer src="/videos/bomb.mp4" poster="/images/tactical-training.png" />
             </FadeIn>
           </div>
         </div>

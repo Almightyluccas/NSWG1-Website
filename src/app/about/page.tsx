@@ -59,7 +59,7 @@ export default function AboutPage() {
 
                         <FadeIn delay={200}>
                             <div className="relative h-96 rounded-lg overflow-hidden shadow-xl">
-                                <Image src="/images/3-soldiers-training-targets.png" alt="NSWG1 Mission" fill className="object-cover" />
+                                <Image src="/images/tacdev/3-soldiers-training-targets.png" alt="NSWG1 Mission" fill className="object-cover" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                                 <div className="absolute bottom-0 left-0 p-6">
                                     <h3 className="text-2xl font-bold text-white mb-2">Elite Training</h3>
