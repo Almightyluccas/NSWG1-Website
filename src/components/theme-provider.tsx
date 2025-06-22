@@ -10,6 +10,7 @@ export interface ThemeOption {
   accentDarker: string
 }
 
+
 interface ThemeContextType {
   themes: ThemeOption[]
   currentAccent: ThemeOption

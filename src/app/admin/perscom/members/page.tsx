@@ -3,9 +3,6 @@ import ServerRoleGuard from "@/components/auth/server-role-guard";
 import {PerscomUserResponse} from "@/types/perscomApi";
 import { perscom } from "@/lib/perscom/api";
 
-
-
-
 export default async function UsersPage() {
   const members: PerscomUserResponse[] = await perscom.get.users();
 
