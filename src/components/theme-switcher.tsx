@@ -52,12 +52,12 @@ export function ThemeSwitcher() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
       {/* Dark/Light Mode Toggle */}
-      <Button
-        onClick={toggleMode}
-        className="rounded-full w-12 h-12 flex items-center justify-center bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 shadow-lg"
-      >
-        {mode === "dark" ? <Sun className="h-5 w-5 text-accent" /> : <Moon className="h-5 w-5 text-accent" />}
-      </Button>
+        {/*<Button*/}
+        {/*  onClick={toggleMode}*/}
+        {/*  className="rounded-full w-12 h-12 flex items-center justify-center bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 shadow-lg"*/}
+        {/*>*/}
+        {/*  {mode === "dark" ? <Sun className="h-5 w-5 text-accent" /> : <Moon className="h-5 w-5 text-accent" />}*/}
+        {/*</Button>*/}
 
       {/* Color Theme Switcher */}
       <div className="relative">
