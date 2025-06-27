@@ -62,7 +62,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
       let targetSectionsMap: Map<number, Section>;
 
-      if (unitName.toLowerCase().includes("tacdevron")) {
+      if (unitName.toLowerCase().includes("tacdevron") || unitName.toLowerCase().includes('green team')) {
         targetSectionsMap = tacdevronSections;
       } else if (unitName.toLowerCase().includes("160th")) {
         targetSectionsMap = soarSections;
@@ -97,6 +97,10 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         const aName = a.name.toLowerCase();
         const bName = b.name.toLowerCase();
 
+        const aIsGreenTeam = aName.includes("green team");
+        const bIsGreenTeam = bName.includes("green team");
+
+
         const aHasCommand = aName.includes("command");
         const bHasCommand = bName.includes("command");
 
@@ -108,6 +112,9 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
         if (aHasEnable && !bHasEnable) return -1;
         if (!aHasEnable && bHasEnable) return 1;
+
+        if (aIsGreenTeam && !bIsGreenTeam) return 1;
+        if (!aIsGreenTeam && bIsGreenTeam) return -1;
 
         return aName.localeCompare(bName);
       });
