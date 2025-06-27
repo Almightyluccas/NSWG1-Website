@@ -112,7 +112,7 @@ export function UpdateMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChangeAction} modal={true}>
       <DialogContent className="w-[90vw] md:w-[50vw] !max-w-none overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Update Member - {member?.data.name}</DialogTitle>
+          <DialogTitle>Update Member - {member?.name}</DialogTitle>
           <DialogDescription>
             Modify member information by selecting a category below and filling in the required details.
           </DialogDescription>

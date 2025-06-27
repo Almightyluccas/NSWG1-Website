@@ -46,22 +46,22 @@ export async function fetchMemberUpdateData(): Promise<UpdateMemberData> {
 export async function updateMember(payload: UpdateMemberPayload): Promise<void> {
   switch (payload.type) {
     case 'award':
-      await perscom.post.userAward(payload.data);
+      await perscom.post.userAward(payload.data.award);
       break
     case 'combat':
-      await perscom.post.userCombatRecord(payload.data);
+      await perscom.post.userCombatRecord(payload.data.combat);
 
       break
     case 'rank':
-      await perscom.post.userRankRecord(payload.data);
+      await perscom.post.userRankRecord(payload.data.rank);
 
       break
     case 'assignment':
-      await perscom.post.userAssignment(payload.data);
+      await perscom.post.userAssignment(payload.data.assignment);
 
       break
     case 'qualification':
-      await perscom.post.userQualification(payload.data);
+      await perscom.post.userQualification(payload.data.qualification);
 
       break
     case 'unit':

@@ -1,16 +1,15 @@
 import {
   ApplicationSubmission,
   ApplicationSubmissionResponse, CreateAssignmentRecord, CreateAwardRecord, CreateCombatRecord,
-  CreatePerscomUser, CreateQualificationRecord, CreateRankRecord,
-  PerscomUserResponse
+  CreatePerscomUser, CreateQualificationRecord, CreateRankRecord, PerscomUserCreationResponse,
 } from '@/types/perscomApi'
 import type { PerscomClient } from './PerscomClient'
 
 export class PerscomPost {
   constructor(private client: PerscomClient) {}
 
-  async user(data: CreatePerscomUser): Promise<PerscomUserResponse> {
-    return this.client.fetch<PerscomUserResponse>('/users', {
+  async user(data: CreatePerscomUser): Promise<PerscomUserCreationResponse> {
+    return this.client.fetch<PerscomUserCreationResponse>('/users', {
       method: 'POST',
       body: JSON.stringify(data)
     })

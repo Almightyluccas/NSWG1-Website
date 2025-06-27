@@ -1,6 +1,11 @@
 "use server"
 
-import { ApplicationSubmissionResponse, CreatePerscomUser, PerscomUserResponse } from "@/types/perscomApi";
+import {
+  ApplicationSubmissionResponse,
+  CreatePerscomUser,
+  PerscomUserCreationResponse,
+  PerscomUserResponse
+} from "@/types/perscomApi";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { perscom } from "@/lib/perscom/api";
@@ -29,7 +34,7 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   }
 
   const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
-  const createPerscomUserResponse: PerscomUserResponse = await perscom.post.user(perscomUser);
+  const createPerscomUserResponse: PerscomUserCreationResponse = await perscom.post.user(perscomUser);
   if (!createPerscomUserResponse) throw new Error("Failed to create perscom user");
 
   const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
