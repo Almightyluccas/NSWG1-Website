@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+
   const restrictedRoutes = ['/admin', '/comms', '/perscom'];
   const currentPath = request.nextUrl.pathname + request.nextUrl.search;
   const requestHeaders = new Headers(request.headers);
