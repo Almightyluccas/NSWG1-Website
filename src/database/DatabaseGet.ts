@@ -107,7 +107,7 @@ export class DatabaseGet {
 
   async userRefreshToken(userId: string): Promise<string> {
     const rows = await this.client.query(
-      "SELECT refresh_token FROM users WHERE id = ?",
+      "SELECT token_hash FROM refresh_tokens WHERE id = ?",
       [userId]
     );
 
