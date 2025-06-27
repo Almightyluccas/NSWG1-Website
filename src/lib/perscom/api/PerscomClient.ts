@@ -60,12 +60,31 @@ export class PerscomClient {
           },
         });
 
+        // if (!response.ok) {
+        //   if (retries > 0 && response.status >= 500) {
+        //     await new Promise(r => setTimeout(r, 1000 * (3 - retries)));
+        //     return executeRequest(retries - 1);
+        //   }
+        //   throw new Error(`Perscom API error: ${response.status}`);
+        // }
+
         if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({}));
+
+          console.error("Perscom API error details:", {
+            status: response.status,
+            url: `${this.apiUrl}${endpoint}`,
+            method,
+            body: options.body,
+            errorBody,
+          });
+
           if (retries > 0 && response.status >= 500) {
             await new Promise(r => setTimeout(r, 1000 * (3 - retries)));
             return executeRequest(retries - 1);
           }
-          throw new Error(`Perscom API error: ${response.status}`);
+
+          throw new Error(`Perscom API error: ${response.status} - ${JSON.stringify(errorBody)}`);
         }
 
         if (method !== 'GET') {

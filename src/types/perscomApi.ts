@@ -166,44 +166,51 @@ export interface CreatePerscomUser {
 }
 
 export interface PerscomUserResponse extends BaseEntity {
-  name: string;
-  email: string;
-  email_verified_at: string;
-  phone_number: string | null;
-  position_id: number;
-  rank_id: number;
-  specialty_id: number | null;
-  status_id: number;
-  unit_id: number;
-  unit_slot_id: number | null;
-  approved: boolean;
-  notes: string | null;
-  notes_updated_at: string | null;
-  profile_photo: string | null;
-  cover_photo: string;
-  last_seen_at: string;
-  discord_user_id: string | null;
-  no_fields: null;
-  last_assignment_change_date: string;
-  last_rank_change_date: string;
-  online: boolean;
-  profile_photo_url: string;
-  cover_photo_url: string;
-  assignment_records?: AssignmentRecord[];
-  attachments?: [] | null;
-  award_records?: AwardRecord[];
-  combat_records?: CombatRecord[];
-  fields?: [] | null;
-  position?: Position;
-  primary_assignment_records?: AssignmentRecord[];
-  qualification_records?: QualificationRecord[];
-  rank?: Rank;
-  rank_records?: RankRecord[];
-  secondary_assignment_records?: AssignmentRecord[];
-  service_records?: [] | null;
-  specialty?: Specialty | null;
-  status?: Status;
-  unit?: Unit;
+  data: {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    label: string;
+    name: string;
+    email: string;
+    email_verified_at: string;
+    phone_number: string | null;
+    position_id: number;
+    rank_id: number;
+    specialty_id: number | null;
+    status_id: number;
+    unit_id: number;
+    unit_slot_id: number | null;
+    approved: boolean;
+    notes: string | null;
+    notes_updated_at: string | null;
+    profile_photo: string | null;
+    cover_photo: string;
+    last_seen_at: string;
+    discord_user_id: string | null;
+    no_fields: null;
+    last_assignment_change_date: string;
+    last_rank_change_date: string;
+    online: boolean;
+    profile_photo_url: string;
+    cover_photo_url: string;
+    assignment_records?: AssignmentRecord[];
+    attachments?: [] | null;
+    award_records?: AwardRecord[];
+    combat_records?: CombatRecord[];
+    fields?: [] | null;
+    position?: Position;
+    primary_assignment_records?: AssignmentRecord[];
+    qualification_records?: QualificationRecord[];
+    rank?: Rank;
+    rank_records?: RankRecord[];
+    secondary_assignment_records?: AssignmentRecord[];
+    service_records?: [] | null;
+    specialty?: Specialty | null;
+    status?: Status;
+    unit?: Unit;
+  }
+
 }
 
 export interface ApplicationSubmission {

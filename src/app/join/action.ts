@@ -35,7 +35,7 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
     {
       form_id: 1,
-      user_id: createPerscomUserResponse.id,
+      user_id: createPerscomUserResponse.data.id,
       arma_3_id: data.steamId,
       first_name: data.name,
       discord_name: data.discordName,
@@ -52,5 +52,5 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   );
   if (!applicationResponse) throw new Error("Failed to create application submission");
 
-  await database.put.userAfterApplication(user_id, createPerscomUserResponse.id, createPerscomUserResponse.name, data.steamId, data.dateOfBirth)
+  await database.put.userAfterApplication(user_id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
 }
