@@ -15,7 +15,7 @@ export default function Tacdevron2Page() {
       <section className="relative min-h-[80vh] flex items-center">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-zinc-900"></div>
-          <Image src="/images/tacdev/tacdev-hero.png" alt="TACDEVRON2 Header" fill className="object-cover opacity-70" priority />
+          <Image src="/images/tacdev/tacdev-1.png" alt="TACDEVRON2 Header" fill className="object-cover opacity-70" priority />
         </div>
 
         <div className="container mx-auto px-4 z-10 pt-20">
@@ -54,7 +54,7 @@ export default function Tacdevron2Page() {
               icon={<GlobeHemisphereWest className="h-10 w-10 text-accent" />}
               title="TACDEVRON2 Culture"
               content="Within TACDEVRON2 there is unmatched dedication among the members. Teamwork and dedication drive the unit tempo and culture. NSW Special Operators are dedicated to their roles and are constantly developing their tactics."
-              image="/images/tacdev/tacdev-1.png"
+              image="/images/tacdev/tacdev-hero.png"
               delay={0}
               className="h-full"
             />
