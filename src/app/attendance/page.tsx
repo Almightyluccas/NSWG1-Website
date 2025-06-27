@@ -96,7 +96,7 @@ const mockUsers: User[] = [
     username: "RecruitCharlie",
     discriminator: "9012",
     avatar: "https://cdn.discordapp.com/embed/avatars/2.png",
-    name: "M. Williams",
+    name: "L. Graterol",
     unit: "Pending Assignment",
     position: "Recruit",
   },
