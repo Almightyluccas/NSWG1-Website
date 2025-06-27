@@ -15,7 +15,7 @@ export default function TF160thPage() {
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-zinc-900"></div>
                     <Image
-                        src="/images/160th/160th-lil-birds-day-loaded.png"
+                        src="/images/160th/160th-hero.png"
                         alt="160th SOAR Header"
                         fill
                         className="object-cover opacity-70"
