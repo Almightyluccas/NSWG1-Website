@@ -88,7 +88,7 @@ export default function Home() {
               icon={<Users className="h-10 w-10 text-accent" />}
               number="90%"
               label="Participation Rate"
-              description="Consistent engagement from our personnel drives the operational precision and strategic advantage that distinguish us from our counterparts."
+              description="Consistent engagement from our personnel drives the operational precision and strategic advantage that distinguish us from our counterparts"
             />
           </div>
         </div>
