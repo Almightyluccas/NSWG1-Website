@@ -13,9 +13,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user }) {
       if (account && user) {
-        if (account.refresh_token) {
-          await database.put.userRefreshToken(user.id, account.refresh_token, account.expires_at || 604800);
-        }
+        // if (account.refresh_token) {
+        //   await database.put.userRefreshToken(user.id, account.refresh_token, account.expires_at || 604800);
+        // }
         return {
           ...token,
           access_token: account.access_token,
@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
 
       if (Date.now() < (token.expires_at as number) * 1000) return token;
 
-      return await refreshAccessToken(token);
+      return token;
     },
     async signIn({ user, account }) {
       if (account?.provider === "discord") {
