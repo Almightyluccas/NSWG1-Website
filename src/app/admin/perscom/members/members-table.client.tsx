@@ -33,7 +33,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const availableStatuses = Array.from(
     new Set(
       members
-        .map(user => user.status?.name)
+        .map(user => user.data.status?.name)
         .filter((status): status is string => !!status)
     )
   );
@@ -41,7 +41,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const availablePositions = Array.from(
     new Set(
       members
-        .map(user => user.position?.name)
+        .map(user => user.data.position?.name)
         .filter((position): position is string => !!position)
     )
   );
@@ -49,7 +49,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const availableUnits = Array.from(
     new Set(
       members
-        .map(user => user.unit?.name)
+        .map(user => user.data.unit?.name)
         .filter((unit): unit is string => !!unit)
     )
   );
@@ -57,19 +57,19 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const filteredUsers = members.filter((user) => {
     const searchLower = searchQuery.toLowerCase()
     const matchesSearch =
-      (user.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.rank?.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.unit?.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.status?.name?.toLowerCase().includes(searchLower) || false)
+      (user.data.name?.toLowerCase().includes(searchLower) || false) ||
+      (user.data.rank?.name?.toLowerCase().includes(searchLower) || false) ||
+      (user.data.unit?.name?.toLowerCase().includes(searchLower) || false) ||
+      (user.data.status?.name?.toLowerCase().includes(searchLower) || false)
 
     const statusMatch = statusFilters.length === 0 ||
-      (user.status?.name && statusFilters.includes(user.status.name));
+      (user.data.status?.name && statusFilters.includes(user.data.status.name));
 
     const positionMatch = positionFilters.length === 0 ||
-      (user.position?.name && positionFilters.includes(user.position.name));
+      (user.data.position?.name && positionFilters.includes(user.data.position.name));
 
     const unitMatch = unitFilters.length === 0 ||
-      (user.unit?.name && unitFilters.includes(user.unit.name));
+      (user.data.unit?.name && unitFilters.includes(user.data.unit.name));
 
     return matchesSearch && statusMatch && positionMatch && unitMatch;
   })
@@ -271,7 +271,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-zinc-700">
             {paginatedUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
+              <tr key={user.data.id} className="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3">
@@ -283,23 +283,23 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                       {/*/>*/}
                     </div>
                     <div>
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-gray-500 dark:text-zinc-400">{user.email}</div>
+                      <div className="font-medium">{user.data.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-zinc-400">{user.data.email}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline">{user.rank?.name}</Badge>
+                  <Badge variant="outline">{user.data.rank?.name}</Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline">{user.position?.name}</Badge>
+                  <Badge variant="outline">{user.data.position?.name}</Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant={user.status?.name === "Active" ? "accent" : "outline"}>
-                    {user.status?.name}
+                  <Badge variant={user.data.status?.name === "Active" ? "accent" : "outline"}>
+                    {user.data.status?.name}
                   </Badge>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.unit?.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.data.unit?.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -366,14 +366,14 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                 <div className="flex flex-col items-center">
                   <div className="relative h-32 w-32 rounded-full overflow-hidden mb-4">
                     {/*<Image*/}
-                    {/*  src={selectedUser.user?.avatar || "/placeholder.svg"}*/}
-                    {/*  alt={selectedUser.user?.username || 'User'}*/}
+                    {/*  src={selectedUser.data.user?.avatar || "/placeholder.svg"}*/}
+                    {/*  alt={selectedUser.data.user?.username || 'User'}*/}
                     {/*  fill*/}
                     {/*  className="object-cover"*/}
                     {/*/>*/}
                   </div>
-                  {/*<h3 className="text-lg font-bold">{selectedUser.user?.username}</h3>*/}
-                  <p className="text-gray-500 dark:text-zinc-400">{selectedUser.rank?.name}</p>
+                  {/*<h3 className="text-lg font-bold">{selectedUser.data.user?.username}</h3>*/}
+                  <p className="text-gray-500 dark:text-zinc-400">{selectedUser.data.rank?.name}</p>
                 </div>
               </div>
 
@@ -386,17 +386,17 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <p className="text-sm font-medium">Email</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.email}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.data.email}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Status</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.status?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.data.status?.name}</p>
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium">Date Joined</p>
                       <p className="text-sm text-gray-500 dark:text-zinc-400">
-                        {new Date(selectedUser.created_at).toLocaleDateString()}
+                        {new Date(selectedUser.data.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -410,11 +410,11 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <p className="text-sm font-medium">Unit</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.unit?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.data.unit?.name}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Position</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.position?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.data.position?.name}</p>
                       </div>
                     </div>
                   </div>

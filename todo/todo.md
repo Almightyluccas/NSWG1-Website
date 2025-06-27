@@ -1,4 +1,4 @@
-* test application..  - **easy**
+* test application..  - **easy**  DONE
 
 
 * add the events to calendar like campaign - **medium to hard**
