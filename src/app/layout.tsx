@@ -20,10 +20,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "/images/nswg1-emblem.png"
   },
-  verification: {
-    google: "EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o"
-  }
+  // verification: {
+  //   google: "EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o"
+  // }
 }
+
 
 export default async function RootLayout({
   children,
@@ -32,16 +33,20 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en" suppressHydrationWarning>
+    <>
+      <meta name="google-site-verification" content="EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o" />
+      <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans`}>
-        <SessionWrapper session={session}>
-          <ThemeProvider>
-            {children}
-            <ThemeSwitcher />
-          </ThemeProvider>
-          <Analytics />
-        </SessionWrapper>
+      <SessionWrapper session={session}>
+        <ThemeProvider>
+          {children}
+          <ThemeSwitcher />
+        </ThemeProvider>
+        <Analytics />
+      </SessionWrapper>
       </body>
-    </html>
+      </html>
+    </>
+
   )
 }
