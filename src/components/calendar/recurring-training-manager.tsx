@@ -24,9 +24,9 @@ import {
   updateRecurringTraining,
   deleteRecurringTraining,
   processRecurringTrainings,
-  type RecurringTraining,
 } from "@/app/calendar/recurring-actions"
 import { toast } from "sonner"
+import { RecurringTraining } from "@/types/recurring-training";
 
 const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
