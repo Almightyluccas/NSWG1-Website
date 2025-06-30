@@ -40,7 +40,7 @@ import {
   createTrainingRecord,
   createOrUpdateTrainingRSVP,
   markTrainingAttendance,
-} from "@/app/attendance/action"
+} from "@/app/calendar/action"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Pagination,
@@ -185,7 +185,7 @@ export function TrainingTab() {
 
       loadTrainingRecords()
     } catch (error) {
-      console.error("Failed to mark attendance:", error)
+      console.error("Failed to mark calendar:", error)
     }
   }
 
@@ -662,7 +662,7 @@ export function TrainingTab() {
           <h3 className="text-lg font-medium mb-2">No Training Records Available</h3>
           <p>
             {isAdmin
-              ? "Create your first training session to start tracking attendance."
+              ? "Create your first training session to start tracking calendar."
               : "You haven't been assigned to any training sessions yet."}
           </p>
         </div>

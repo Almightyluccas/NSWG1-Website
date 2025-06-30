@@ -157,11 +157,11 @@ export const UserProfile = ({
                     <span className="font-medium">{user.unit?.name || "Unknown"}</span>
                   </div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 dark:text-zinc-400">Time in Unit:</span>
+                    <span className="text-gray-500 dark:text-zinc-400">Time in Service:</span>
                     <span className="font-medium">{calculateTimeDifference(user.created_at)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Time in Position:</span>
+                    <span className="text-gray-500 dark:text-zinc-400">Time in Grade:</span>
                     <span className="font-medium">{user.last_assignment_change_date ? calculateTimeDifference(user.last_assignment_change_date) : "Unknown"}</span>
                   </div>
                 </div>

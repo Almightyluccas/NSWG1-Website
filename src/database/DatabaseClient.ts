@@ -21,7 +21,7 @@ export class DatabaseClient {
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE,
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 40,
       queueLimit: 0,
     })
 

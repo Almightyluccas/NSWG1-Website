@@ -39,7 +39,7 @@ import {
   Cell,
 } from "recharts"
 import { cn } from "@/lib/utils"
-import { getAttendanceStats, getUsersForSelection } from "@/app/attendance/action"
+import { getAttendanceStats, getUsersForSelection } from "@/app/calendar/action"
 
 interface AttendanceStatsProps {
   isAdmin?: boolean
@@ -83,7 +83,7 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
         const data = await getAttendanceStats(isAdmin ? selectedUserId || undefined : undefined)
         setStatsData(data)
       } catch (error) {
-        console.error("Failed to load attendance stats:", error)
+        console.error("Failed to load calendar stats:", error)
         setStatsData(null)
       } finally {
         setLoading(false)
@@ -96,21 +96,145 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
   }, [session, selectedUserId, isAdmin])
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading statistics...</div>
+    return (
+      <div className="space-y-6">
+        <div className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+          <div className="mb-4">
+            <div className="h-6 w-64 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+            <div className="h-4 w-96 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {isAdmin && (
+              <div>
+                <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+                <div className="h-10 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+              </div>
+            )}
+
+            <div>
+              <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+              <div className="h-10 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+
+            <div>
+              <div className="h-4 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+              <div className="h-10 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+
+            <div>
+              <div className="h-4 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+              <div className="h-10 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+
+            <div className="flex items-end">
+              <div className="h-10 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+          </div>
+
+          {isAdmin && (
+            <div className="mt-4 p-4 bg-gray-100 dark:bg-zinc-700 rounded-lg animate-pulse">
+              <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-600 rounded mb-2" />
+              <div className="h-4 w-64 bg-gray-200 dark:bg-zinc-600 rounded" />
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                <div className="h-4 w-4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+              </div>
+              <div className="text-2xl font-bold h-8 w-20 bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />
+              <div className="text-xs h-4 w-32 bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />
+              {i % 2 !== 0 && <div className="h-2 w-full bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />} {/* For progress bars */}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+            <div className="mb-4">
+              <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+              <div className="h-4 w-64 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-200 dark:bg-zinc-700 rounded-full animate-pulse" />
+                    <div className="h-4 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-12 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                    <div className="h-6 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+              <div className="mt-6">
+                <div className="h-4 w-40 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-4" />
+                <div className="h-[200px] w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          <div className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+            <div className="mb-4">
+              <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+              <div className="h-4 w-64 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-700 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                    <div>
+                      <div className="h-4 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-1" />
+                      <div className="h-3 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="h-6 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+          <div className="mb-4">
+            <div className="h-6 w-64 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+            <div className="h-4 w-full bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+          </div>
+          <div className="h-96 w-full bg-gray-200 dark:bg-zinc-700 rounded overflow-hidden animate-pulse">
+            <div className="grid grid-cols-4 h-12 bg-gray-100 dark:bg-zinc-700 border-b border-gray-200 dark:border-zinc-600 items-center px-4">
+              <div className="h-4 w-16 bg-gray-200 dark:bg-zinc-600 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-600 rounded animate-pulse" />
+              <div className="h-4 w-16 bg-gray-200 dark:bg-zinc-600 rounded animate-pulse" />
+              <div className="h-4 w-20 bg-gray-200 dark:bg-zinc-600 rounded animate-pulse" />
+            </div>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-4 h-12 border-b border-gray-100 dark:border-zinc-700 last:border-0 items-center px-4">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                <div className="h-4 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                <div className="h-4 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                <div className="h-6 w-20 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!statsData) {
     return <div className="flex justify-center p-8">No attendance data available</div>
   }
 
-  // Filter attendance data based on filters
   const filteredAttendanceData = statsData.records.filter((record: any) => {
-    // Status filter
     if (filterStatus !== "all" && record.status !== filterStatus) {
       return false
     }
 
-    // Date range filter
     const recordDate = parseISO(record.date)
     if (startDate && isBefore(recordDate, parseISO(startDate))) {
       return false
@@ -122,7 +246,6 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
     return true
   })
 
-  // Recalculate statistics based on filtered data
   const totalEvents = filteredAttendanceData.length
   const presentCount = filteredAttendanceData.filter((record: any) => record.status === "present").length
   const absentCount = filteredAttendanceData.filter((record: any) => record.status === "absent").length
@@ -132,12 +255,10 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
   const attendanceRate = totalEvents > 0 ? Math.round((presentCount / totalEvents) * 100) : 0
   const punctualityRate = totalEvents > 0 ? Math.round((presentCount / (presentCount + lateCount)) * 100) : 0
 
-  // Get recent attendance (last 10 events)
   const recentAttendance = filteredAttendanceData
     .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10)
 
-  // Prepare chart data
   const chartData = filteredAttendanceData
     .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map((record: any) => ({
@@ -196,8 +317,8 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
           </CardTitle>
           <CardDescription>
             {isAdmin
-              ? "Select a user and filter their attendance records"
-              : "Filter attendance records and customize view"}
+              ? "Select a user and filter their calendar records"
+              : "Filter calendar records and customize view"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -501,29 +622,29 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
         </Card>
       </div>
 
-      {/* Attendance Trend Chart */}
-      {chartData.length > 0 && (
-        <Card className="theme-card">
-          <CardHeader>
-            <CardTitle>Attendance Trend</CardTitle>
-            <CardDescription>Attendance pattern over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="present" stroke="#10b981" name="Present" strokeWidth={2} />
-                <Line type="monotone" dataKey="absent" stroke="#ef4444" name="Absent" strokeWidth={2} />
-                <Line type="monotone" dataKey="late" stroke="#f59e0b" name="Late" strokeWidth={2} />
-                <Line type="monotone" dataKey="excused" stroke="#3b82f6" name="Excused" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
+      {/*/!* Attendance Trend Chart *!/*/}
+      {/*{chartData.length > 0 && (*/}
+      {/*  <Card className="theme-card">*/}
+      {/*    <CardHeader>*/}
+      {/*      <CardTitle>Attendance Trend</CardTitle>*/}
+      {/*      <CardDescription>Attendance pattern over time</CardDescription>*/}
+      {/*    </CardHeader>*/}
+      {/*    <CardContent>*/}
+      {/*      <ResponsiveContainer width="100%" height={300}>*/}
+      {/*        <LineChart data={chartData}>*/}
+      {/*          <CartesianGrid strokeDasharray="3 3" />*/}
+      {/*          <XAxis dataKey="date" />*/}
+      {/*          <YAxis />*/}
+      {/*          <Tooltip />*/}
+      {/*          <Line type="monotone" dataKey="present" stroke="#10b981" name="Present" strokeWidth={2} />*/}
+      {/*          <Line type="monotone" dataKey="absent" stroke="#ef4444" name="Absent" strokeWidth={2} />*/}
+      {/*          <Line type="monotone" dataKey="late" stroke="#f59e0b" name="Late" strokeWidth={2} />*/}
+      {/*          <Line type="monotone" dataKey="excused" stroke="#3b82f6" name="Excused" strokeWidth={2} />*/}
+      {/*        </LineChart>*/}
+      {/*      </ResponsiveContainer>*/}
+      {/*    </CardContent>*/}
+      {/*  </Card>*/}
+      {/*)}*/}
 
       {/* Detailed Records Table */}
       {showDetailedView && (

@@ -34,7 +34,7 @@ import {
   getTrainingByDateRange,
   createOrUpdateMissionRSVP,
   createOrUpdateTrainingRSVP,
-} from "@/app/attendance/action"
+} from "@/app/calendar/action"
 
 interface AttendanceRecord {
   date: string
@@ -149,7 +149,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     loadData()
   }, [currentMonth, session])
 
-  // Get attendance status for a specific date from the attendanceData prop
+  // Get calendar status for a specific date from the attendanceData prop
   const getAttendanceForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     return attendanceData.filter((record) => record.date === dateString)
@@ -227,7 +227,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return rsvp?.status || null
   }
 
-  // Get attendance status for a mission
+  // Get calendar status for a mission
   const getUserAttendanceStatus = (mission: Mission) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -243,7 +243,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return rsvp?.status || null
   }
 
-  // Get attendance status for training
+  // Get calendar status for training
   const getUserTrainingAttendanceStatus = (training: Training) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -937,13 +937,13 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                     )
                   })}
 
-                  {/* Regular attendance records - only show if there's actual attendance marked and no corresponding mission/training */}
+                  {/* Regular calendar records - only show if there's actual calendar marked and no corresponding mission/training */}
                   {attendanceRecords.map((record, idx) => {
-                    // Check if this attendance record corresponds to a mission or training already shown
+                    // Check if this calendar record corresponds to a mission or training already shown
                     const correspondingMission = dayMissions.find((m) => m.name === record.event)
                     const correspondingTraining = dayTraining.find((t) => t.name === record.event)
 
-                    // Only show standalone attendance records (not linked to missions/training shown above)
+                    // Only show standalone calendar records (not linked to missions/training shown above)
                     if (correspondingMission || correspondingTraining) return null
 
                     return (

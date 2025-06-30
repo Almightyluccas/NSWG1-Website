@@ -98,7 +98,7 @@ export function Navbar() {
             {session && (
               <>
                 <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
-                  <NavLink href="/attendance">Attendance</NavLink>
+                  <NavLink href="/calendar">Calendar</NavLink>
                   <div
                     className="relative group"
                     onMouseEnter={() => setIsPerscomDropdownOpen(true)}

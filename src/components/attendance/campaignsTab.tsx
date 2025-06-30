@@ -50,7 +50,7 @@ import {
   createOrUpdateMissionRSVP,
   markMissionAttendance,
   updateCampaignEndDate,
-} from "@/app/attendance/action"
+} from "@/app/calendar/action"
 
 const CAMPAIGNS_PER_PAGE = 5
 
@@ -241,7 +241,7 @@ export function CampaignsTab() {
       setIsAttendanceModalOpen(false)
       loadCampaigns()
     } catch (error) {
-      console.error("Failed to mark attendance:", error)
+      console.error("Failed to mark calendar:", error)
     }
   }
 

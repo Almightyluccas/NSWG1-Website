@@ -79,7 +79,7 @@ export async function getCampaigns() {
 
       const missions = await db.get.missionsByCampaign(campaign.id)
 
-      // Update mission statuses and get RSVPs/attendance
+      // Update mission statuses and get RSVPs/calendar
       const missionsWithData = await Promise.all(
         missions.map(async (mission) => {
           // Update mission status based on date/time
@@ -137,7 +137,7 @@ export async function getTrainingRecords() {
   const isAdmin = session.user.roles.includes("admin")
   const trainingRecords = await db.get.trainingRecords(session.user.id, isAdmin)
 
-  // Update training statuses and get RSVPs/attendance
+  // Update training statuses and get RSVPs/calendar
   const trainingWithData = await Promise.all(
     trainingRecords.map(async (training) => {
       // Update training status based on date/time
@@ -190,7 +190,7 @@ export async function getMissionsByDateRange(startDate: string, endDate: string)
   const missions = await db.get.missionsByDateRange(startDate, endDate)
   console.log("Found missions:", missions.length)
 
-  // Get RSVPs and attendance for each mission
+  // Get RSVPs and calendar for each mission
   const missionsWithData = await Promise.all(
     missions.map(async (mission) => {
       // Update mission status
@@ -244,7 +244,7 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
   const training = await db.get.trainingByDateRange(startDate, endDate)
   console.log("Found training records:", training.length)
 
-  // Get RSVPs and attendance for each training
+  // Get RSVPs and calendar for each training
   const trainingWithData = await Promise.all(
     training.map(async (trainingRecord) => {
       // Update training status

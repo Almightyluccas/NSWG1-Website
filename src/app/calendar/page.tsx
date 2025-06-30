@@ -7,8 +7,8 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { AttendanceCalendar } from "@/components/attendance/calendar"
 import { AttendanceStats } from "@/components/attendance/stats"
-import { CampaignsTab } from "@/components/attendance/campaigns-tab"
-import { TrainingTab } from "@/components/attendance/training-tab"
+import { CampaignsTab } from "@/components/attendance/campaignsTab"
+import { TrainingTab } from "@/components/attendance/trainingTab"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar, BarChart, Target, GraduationCap } from "lucide-react"
 import { FadeIn } from "@/components/fade-in"
@@ -37,7 +37,7 @@ export default function AttendancePage() {
         const data = await getAttendanceRecords()
         setAttendanceData(data)
       } catch (error) {
-        console.error("Failed to load attendance data:", error)
+        console.error("Failed to load calendar data:", error)
         setAttendanceData([])
       } finally {
         setLoading(false)
@@ -49,9 +49,9 @@ export default function AttendancePage() {
     }
   }, [session])
 
-  if (status === "loading" || loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
-  }
+  // if (status === "loading" || loading) {
+  //   return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  // }
 
   if (!session) {
     redirect("/api/auth/signin")
@@ -66,9 +66,9 @@ export default function AttendancePage() {
           <FadeIn>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-3xl font-bold">Attendance Tracker</h1>
+                <h1 className="text-3xl font-bold">Calendar</h1>
                 <p className="text-gray-500 dark:text-zinc-400 mt-1">
-                  {isAdmin ? "Monitor and manage attendance records" : "View your attendance records"}
+                  {isAdmin ? "Monitor and manage calendar records" : "View your calendar records"}
                 </p>
               </div>
             </div>

@@ -110,7 +110,7 @@ export class DatabaseMigrate {
       )
     `)
 
-    // Mission attendance table
+    // Mission calendar table
     await this.client.query(`
       CREATE TABLE IF NOT EXISTS mission_attendance (
         id VARCHAR(255) PRIMARY KEY,
@@ -174,7 +174,7 @@ export class DatabaseMigrate {
       )
     `)
 
-    // Training attendance table
+    // Training calendar table
     await this.client.query(`
       CREATE TABLE IF NOT EXISTS training_attendance (
         id VARCHAR(255) PRIMARY KEY,
