@@ -117,6 +117,7 @@ export async function getCampaigns() {
           }
         }),
       )
+      console.log(campaign, missionsWithData)
 
       return {
         ...campaign,
@@ -185,15 +186,11 @@ export async function getMissionsByDateRange(startDate: string, endDate: string)
     throw new Error("Unauthorized")
   }
 
-  console.log("Getting missions by date range:", { startDate, endDate })
 
   const missions = await db.get.missionsByDateRange(startDate, endDate)
-  console.log("Found missions:", missions.length)
 
-  // Get RSVPs and calendar for each mission
   const missionsWithData = await Promise.all(
     missions.map(async (mission) => {
-      // Update mission status
       const newStatus = getMissionStatusFromDate(mission.date, mission.time, mission.status)
       if (newStatus !== mission.status) {
         await db.put.missionStatus(mission.id, newStatus)
@@ -229,7 +226,6 @@ export async function getMissionsByDateRange(startDate: string, endDate: string)
     }),
   )
 
-  console.log("Returning missions with data:", missionsWithData.length)
   return missionsWithData
 }
 
@@ -239,10 +235,8 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
     throw new Error("Unauthorized")
   }
 
-  console.log("Getting training by date range:", { startDate, endDate })
 
   const training = await db.get.trainingByDateRange(startDate, endDate)
-  console.log("Found training records:", training.length)
 
   // Get RSVPs and calendar for each training
   const trainingWithData = await Promise.all(
@@ -283,7 +277,6 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
     }),
   )
 
-  console.log("Returning training with data:", trainingWithData.length)
   return trainingWithData
 }
 

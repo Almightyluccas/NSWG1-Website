@@ -128,7 +128,10 @@ export function CampaignsTab() {
     try {
       setLoading(true)
       const campaignData = await getCampaigns()
-      setCampaigns(campaignData)
+      let campaignToDisplay = campaignData;
+
+      if (!isAdmin) campaignToDisplay = campaignData.filter((campaign) => campaign.status !== "planning")
+      setCampaigns(campaignToDisplay)
     } catch (error) {
       console.error("Failed to load campaigns:", error)
     } finally {
