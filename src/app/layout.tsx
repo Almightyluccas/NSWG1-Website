@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     "Seal Team"
   ],
   authors: [{ name: "Luccas Amorim" }],
-  creator: "Naval Special Warfare Group One",
+  creator: "Luccas Amorim",
   publisher: "Naval Special Warfare Group One",
   robots: "index, follow",
   alternates: {
