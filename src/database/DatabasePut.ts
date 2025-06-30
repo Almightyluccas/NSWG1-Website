@@ -1,4 +1,5 @@
 import type { DatabaseClient } from "./DatabaseClient"
+import type { UpdateRecurringTrainingData } from "@/types/recurring-training"
 
 export class DatabasePut {
   constructor(private client: DatabaseClient) {}
@@ -94,6 +95,61 @@ export class DatabasePut {
           WHERE id = ?
       `,
       [status, trainingId],
+    )
+  }
+
+  // Recurring Training methods
+  async recurringTraining(id: string, data: UpdateRecurringTrainingData): Promise<void> {
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (data.name !== undefined) {
+      updates.push("name = ?")
+      values.push(data.name)
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?")
+      values.push(data.description)
+    }
+    if (data.dayOfWeek !== undefined) {
+      updates.push("day_of_week = ?")
+      values.push(data.dayOfWeek)
+    }
+    if (data.time !== undefined) {
+      updates.push("time = ?")
+      values.push(data.time)
+    }
+    if (data.location !== undefined) {
+      updates.push("location = ?")
+      values.push(data.location)
+    }
+    if (data.instructor !== undefined) {
+      updates.push("instructor = ?")
+      values.push(data.instructor || null)
+    }
+    if (data.maxPersonnel !== undefined) {
+      updates.push("max_personnel = ?")
+      values.push(data.maxPersonnel || null)
+    }
+    if (data.isActive !== undefined) {
+      updates.push("is_active = ?")
+      values.push(data.isActive)
+    }
+
+    if (updates.length === 0) {
+      return
+    }
+
+    updates.push("updated_at = NOW()")
+    values.push(id)
+
+    await this.client.query(`UPDATE recurring_trainings SET ${updates.join(", ")} WHERE id = ?`, values)
+  }
+
+  async recurringTrainingInstanceCount(recurringId: string): Promise<void> {
+    await this.client.query(
+      `UPDATE recurring_trainings SET instances_created = instances_created + 1, updated_at = NOW() WHERE id = ?`,
+      [recurringId],
     )
   }
 }

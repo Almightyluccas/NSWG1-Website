@@ -1,4 +1,5 @@
 import type { DatabaseClient } from "./DatabaseClient"
+import type { CreateRecurringTrainingData } from "@/types/recurring-training"
 
 export class DatabasePost {
   constructor(private client: DatabaseClient) {}
@@ -58,9 +59,9 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO campaigns (id, name, description, start_date, end_date, status, created_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `,
+          INSERT INTO campaigns (id, name, description, start_date, end_date, status, created_by, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `,
       [data.id, data.name, data.description, data.startDate, data.endDate, data.status, data.createdBy],
     )
   }
@@ -79,9 +80,9 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO missions (id, campaign_id, name, description, date, time, location, max_personnel, status, created_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `,
+          INSERT INTO missions (id, campaign_id, name, description, date, time, location, max_personnel, status, created_by, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `,
       [
         data.id,
         data.campaignId,
@@ -107,13 +108,13 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO mission_rsvps (id, mission_id, user_id, user_name, status, notes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        notes = VALUES(notes),
-        updated_at = NOW()
-    `,
+          INSERT INTO mission_rsvps (id, mission_id, user_id, user_name, status, notes, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+          ON DUPLICATE KEY UPDATE
+                               status = VALUES(status),
+                               notes = VALUES(notes),
+                               updated_at = NOW()
+      `,
       [data.id, data.missionId, data.userId, data.userName, data.status, data.notes || null],
     )
   }
@@ -129,14 +130,14 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO mission_attendance (id, mission_id, user_id, user_name, status, notes, marked_by, marked_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        notes = VALUES(notes),
-        marked_by = VALUES(marked_by),
-        marked_at = NOW()
-    `,
+          INSERT INTO mission_attendance (id, mission_id, user_id, user_name, status, notes, marked_by, marked_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+          ON DUPLICATE KEY UPDATE
+                               status = VALUES(status),
+                               notes = VALUES(notes),
+                               marked_by = VALUES(marked_by),
+                               marked_at = NOW()
+      `,
       [data.id, data.missionId, data.userId, data.userName, data.status, data.notes || null, data.markedBy],
     )
   }
@@ -156,9 +157,9 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO training_records (id, name, description, date, time, location, instructor, max_personnel, status, created_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `,
+          INSERT INTO training_records (id, name, description, date, time, location, instructor, max_personnel, status, created_by, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `,
       [
         data.id,
         data.name,
@@ -184,13 +185,13 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO training_rsvps (id, training_id, user_id, user_name, status, notes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        notes = VALUES(notes),
-        updated_at = NOW()
-    `,
+          INSERT INTO training_rsvps (id, training_id, user_id, user_name, status, notes, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+          ON DUPLICATE KEY UPDATE
+                               status = VALUES(status),
+                               notes = VALUES(notes),
+                               updated_at = NOW()
+      `,
       [data.id, data.trainingId, data.userId, data.userName, data.status, data.notes || null],
     )
   }
@@ -206,15 +207,51 @@ export class DatabasePost {
   }): Promise<void> {
     await this.client.query(
       `
-      INSERT INTO training_attendance (id, training_id, user_id, user_name, status, notes, marked_by, marked_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-      ON DUPLICATE KEY UPDATE
-        status = VALUES(status),
-        notes = VALUES(notes),
-        marked_by = VALUES(marked_by),
-        marked_at = NOW()
-    `,
+          INSERT INTO training_attendance (id, training_id, user_id, user_name, status, notes, marked_by, marked_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+          ON DUPLICATE KEY UPDATE
+                               status = VALUES(status),
+                               notes = VALUES(notes),
+                               marked_by = VALUES(marked_by),
+                               marked_at = NOW()
+      `,
       [data.id, data.trainingId, data.userId, data.userName, data.status, data.notes || null, data.markedBy],
+    )
+  }
+
+  // Recurring Training methods
+  async recurringTraining(data: CreateRecurringTrainingData & { id: string; createdBy: string }): Promise<void> {
+    await this.client.query(
+      `
+          INSERT INTO recurring_trainings (id, name, description, day_of_week, time, location, instructor, max_personnel, is_active, created_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE, ?)
+      `,
+      [
+        data.id,
+        data.name,
+        data.description,
+        data.dayOfWeek,
+        data.time,
+        data.location,
+        data.instructor || null,
+        data.maxPersonnel || null,
+        data.createdBy,
+      ],
+    )
+  }
+
+  async recurringTrainingInstance(data: {
+    id: string
+    recurringTrainingId: string
+    trainingId: string
+    scheduledDate: string
+  }): Promise<void> {
+    await this.client.query(
+      `
+          INSERT INTO recurring_training_instances (id, recurring_training_id, training_id, scheduled_date)
+          VALUES (?, ?, ?, ?)
+      `,
+      [data.id, data.recurringTrainingId, data.trainingId, data.scheduledDate],
     )
   }
 }

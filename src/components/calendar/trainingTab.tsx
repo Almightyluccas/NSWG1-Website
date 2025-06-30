@@ -50,6 +50,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { RecurringTrainingManager } from "./recurring-training-manager"
 
 const TRAINING_PER_PAGE = 5
 
@@ -129,7 +130,7 @@ export function TrainingTab() {
     const time = formData.get("time") as string
     const location = formData.get("location") as string
     const instructor = formData.get("instructor") as string
-    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || undefined
+    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || 40
 
     try {
       await createTrainingRecord({
@@ -185,7 +186,7 @@ export function TrainingTab() {
 
       loadTrainingRecords()
     } catch (error) {
-      console.error("Failed to mark calendar:", error)
+      console.error("Failed to mark attendance:", error)
     }
   }
 
@@ -246,6 +247,22 @@ export function TrainingTab() {
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Recurring Training Manager Loading - Only for admins */}
+        {isAdmin && (
+          <Card className="theme-card">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="h-6 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
+                  <div className="h-4 w-64 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+                </div>
+                <div className="h-6 w-6 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
+              </div>
+            </CardHeader>
+          </Card>
+        )}
+
+        {/* Training Records Loading */}
         <div className="flex justify-between items-center">
           <div>
             <div className="h-8 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
@@ -289,6 +306,14 @@ export function TrainingTab() {
 
   return (
     <div className="space-y-6">
+      {/* Recurring Training Manager - Only visible to admins */}
+      {isAdmin && (
+        <div className="mb-8">
+          <RecurringTrainingManager />
+        </div>
+      )}
+
+      {/* Individual Training Sessions */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Training Records</h2>
@@ -300,7 +325,7 @@ export function TrainingTab() {
         {isAdmin && (
           <Dialog open={isCreateTrainingOpen} onOpenChange={setIsCreateTrainingOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-accent hover:bg-accent-darker text-black">
+              <Button className="bg-accent hover:bg-accent/90 text-black">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Training
               </Button>
@@ -344,7 +369,7 @@ export function TrainingTab() {
                   </div>
                 </div>
                 <DialogFooter className="mt-6">
-                  <Button type="submit" className="bg-accent hover:bg-accent-darker text-black">
+                  <Button type="submit" className="bg-accent hover:bg-accent/90 text-black">
                     Create Training
                   </Button>
                 </DialogFooter>
@@ -375,7 +400,7 @@ export function TrainingTab() {
                             variant="ghost"
                             size="sm"
                             onClick={() => toggleTrainingCollapse(training.id)}
-                            className="ml-auto"
+                            className="ml-auto bg-transparent"
                           >
                             {isCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </Button>
@@ -466,7 +491,9 @@ export function TrainingTab() {
                                     variant={userRSVP?.status === "attending" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "attending")}
                                     className={
-                                      userRSVP?.status === "attending" ? "bg-green-500 hover:bg-green-600" : ""
+                                      userRSVP?.status === "attending"
+                                        ? "bg-green-500 hover:bg-green-600"
+                                        : "bg-transparent"
                                     }
                                   >
                                     <CheckCircle className="h-4 w-4 mr-1" />
@@ -476,7 +503,11 @@ export function TrainingTab() {
                                     size="sm"
                                     variant={userRSVP?.status === "maybe" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "maybe")}
-                                    className={userRSVP?.status === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                                    className={
+                                      userRSVP?.status === "maybe"
+                                        ? "bg-yellow-500 hover:bg-yellow-600"
+                                        : "bg-transparent"
+                                    }
                                   >
                                     <AlertCircle className="h-4 w-4 mr-1" />
                                     Maybe
@@ -486,7 +517,9 @@ export function TrainingTab() {
                                     variant={userRSVP?.status === "not-attending" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "not-attending")}
                                     className={
-                                      userRSVP?.status === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""
+                                      userRSVP?.status === "not-attending"
+                                        ? "bg-red-500 hover:bg-red-600"
+                                        : "bg-transparent"
                                     }
                                   >
                                     <XCircle className="h-4 w-4 mr-1" />
@@ -506,6 +539,7 @@ export function TrainingTab() {
                                 setSelectedTraining(training)
                                 setIsAttendanceModalOpen(true)
                               }}
+                              className="bg-transparent"
                             >
                               <Edit className="h-4 w-4 mr-1" />
                               Mark Attendance
@@ -662,7 +696,7 @@ export function TrainingTab() {
           <h3 className="text-lg font-medium mb-2">No Training Records Available</h3>
           <p>
             {isAdmin
-              ? "Create your first training session to start tracking calendar."
+              ? "Create your first training session to start tracking attendance."
               : "You haven't been assigned to any training sessions yet."}
           </p>
         </div>
@@ -717,6 +751,7 @@ export function TrainingTab() {
                               onClick={() =>
                                 handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "present")
                               }
+                              className="bg-transparent"
                             >
                               Present
                             </Button>
@@ -726,6 +761,7 @@ export function TrainingTab() {
                               onClick={() =>
                                 handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "absent")
                               }
+                              className="bg-transparent"
                             >
                               Absent
                             </Button>
@@ -733,6 +769,7 @@ export function TrainingTab() {
                               size="sm"
                               variant={attendance?.status === "late" ? "default" : "outline"}
                               onClick={() => handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "late")}
+                              className="bg-transparent"
                             >
                               Late
                             </Button>
@@ -742,6 +779,7 @@ export function TrainingTab() {
                               onClick={() =>
                                 handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "excused")
                               }
+                              className="bg-transparent"
                             >
                               Excused
                             </Button>

@@ -31,7 +31,6 @@ export default function AttendancePage() {
   useEffect(() => {
     const loadAttendanceData = async () => {
       if (!session?.user) return
-
       try {
         setLoading(true)
         const data = await getAttendanceRecords()
@@ -48,10 +47,6 @@ export default function AttendancePage() {
       loadAttendanceData()
     }
   }, [session])
-
-  // if (status === "loading" || loading) {
-  //   return <div className="flex justify-center items-center min-h-screen">Loading...</div>
-  // }
 
   if (!session) {
     redirect("/api/auth/signin")

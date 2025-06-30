@@ -722,15 +722,15 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                               )}
                             </div>
 
-                            {/* Debug info */}
-                            <div className="text-xs text-gray-500 bg-gray-50 dark:bg-zinc-800 p-2 rounded">
-                              Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}
-                              <br />
-                              Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}
-                            </div>
+                            {/*/!* Debug info *!/*/}
+                            {/*<div className="text-xs text-gray-500 bg-gray-50 dark:bg-zinc-800 p-2 rounded">*/}
+                            {/*  Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}*/}
+                            {/*  <br />*/}
+                            {/*  Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}*/}
+                            {/*</div>*/}
 
                             {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
-                            {!userId && !userAttendance && !isPast && (
+                            {!userAttendance && !isPast && (
                               <>
                                 <Separator />
                                 <div className="flex gap-2">

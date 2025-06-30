@@ -1,5 +1,6 @@
 import type { User } from "@/types/database"
 import type { DatabaseClient } from "./DatabaseClient"
+import type { RecurringTraining, RecurringTrainingWithStats } from "@/types/recurring-training"
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -336,5 +337,76 @@ export class DatabaseGet {
     return [...missionAttendance, ...trainingAttendance].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     )
+  }
+
+  // Recurring Training methods
+  async recurringTrainings(): Promise<RecurringTrainingWithStats[]> {
+    const rows = await this.client.query<any[]>(`
+      SELECT rt.*, 
+             COUNT(rti.id) as instances_created,
+             u.name as created_by_name
+      FROM recurring_trainings rt
+      LEFT JOIN recurring_training_instances rti ON rt.id = rti.recurring_training_id
+      LEFT JOIN users u ON rt.created_by = u.id
+      GROUP BY rt.id
+      ORDER BY rt.day_of_week ASC, rt.time ASC
+    `)
+
+    const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+    return rows.map((row) => ({
+      ...row,
+      instances_created: row.instances_created || 0,
+      created_by_name: row.created_by_name || "Unknown",
+      dayName: DAY_NAMES[row.day_of_week] || "Unknown",
+    }))
+  }
+
+  async recurringTrainingById(id: string): Promise<RecurringTraining | null> {
+    const rows = await this.client.query<any[]>(`SELECT * FROM recurring_trainings WHERE id = ?`, [id])
+    return rows.length > 0 ? (rows[0] as RecurringTraining) : null
+  }
+
+  async activeRecurringTrainings(): Promise<RecurringTraining[]> {
+    const rows = await this.client.query<any[]>(`SELECT * FROM recurring_trainings WHERE is_active = TRUE`)
+    return rows as RecurringTraining[]
+  }
+
+  async recurringTrainingInstances(recurringId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT rti.*, tr.name, tr.date, tr.time, tr.status
+          FROM recurring_training_instances rti
+                   JOIN training_records tr ON rti.training_id = tr.id
+          WHERE rti.recurring_training_id = ?
+          ORDER BY tr.date DESC
+      `,
+      [recurringId],
+    )
+    return rows
+  }
+
+  async recurringTrainingInstanceExists(recurringId: string, scheduledDate: string): Promise<boolean> {
+    const rows = await this.client.query<any[]>(
+      `SELECT id FROM recurring_training_instances WHERE recurring_training_id = ? AND scheduled_date = ?`,
+      [recurringId, scheduledDate],
+    )
+    return rows.length > 0
+  }
+
+  async missionConflictsOnDate(date: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `SELECT id FROM missions WHERE date = ? AND status IN ('scheduled', 'in-progress')`,
+      [date],
+    )
+    return rows
+  }
+
+  async trainingRecordByDetails(name: string, date: string, time: string): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `SELECT id FROM training_records WHERE name = ? AND date = ? AND time = ? ORDER BY created_at DESC LIMIT 1`,
+      [name, date, time],
+    )
+    return rows.length > 0 ? rows[0] : null
   }
 }

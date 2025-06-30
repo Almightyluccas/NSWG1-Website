@@ -216,3 +216,37 @@ export class DatabaseMigrate {
     }
   }
 }
+
+
+/*
+* -- Create recurring_trainings table
+CREATE TABLE IF NOT EXISTS recurring_trainings (
+                                                   id VARCHAR(255) PRIMARY KEY,
+                                                   name VARCHAR(255) NOT NULL,
+                                                   description TEXT NOT NULL,
+                                                   day_of_week INT NOT NULL, -- 0 = Sunday, 1 = Monday, etc.
+                                                   time TIME NOT NULL,
+                                                   location VARCHAR(255) NOT NULL,
+                                                   instructor VARCHAR(255),
+                                                   max_personnel INT,
+                                                   is_active BOOLEAN DEFAULT TRUE,
+                                                   created_by VARCHAR(255) NOT NULL,
+                                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                   INDEX idx_day_of_week (day_of_week),
+                                                   INDEX idx_is_active (is_active),
+                                                   INDEX idx_created_by (created_by)
+);
+
+-- Create recurring_training_instances table to track created instances
+CREATE TABLE IF NOT EXISTS recurring_training_instances (
+                                                            id VARCHAR(255) PRIMARY KEY,
+                                                            recurring_training_id VARCHAR(255) NOT NULL,
+                                                            training_id VARCHAR(255) NOT NULL,
+                                                            scheduled_date DATE NOT NULL,
+                                                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                            FOREIGN KEY (recurring_training_id) REFERENCES recurring_trainings(id) ON DELETE CASCADE,
+                                                            UNIQUE KEY unique_recurring_date (recurring_training_id, scheduled_date),
+                                                            INDEX idx_scheduled_date (scheduled_date)
+);
+*/

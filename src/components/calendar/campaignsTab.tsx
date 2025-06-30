@@ -189,7 +189,7 @@ export function CampaignsTab() {
     const date = formData.get("date") as string
     const time = formData.get("time") as string
     const location = formData.get("location") as string
-    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || undefined
+    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || 40
 
     try {
       await createMission({
