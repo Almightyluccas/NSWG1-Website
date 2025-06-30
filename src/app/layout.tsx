@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "Elite tactical team in Arma 3, where immersive simulations meet real-world tactics.",
   icons: {
     icon: "/images/nswg1-emblem.png"
+  },
+  verification: {
+    google: "EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o"
   }
 }
 
