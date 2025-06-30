@@ -17,6 +17,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Naval Special Warfare Group One",
   description: "Elite tactical team in Arma 3, where immersive simulations meet real-world tactics.",
+  icons: {
+    icon: "/images/nswg1-emblem.png"
+  }
 }
 
 export default async function RootLayout({
