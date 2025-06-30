@@ -7,7 +7,6 @@ import { format, isAfter, isBefore } from "date-fns"
 
 const db = DatabaseClient.getInstance()
 
-// Helper function to determine status based on dates
 function getStatusFromDates(startDate: string, endDate: string, currentStatus: string): string {
   const now = new Date()
   const start = new Date(startDate)
@@ -117,8 +116,6 @@ export async function getCampaigns() {
           }
         }),
       )
-      console.log(campaign, missionsWithData)
-
       return {
         ...campaign,
         missions: missionsWithData,
@@ -138,10 +135,8 @@ export async function getTrainingRecords() {
   const isAdmin = session.user.roles.includes("admin")
   const trainingRecords = await db.get.trainingRecords(session.user.id, isAdmin)
 
-  // Update training statuses and get RSVPs/calendar
   const trainingWithData = await Promise.all(
     trainingRecords.map(async (training) => {
-      // Update training status based on date/time
       const newStatus = getMissionStatusFromDate(training.date, training.time, training.status)
       if (newStatus !== training.status) {
         await db.put.trainingStatus(training.id, newStatus)
@@ -238,10 +233,8 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
 
   const training = await db.get.trainingByDateRange(startDate, endDate)
 
-  // Get RSVPs and calendar for each training
   const trainingWithData = await Promise.all(
     training.map(async (trainingRecord) => {
-      // Update training status
       const newStatus = getMissionStatusFromDate(trainingRecord.date, trainingRecord.time, trainingRecord.status)
       if (newStatus !== trainingRecord.status) {
         await db.put.trainingStatus(trainingRecord.id, newStatus)

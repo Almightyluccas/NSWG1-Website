@@ -546,6 +546,42 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                               )}
                             </div>
 
+                            {/* RSVP buttons for missions (not viewing someone else and not already attended and not past date) */}
+                            {!userAttendance && !isPast && (
+                              <>
+                                <Separator />
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "attending" ? "default" : "outline"}
+                                    onClick={() => handleMissionRSVP(mission, "attending")}
+                                    className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Attending
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "maybe" ? "default" : "outline"}
+                                    onClick={() => handleMissionRSVP(mission, "maybe")}
+                                    className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                                  >
+                                    <AlertCircle className="h-3 w-3 mr-1" />
+                                    Maybe
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "not-attending" ? "default" : "outline"}
+                                    onClick={() => handleMissionRSVP(mission, "not-attending")}
+                                    className={userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""}
+                                  >
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                    Can't Attend
+                                  </Button>
+                                </div>
+                              </>
+                            )}
+
                             {/* RSVP Summary */}
                             <div className="space-y-2">
                               <h5 className="font-medium text-sm">RSVP Summary</h5>
@@ -590,62 +626,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                               </div>
                             )}
 
-                            {/* RSVP Details */}
-                            {mission.rsvps.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">RSVPs</h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {mission.rsvps.map((rsvp) => {
-                                    const attendanceRecord = mission.attendance.find((a) => a.userId === rsvp.userId)
-                                    return (
-                                      <div key={rsvp.id} className="flex items-center justify-between text-sm">
-                                        <span>{rsvp.userName}</span>
-                                        <div className="flex items-center gap-2">
-                                          <Badge
-                                            variant="outline"
-                                            className={cn("text-xs", getRSVPBadgeColor(rsvp.status))}
-                                          >
-                                            {rsvp.status.replace("-", " ")}
-                                          </Badge>
-                                          {attendanceRecord && (
-                                            <Badge
-                                              variant="outline"
-                                              className={cn(
-                                                "text-xs",
-                                                getAttendanceBadgeColor(attendanceRecord.status),
-                                              )}
-                                            >
-                                              {attendanceRecord.status}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Attendance Details (for past events) */}
-                            {isPast && mission.attendance.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">Attendance Records</h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {mission.attendance.map((attendance) => (
-                                    <div key={attendance.id} className="flex items-center justify-between text-sm">
-                                      <span>{attendance.userName}</span>
-                                      <Badge
-                                        variant="outline"
-                                        className={cn("text-xs", getAttendanceBadgeColor(attendance.status))}
-                                      >
-                                        {attendance.status}
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
                             {userRSVP && (
                               <div className="text-sm">
                                 <span className="font-medium">Your RSVP:</span>{" "}
@@ -662,42 +642,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                                   {userAttendance}
                                 </Badge>
                               </div>
-                            )}
-
-                            {/* RSVP buttons for missions (not viewing someone else and not already attended and not past date) */}
-                            {!userId && !userAttendance && !isPast && (
-                              <>
-                                <Separator />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "attending" ? "default" : "outline"}
-                                    onClick={() => handleMissionRSVP(mission, "attending")}
-                                    className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
-                                  >
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Attending
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "maybe" ? "default" : "outline"}
-                                    onClick={() => handleMissionRSVP(mission, "maybe")}
-                                    className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
-                                  >
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    Maybe
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "not-attending" ? "default" : "outline"}
-                                    onClick={() => handleMissionRSVP(mission, "not-attending")}
-                                    className={userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""}
-                                  >
-                                    <XCircle className="h-3 w-3 mr-1" />
-                                    Can't Attend
-                                  </Button>
-                                </div>
-                              </>
                             )}
                           </div>
                         </PopoverContent>
@@ -777,6 +721,49 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                                 </div>
                               )}
                             </div>
+
+                            {/* Debug info */}
+                            <div className="text-xs text-gray-500 bg-gray-50 dark:bg-zinc-800 p-2 rounded">
+                              Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}
+                              <br />
+                              Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}
+                            </div>
+
+                            {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
+                            {!userId && !userAttendance && !isPast && (
+                              <>
+                                <Separator />
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "attending" ? "default" : "outline"}
+                                    onClick={() => handleTrainingRSVP(training, "attending")}
+                                    className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Attending
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "maybe" ? "default" : "outline"}
+                                    onClick={() => handleTrainingRSVP(training, "maybe")}
+                                    className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                                  >
+                                    <AlertCircle className="h-3 w-3 mr-1" />
+                                    Maybe
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={userRSVP === "not-attending" ? "default" : "outline"}
+                                    onClick={() => handleTrainingRSVP(training, "not-attending")}
+                                    className={userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""}
+                                  >
+                                    <XCircle className="h-3 w-3 mr-1" />
+                                    Can't Attend
+                                  </Button>
+                                </div>
+                              </>
+                            )}
 
                             {/* RSVP Summary */}
                             <div className="space-y-2">
@@ -894,42 +881,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                                   {userAttendance}
                                 </Badge>
                               </div>
-                            )}
-
-                            {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
-                            {!userId && !userAttendance && !isPast && (
-                              <>
-                                <Separator />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "attending" ? "default" : "outline"}
-                                    onClick={() => handleTrainingRSVP(training, "attending")}
-                                    className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
-                                  >
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Attending
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "maybe" ? "default" : "outline"}
-                                    onClick={() => handleTrainingRSVP(training, "maybe")}
-                                    className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
-                                  >
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    Maybe
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={userRSVP === "not-attending" ? "default" : "outline"}
-                                    onClick={() => handleTrainingRSVP(training, "not-attending")}
-                                    className={userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""}
-                                  >
-                                    <XCircle className="h-3 w-3 mr-1" />
-                                    Can't Attend
-                                  </Button>
-                                </div>
-                              </>
                             )}
                           </div>
                         </PopoverContent>
