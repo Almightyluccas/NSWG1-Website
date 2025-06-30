@@ -1,135 +1,61 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { AttendanceCalendar } from "@/components/attendance/calendar"
-// import { AttendanceStats } from "@/components/attendance/stats"
-import { UserSelector } from "@/components/attendance/user-selector"
+import { AttendanceStats } from "@/components/attendance/stats"
+import { CampaignsTab } from "@/components/attendance/campaigns-tab"
+import { TrainingTab } from "@/components/attendance/training-tab"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Calendar, Users, BarChart } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Calendar, BarChart, Target, GraduationCap } from "lucide-react"
 import { FadeIn } from "@/components/fade-in"
-import { useSession } from "next-auth/react"
+import { getAttendanceRecords } from "./action"
 
 interface AttendanceRecord {
-  date: string;
-  status: "present" | "absent" | "late" | "excused";
-  event: string;
+  date: string
+  status: "present" | "absent" | "late" | "excused"
+  event: string
 }
-
-interface AttendanceData {
-  [userId: string]: AttendanceRecord[];
-}
-
-interface User {
-  id: string;
-  username: string;
-  discriminator: string;
-  avatar: string;
-  name: string;
-  unit: string;
-  position: string;
-}
-
-const mockAttendanceData: AttendanceData = {
-  "123456789": [
-    { date: "2025-04-01", status: "present", event: "Weekly Training" },
-    { date: "2025-04-08", status: "present", event: "Weekly Training" },
-    { date: "2025-04-15", status: "absent", event: "Weekly Training" },
-    { date: "2025-04-22", status: "present", event: "Weekly Training" },
-    { date: "2025-04-29", status: "late", event: "Weekly Training" },
-    { date: "2025-05-06", status: "present", event: "Weekly Training" },
-    { date: "2025-05-13", status: "excused", event: "Weekly Training" },
-    { date: "2025-04-04", status: "present", event: "Operation" },
-    { date: "2025-04-18", status: "present", event: "Operation" },
-    { date: "2025-05-02", status: "absent", event: "Operation" }
-  ],
-  "knight0923": [
-    { date: "2025-04-01", status: "present", event: "Weekly Training" },
-    { date: "2025-04-08", status: "absent", event: "Weekly Training" },
-    { date: "2025-04-15", status: "absent", event: "Weekly Training" },
-    { date: "2025-04-22", status: "present", event: "Weekly Training" },
-    { date: "2025-04-29", status: "present", event: "Weekly Training" },
-    { date: "2025-05-06", status: "late", event: "Weekly Training" },
-    { date: "2025-05-13", status: "present", event: "Weekly Training" },
-    { date: "2025-04-04", status: "absent", event: "Operation" },
-    { date: "2025-04-18", status: "present", event: "Operation" },
-    { date: "2025-05-02", status: "present", event: "Operation" }
-  ],
-  "L. Graterol": [
-    { date: "2025-04-01", status: "absent", event: "Weekly Training" },
-    { date: "2025-04-08", status: "present", event: "Weekly Training" },
-    { date: "2025-04-15", status: "present", event: "Weekly Training" },
-    { date: "2025-04-22", status: "present", event: "Weekly Training" },
-    { date: "2025-04-29", status: "absent", event: "Weekly Training" },
-    { date: "2025-05-06", status: "present", event: "Weekly Training" },
-    { date: "2025-05-13", status: "excused", event: "Weekly Training" },
-    { date: "2025-04-04", status: "present", event: "Operation" },
-    { date: "2025-04-18", status: "absent", event: "Operation" },
-    { date: "2025-05-02", status: "present", event: "Operation" }
-  ]
-};
-
-const mockUsers: User[] = [
-  {
-    id: "123456789",
-    username: "CommanderAlpha",
-    discriminator: "1234",
-    avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
-    name: "J. Smith",
-    unit: "Task Force 160th",
-    position: "Commander",
-  },
-  {
-    id: "knight0923",
-    username: "OperatorBravo",
-    discriminator: "5678",
-    avatar: "https://cdn.discordapp.com/embed/avatars/1.png",
-    name: "R. Johnson",
-    unit: "TACDEVRON2",
-    position: "Operator",
-  },
-  {
-    id: "L. Graterol",
-    username: "RecruitCharlie",
-    discriminator: "9012",
-    avatar: "https://cdn.discordapp.com/embed/avatars/2.png",
-    name: "L. Graterol",
-    unit: "Pending Assignment",
-    position: "Recruit",
-  },
-];
 
 export default function AttendancePage() {
-  const { data: session } = useSession();
-  const router = useRouter()
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState("calendar")
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Set the selected user to the current user on initial load
+  const isAdmin = session?.user?.roles.includes("admin")
+
   useEffect(() => {
-    if (session) {
-      setSelectedUserId(session?.user?.name || null)
+    const loadAttendanceData = async () => {
+      if (!session?.user) return
+
+      try {
+        setLoading(true)
+        const data = await getAttendanceRecords()
+        setAttendanceData(data)
+      } catch (error) {
+        console.error("Failed to load attendance data:", error)
+        setAttendanceData([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (session?.user) {
+      loadAttendanceData()
     }
   }, [session])
 
-  useEffect(() => {
-    if (!session) {
-      router.push("/login")
-    }
-  }, [session, router])
-
-  if (!session) {
-    return null // Don't render anything while redirecting
+  if (status === "loading" || loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
   }
 
-  // Get attendance data for the selected user
-  const attendanceData = selectedUserId ? mockAttendanceData[selectedUserId] || [] : []
-
-  // Find user details
-  const selectedUser = mockUsers.find((u) => u.id === selectedUserId)
+  if (!session) {
+    redirect("/api/auth/signin")
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-zinc-900">
@@ -142,73 +68,51 @@ export default function AttendancePage() {
               <div>
                 <h1 className="text-3xl font-bold">Attendance Tracker</h1>
                 <p className="text-gray-500 dark:text-zinc-400 mt-1">
-                  {["admin", "superAdmin"].some(role => session.user.roles.includes(role)) ?
-                    "Monitor and manage attendance records" :
-                    "View your attendance records"
-                  }
+                  {isAdmin ? "Monitor and manage attendance records" : "View your attendance records"}
                 </p>
               </div>
-
-              {["admin", "superAdmin"].some(role => session.user.roles.includes(role)) && (
-                <UserSelector users={mockUsers} selectedUserId={selectedUserId} onSelectUser={setSelectedUserId} />
-              )}
             </div>
 
-            {selectedUser && (
-              <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 mb-8">
-                <div className="p-6 border-b border-gray-200 dark:border-zinc-700">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-gray-100 dark:bg-zinc-700 p-3 rounded-full">
-                        <Users className="h-6 w-6 text-accent" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold">
-                          {selectedUser.name} ({selectedUser.username}#{selectedUser.discriminator})
-                        </h2>
-                        <p className="text-gray-500 dark:text-zinc-400">
-                          {selectedUser.unit} • {selectedUser.position}
-                        </p>
-                      </div>
-                    </div>
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 mb-8">
+              <div className="p-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4 mb-6">
+                    <TabsTrigger value="calendar" className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Calendar View
+                    </TabsTrigger>
+                    <TabsTrigger value="statistics" className="flex items-center gap-2">
+                      <BarChart className="h-4 w-4" />
+                      Statistics
+                    </TabsTrigger>
+                    <TabsTrigger value="campaigns" className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      Campaigns
+                    </TabsTrigger>
+                    <TabsTrigger value="training" className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      Training
+                    </TabsTrigger>
+                  </TabsList>
 
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        Export Data
-                      </Button>
-                      {["admin", "superAdmin"].some(role => session.user.roles.includes(role)) && (
-                        <Button className="bg-accent hover:bg-accent-darker text-black" size="sm">
-                          Edit Records
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  <TabsContent value="calendar" className="space-y-4">
+                    <AttendanceCalendar attendanceData={attendanceData} isAdmin={isAdmin} userId={session?.user?.id} />
+                  </TabsContent>
 
-                <div className="p-6">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                      <TabsTrigger value="calendar" className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Calendar View
-                      </TabsTrigger>
-                      <TabsTrigger value="statistics" className="flex items-center gap-2">
-                        <BarChart className="h-4 w-4" />
-                        Statistics
-                      </TabsTrigger>
-                    </TabsList>
+                  <TabsContent value="statistics" className="space-y-4">
+                    <AttendanceStats isAdmin={isAdmin} />
+                  </TabsContent>
 
-                    <TabsContent value="calendar" className="space-y-4">
-                      <AttendanceCalendar attendanceData={attendanceData} />
-                    </TabsContent>
+                  <TabsContent value="campaigns" className="space-y-4">
+                    <CampaignsTab />
+                  </TabsContent>
 
-                    {/*<TabsContent value="statistics" className="space-y-4">*/}
-                    {/*  <AttendanceStats attendanceData={attendanceData} />*/}
-                    {/*</TabsContent>*/}
-                  </Tabs>
-                </div>
+                  <TabsContent value="training" className="space-y-4">
+                    <TrainingTab />
+                  </TabsContent>
+                </Tabs>
               </div>
-            )}
+            </div>
           </FadeIn>
         </div>
       </section>

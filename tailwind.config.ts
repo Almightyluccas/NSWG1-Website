@@ -1,4 +1,6 @@
+// tailwind.config.ts
 import type { Config } from "tailwindcss"
+import tailwindcssRadix from "tailwindcss-radix" // Import the plugin
 
 const config: Config = {
   darkMode: "class",
@@ -6,7 +8,10 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    // Make sure your main app entry file is covered, e.g., 'app/**/*.{js,ts,jsx,tsx,mdx}' or 'src/**/*.{js,ts,jsx,tsx,mdx}'
+    // If you have components directly in the root, then `*.{js,ts,jsx,tsx,mdx}` is okay, but generally, components are in `components/`
+    // Double-check your actual file structure for content array.
+    "*.{js,ts,jsx,tsx,mdx}", // Consider if this is truly needed or if your components/app covers everything
   ],
   theme: {
     extend: {
@@ -81,6 +86,16 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    tailwindcssRadix({
+      // Configure radix variants you want to enable.
+      // By default, it enables most common ones.
+      // You can explicitly list them if you only want certain ones.
+      // e.g., 'state', 'disabled', 'open', 'checked', etc.
+      // For your case, `disabled` is key.
+    }),
+    // If you use animations from shadcn/ui, you'll need this.
+                                    // It's often included in shadcn setup.
+  ],
 }
 export default config

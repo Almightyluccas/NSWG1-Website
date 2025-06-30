@@ -1,18 +1,18 @@
-import type { UserInformation } from "@/types/database"
+import type { User } from "@/types/database"
 import type { DatabaseClient } from "./DatabaseClient"
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
 
-  async users(): Promise<UserInformation[]> {
+  async users(): Promise<User[]> {
     const rows = await this.client.query<any[]>(`
-      SELECT u.id, u.perscom_id, u.steam_id, u.discord_username, u.name, u.date_of_birth,
-             u.email, u.created_at, u.role, i.image_url
-      FROM users u
-      LEFT JOIN images i ON u.profile_image_id = i.id
+        SELECT u.id, u.perscom_id, u.steam_id, u.discord_username, u.name, u.date_of_birth,
+               u.email, u.created_at, u.role, i.image_url
+        FROM users u
+                 LEFT JOIN images i ON u.profile_image_id = i.id
     `)
 
-    return rows.map(row => ({
+    return rows.map((row) => ({
       id: row.id,
       perscom_id: row.perscom_id,
       steam_id: row.steam_id,
@@ -22,21 +22,48 @@ export class DatabaseGet {
       email: row.email,
       created_at: new Date(row.created_at),
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
-      imageUrl: row.image_url || null
+      imageUrl: row.image_url || null,
     }))
   }
 
-  async recentUsers(limit: number): Promise<UserInformation[]> {
+  async usersForSelection(): Promise<
+    Array<{
+      id: string
+      name: string
+      discord_username: string
+      role: string[]
+    }>
+  > {
     const rows = await this.client.query<any[]>(`
-      SELECT u.id, u.perscom_id, u.steam_id, u.discord_username, u.name, u.date_of_birth,
-             u.email, u.created_at, u.role, i.image_url
-      FROM users u
-      LEFT JOIN images i ON u.profile_image_id = i.id
-      ORDER BY u.created_at DESC
-      LIMIT ?
-    `, [limit])
+        SELECT id, name, discord_username, role
+        FROM users
+        WHERE name IS NOT NULL AND name != ''
+          AND role LIKE '%member%'
+        ORDER BY name ASC
+    `)
 
-    return rows.map(row => ({
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name || row.discord_username,
+      discord_username: row.discord_username,
+      role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
+    }))
+  }
+
+  async recentUsers(limit: number): Promise<User[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT u.id, u.perscom_id, u.steam_id, u.discord_username, u.name, u.date_of_birth,
+                 u.email, u.created_at, u.role, i.image_url
+          FROM users u
+                   LEFT JOIN images i ON u.profile_image_id = i.id
+          ORDER BY u.created_at DESC
+          LIMIT ?
+      `,
+      [limit],
+    )
+
+    return rows.map((row) => ({
       id: row.id,
       perscom_id: row.perscom_id,
       steam_id: row.steam_id,
@@ -46,16 +73,19 @@ export class DatabaseGet {
       email: row.email,
       created_at: new Date(row.created_at),
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
-      imageUrl: row.image_url || null
+      imageUrl: row.image_url || null,
     }))
   }
 
   async userInfo(userId: string): Promise<{ roles: string[]; perscomId: string | null; name: string | null }> {
-    const rows = await this.client.query<any[]>(`
-      SELECT role, perscom_id, name
-      FROM users
-      WHERE id = ?
-    `, [userId])
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT role, perscom_id, name
+          FROM users
+          WHERE id = ?
+      `,
+      [userId],
+    )
 
     if (rows.length === 0) {
       return { roles: [], perscomId: null, name: null }
@@ -65,7 +95,7 @@ export class DatabaseGet {
     return {
       roles: role ? role.split(",").map((r: string) => r.trim()) : [],
       perscomId: perscom_id,
-      name
+      name,
     }
   }
 
@@ -76,17 +106,23 @@ export class DatabaseGet {
     const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1
     const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear
 
-    const currentResult = await this.client.query<any[]>(`
-      SELECT COUNT(*) as count
-      FROM users
-      WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
-    `, [currentMonth, currentYear])
+    const currentResult = await this.client.query<any[]>(
+      `
+          SELECT COUNT(*) as count
+          FROM users
+          WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
+      `,
+      [currentMonth, currentYear],
+    )
 
-    const previousResult = await this.client.query<any[]>(`
-      SELECT COUNT(*) as count
-      FROM users
-      WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
-    `, [previousMonth, previousYear])
+    const previousResult = await this.client.query<any[]>(
+      `
+          SELECT COUNT(*) as count
+          FROM users
+          WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
+      `,
+      [previousMonth, previousYear],
+    )
 
     const currentCount = currentResult[0].count
     const previousCount = previousResult[0].count
@@ -101,20 +137,204 @@ export class DatabaseGet {
     return {
       currentCount,
       percentChange: Math.abs(Math.round(percentChange)),
-      isPositive: percentChange >= 0
+      isPositive: percentChange >= 0,
     }
   }
 
   async userRefreshToken(userId: string): Promise<string> {
-    const rows = await this.client.query(
-      "SELECT token_hash FROM refresh_tokens WHERE id = ?",
-      [userId]
-    );
+    const rows = await this.client.query("SELECT token_hash FROM refresh_tokens WHERE id = ?", [userId])
 
-    if (!rows || (rows as any[]).length === 0) throw new Error("No refresh token found");
+    if (!rows || (rows as any[]).length === 0) throw new Error("No refresh token found")
 
+    return (rows as any[])[0].refresh_token
+  }
 
-    return (rows as any[])[0].refresh_token;
+  // Campaign methods
+  async campaigns(userId?: string, isAdmin = false): Promise<any[]> {
+    if (isAdmin) {
+      const rows = await this.client.query<any[]>(`
+          SELECT c.*,
+                 COUNT(DISTINCT m.id) as mission_count
+          FROM campaigns c
+                   LEFT JOIN missions m ON c.id = m.campaign_id
+          GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
+          ORDER BY c.created_at DESC
+      `)
+      return rows
+    }
 
+    // For regular users, return all campaigns (they can see all but only RSVP to missions)
+    const rows = await this.client.query<any[]>(`
+        SELECT c.*,
+               COUNT(DISTINCT m.id) as mission_count
+        FROM campaigns c
+                 LEFT JOIN missions m ON c.id = m.campaign_id
+        GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
+        ORDER BY c.created_at DESC
+    `)
+    return rows
+  }
+
+  async campaignById(campaignId: string): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT * FROM campaigns WHERE id = ?
+      `,
+      [campaignId],
+    )
+    return rows.length > 0 ? rows[0] : null
+  }
+
+  async missionsByCampaign(campaignId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT * FROM missions
+          WHERE campaign_id = ?
+          ORDER BY date ASC, time ASC
+      `,
+      [campaignId],
+    )
+    return rows
+  }
+
+  async missionsByDateRange(startDate: string, endDate: string): Promise<any[]> {
+    console.log("Fetching missions between", startDate, "and", endDate)
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT m.*, c.name as campaign_name
+          FROM missions m
+                   LEFT JOIN campaigns c ON m.campaign_id = c.id
+          WHERE m.date BETWEEN ? AND ?
+          ORDER BY m.date ASC, m.time ASC
+      `,
+      [startDate, endDate],
+    )
+    console.log("Found missions:", rows.length)
+    return rows
+  }
+
+  async missionRSVPs(missionId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT mr.*, u.name as user_name
+          FROM mission_rsvps mr
+                   JOIN users u ON mr.user_id = u.id
+          WHERE mr.mission_id = ?
+          ORDER BY mr.created_at ASC
+      `,
+      [missionId],
+    )
+    return rows
+  }
+
+  async missionAttendance(missionId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT ma.*, u.name as user_name, marker.name as marked_by_name
+          FROM mission_attendance ma
+                   JOIN users u ON ma.user_id = u.id
+                   JOIN users marker ON ma.marked_by = marker.id
+          WHERE ma.mission_id = ?
+          ORDER BY ma.marked_at ASC
+      `,
+      [missionId],
+    )
+    return rows
+  }
+
+  // Training methods
+  async trainingRecords(userId?: string, isAdmin = false): Promise<any[]> {
+    if (isAdmin) {
+      const rows = await this.client.query<any[]>(`
+          SELECT t.*,
+                 COUNT(DISTINCT tr.id) as rsvp_count
+          FROM training_records t
+                   LEFT JOIN training_rsvps tr ON t.id = tr.training_id
+          GROUP BY t.id, t.name, t.description, t.date, t.time, t.location, t.instructor, t.max_personnel, t.status, t.created_by, t.created_at, t.updated_at
+          ORDER BY t.date DESC, t.time DESC
+      `)
+      return rows
+    }
+
+    // For regular users, return all training records (they can see all but only RSVP)
+    const rows = await this.client.query<any[]>(`
+        SELECT t.*,
+               COUNT(DISTINCT tr.id) as rsvp_count
+        FROM training_records t
+                 LEFT JOIN training_rsvps tr ON t.id = tr.training_id
+        GROUP BY t.id, t.name, t.description, t.date, t.time, t.location, t.instructor, t.max_personnel, t.status, t.created_by, t.created_at, t.updated_at
+        ORDER BY t.date DESC, t.time DESC
+    `)
+    return rows
+  }
+
+  async trainingByDateRange(startDate: string, endDate: string): Promise<any[]> {
+    console.log("Fetching training between", startDate, "and", endDate)
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT * FROM training_records
+          WHERE date BETWEEN ? AND ?
+          ORDER BY date ASC, time ASC
+      `,
+      [startDate, endDate],
+    )
+    console.log("Found training records:", rows.length)
+    return rows
+  }
+
+  async trainingRSVPs(trainingId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT tr.*, u.name as user_name
+          FROM training_rsvps tr
+                   JOIN users u ON tr.user_id = u.id
+          WHERE tr.training_id = ?
+          ORDER BY tr.created_at ASC
+      `,
+      [trainingId],
+    )
+    return rows
+  }
+
+  async trainingAttendance(trainingId: string): Promise<any[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT ta.*, u.name as user_name, marker.name as marked_by_name
+          FROM training_attendance ta
+                   JOIN users u ON ta.user_id = u.id
+                   JOIN users marker ON ta.marked_by = marker.id
+          WHERE ta.training_id = ?
+          ORDER BY ta.marked_at ASC
+      `,
+      [trainingId],
+    )
+    return rows
+  }
+
+  // Attendance methods
+  async attendanceRecords(userId: string): Promise<any[]> {
+    const missionAttendance = await this.client.query<any[]>(
+      `
+          SELECT ma.*, m.name as event_name, m.date, 'mission' as event_type
+          FROM mission_attendance ma
+                   JOIN missions m ON ma.mission_id = m.id
+          WHERE ma.user_id = ?
+      `,
+      [userId],
+    )
+
+    const trainingAttendance = await this.client.query<any[]>(
+      `
+          SELECT ta.*, t.name as event_name, t.date, 'training' as event_type
+          FROM training_attendance ta
+                   JOIN training_records t ON ta.training_id = t.id
+          WHERE ta.user_id = ?
+      `,
+      [userId],
+    )
+
+    return [...missionAttendance, ...trainingAttendance].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    )
   }
 }

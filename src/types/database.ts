@@ -16,7 +16,7 @@ export enum UserRole {
   developer = 'developer',
 }
 
-export interface UserInformation {
+export interface User {
   id: string;
   perscom_id: number | null;
   steam_id: string | null;
@@ -27,4 +27,55 @@ export interface UserInformation {
   created_at: Date;
   role: UserRole[];
   imageUrl?: string | null;
+}
+
+export interface Campaign {
+  id: string
+  name: string
+  description: string
+  startDate: string
+  endDate: string
+  status: "planning" | "active" | "completed" | "cancelled"
+  createdBy: string
+  createdAt: string
+  missions: Mission[]
+}
+
+export interface Mission {
+  id: string
+  campaignId: string
+  name: string
+  description: string
+  date: string
+  time: string
+  location: string
+  maxPersonnel?: number
+  requiredMOS?: string[]
+  status: "scheduled" | "in-progress" | "completed" | "cancelled"
+  createdBy: string
+  createdAt: string
+  rsvps: RSVP[]
+  attendance: AttendanceRecord[]
+}
+
+export interface RSVP {
+  id: string
+  missionId: string
+  userId: string
+  userName: string
+  status: "attending" | "not-attending" | "maybe"
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AttendanceRecord {
+  id: string
+  missionId: string
+  userId: string
+  userName: string
+  status: "present" | "absent" | "late" | "excused"
+  notes?: string
+  markedBy: string
+  markedAt: string
 }

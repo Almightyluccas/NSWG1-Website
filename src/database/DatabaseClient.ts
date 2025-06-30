@@ -3,7 +3,7 @@ import { DatabaseGet } from "./DatabaseGet"
 import { DatabasePost } from "./DatabasePost"
 import { DatabasePut } from "./DatabasePut"
 import { DatabaseDelete } from "./DatabaseDelete"
-import { DatabaseMigrate } from "./DatabaseMigrate"
+// import { DatabaseMigrate } from "./DatabaseMigrate"
 
 export class DatabaseClient {
   private static instance: DatabaseClient
@@ -12,7 +12,7 @@ export class DatabaseClient {
   readonly post: DatabasePost
   readonly put: DatabasePut
   readonly delete: DatabaseDelete
-  readonly migrate: DatabaseMigrate
+  // readonly migrate: DatabaseMigrate
 
   private constructor() {
     this.pool = mysql.createPool({
@@ -29,7 +29,7 @@ export class DatabaseClient {
     this.post = new DatabasePost(this)
     this.put = new DatabasePut(this)
     this.delete = new DatabaseDelete(this)
-    this.migrate = new DatabaseMigrate(this)
+    // this.migrate = new DatabaseMigrate(this)
   }
 
   static getInstance(): DatabaseClient {

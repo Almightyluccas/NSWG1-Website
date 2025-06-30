@@ -1,10 +1,10 @@
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow } from "date-fns"
-import { UserInformation } from "@/types/database";
+import { User } from "@/types/database";
 
 interface RecentUsersTableProps {
-  users: UserInformation[]
+  users: User[]
 }
 
 export function RecentUsersTable({ users }: RecentUsersTableProps) {

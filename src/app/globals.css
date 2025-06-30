@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+[cmdk-item][data-disabled="false"] {
+  opacity: 1 !important; /* Ensures it's fully visible */
+  pointer-events: auto !important; /* Ensures it's clickable */
+}
+
 @layer base {
   :root {
     /* Light mode colors */

@@ -2,14 +2,14 @@ import { Users, UserPlus, FileText, Calendar } from "lucide-react"
 import { AdminStatCard } from "@/components/admin/stat-card"
 import { RecentUsersTable } from "@/components/admin/recent-users-table"
 import ServerRoleGuard from "@/components/auth/server-role-guard";
-import { UserInformation, UserRole } from "@/types/database";
+import { User, UserRole } from "@/types/database";
 import { perscom } from "@/lib/perscom/api";
 import { database } from "@/database";
 
 
 export default async function AdminDashboard() {
   const recentUsersLimit = 10;
-  const recentUsers: UserInformation[] = await database.get.recentUsers(recentUsersLimit)
+  const recentUsers: User[] = await database.get.recentUsers(recentUsersLimit)
   const newUsersThisMonth  = await database.get.userCount();
   const pendingApplications = await perscom.get.applications(true).then(applications => {
     return applications.filter(application => {

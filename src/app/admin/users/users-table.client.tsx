@@ -8,7 +8,7 @@ import Image from "next/image";
 import {Badge} from "@/components/ui/badge";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {UserInformation} from "@/types/database";
+import {User} from "@/types/database";
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/types/database";
 import { PaginationBar } from "@/components/ui/pagination";
@@ -16,14 +16,14 @@ import RoleGuard from "@/components/auth/role-guard";
 import { RoleManager } from "@/app/admin/users/role-manager";
 
 interface UserTableProps {
-  users: UserInformation[]
+  users: User[]
 }
 const itemsPerPage = 10;
 
 
 export const UsersTable = ({ users } : UserTableProps ) => {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedUser, setSelectedUser] = useState<UserInformation | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
@@ -40,7 +40,7 @@ export const UsersTable = ({ users } : UserTableProps ) => {
     )
   })
 
-  const handleViewDetails = (user: UserInformation) => {
+  const handleViewDetails = (user: User) => {
     setSelectedUser(user);
     setIsUserDetailsOpen(true);
 

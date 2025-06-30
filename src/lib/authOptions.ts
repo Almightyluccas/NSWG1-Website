@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "discord") {
         try {
-          await database.migrate.migrate(); //TODO: Remove this when finished with development
+          // await database.migrate.migrate(); //TODO: Remove this when finished with development
           await database.post.user(account.providerAccountId, user.name!, user.email!);
           await database.post.userProfileImage(account.providerAccountId, user.image!);
 
