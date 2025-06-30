@@ -7,6 +7,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher"
 import SessionWrapper from "@/components/auth/sessionWrapper";
 import  { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default async function RootLayout({
             {children}
             <ThemeSwitcher />
           </ThemeProvider>
+          <Analytics />
         </SessionWrapper>
       </body>
     </html>
