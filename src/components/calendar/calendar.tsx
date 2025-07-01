@@ -161,6 +161,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return missions.filter((mission) => {
       const rawDate = mission.date as unknown
       let missionDateString: string
+      console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)
 
       if (typeof rawDate === "string") {
         missionDateString = format(parse(rawDate, "yyyy-MM-dd", new Date()), "yyyy-MM-dd")
