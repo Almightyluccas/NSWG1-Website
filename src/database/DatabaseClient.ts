@@ -21,7 +21,7 @@ export class DatabaseClient {
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE,
       waitForConnections: true,
-      connectionLimit: 40,
+      connectionLimit: 2,
       queueLimit: 0,
     })
 
@@ -49,3 +49,6 @@ export class DatabaseClient {
     }
   }
 }
+
+//TODO: Fix the singleton pattern becuase it apparaently doesn't work on vercel..
+//TODO: the issue with shwoing on the wrong date is when retreiving from database it puts the wrong date

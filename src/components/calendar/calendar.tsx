@@ -52,7 +52,7 @@ interface Mission {
   id: string
   name: string
   description: string
-  date: string // Assuming this is "YYYY-MM-DD" string
+  date: string
   time: string
   location: string
   max_personnel?: number
@@ -78,7 +78,7 @@ interface Training {
   id: string
   name: string
   description: string
-  date: string // Assuming this is "YYYY-MM-DD" string
+  date: string
   time: string
   location: string
   instructor?: string
@@ -106,8 +106,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const [missions, setMissions] = useState<Mission[]>([])
   const [trainingRecords, setTrainingRecords] = useState<Training[]>([])
   const [loading, setLoading] = useState(false)
-  // Removed: const [timeZone, setTimeZone] = useState<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
-
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
@@ -157,19 +155,53 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return attendanceData.filter((record) => record.date === dateString)
   }
 
-// Update getMissionsForDate and getTrainingForDate
+  // Get missions for a specific date - FIXED: properly handle date comparison
   const getMissionsForDate = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd");
-    // Directly compare the date string from the mission with the formatted date
-    return missions.filter((mission) => mission.date === dateString);
+    const dateString = format(date, "yyyy-MM-dd")
+    const dayMissions = missions.filter((mission) => {
+      // Handle both string dates and Date objects
+      let missionDateString: string
+      if (typeof mission.date === "string") {
+        // If it's already a string, use it directly
+        missionDateString = mission.date
+      } else {
+        // If it's a Date object, format it
+        missionDateString = format(new Date(mission.date), "yyyy-MM-dd")
+      }
+
+      console.log(`Comparing mission date ${missionDateString} with ${dateString}`)
+      return missionDateString === dateString
+    })
+
+    if (dayMissions.length > 0) {
+      console.log(`Found ${dayMissions.length} missions for ${dateString}:`, dayMissions)
+    }
+    return dayMissions
   }
 
+  // Get training records for a specific date - FIXED: properly handle date comparison
   const getTrainingForDate = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd");
-    // Directly compare the date string from the training with the formatted date
-    return trainingRecords.filter((training) => training.date === dateString);
-  }
+    const dateString = format(date, "yyyy-MM-dd")
+    const dayTraining = trainingRecords.filter((training) => {
+      // Handle both string dates and Date objects
+      let trainingDateString: string
+      if (typeof training.date === "string") {
+        // If it's already a string, use it directly
+        trainingDateString = training.date
+      } else {
+        // If it's a Date object, format it
+        trainingDateString = format(new Date(training.date), "yyyy-MM-dd")
+      }
 
+      console.log(`Comparing training date ${trainingDateString} with ${dateString}`)
+      return trainingDateString === dateString
+    })
+
+    if (dayTraining.length > 0) {
+      console.log(`Found ${dayTraining.length} training records for ${dateString}:`, dayTraining)
+    }
+    return dayTraining
+  }
 
   // Get status color
   const getStatusColor = (status: string) => {
@@ -373,19 +405,19 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
 
       {/* Debug info */}
       {/*<div className="text-xs text-gray-500 p-2 bg-gray-50 dark:bg-zinc-800 rounded">*/}
-      {/* Debug: Loaded {missions.length} missions and {trainingRecords.length} training records for{" "}*/}
-      {/* {format(currentMonth, "MMMM yyyy")}. Attendance data: {attendanceData.length} records.*/}
-      {/* {missions.length > 0 && (*/}
-      {/* <div className="mt-1">*/}
-      {/* Mission dates:{" "}*/}
-      {/* {missions*/}
-      {/* .map((m) => {*/}
-      {/* const dateStr = typeof m.date === "string" ? m.date : format(new Date(m.date), "yyyy-MM-dd")*/}
-      {/* return `${m.name}: ${dateStr}`*/}
-      {/* })*/}
-      {/* .join(", ")}*/}
-      {/* </div>*/}
-      {/* )}*/}
+      {/*  Debug: Loaded {missions.length} missions and {trainingRecords.length} training records for{" "}*/}
+      {/*  {format(currentMonth, "MMMM yyyy")}. Attendance data: {attendanceData.length} records.*/}
+      {/*  {missions.length > 0 && (*/}
+      {/*    <div className="mt-1">*/}
+      {/*      Mission dates:{" "}*/}
+      {/*      {missions*/}
+      {/*        .map((m) => {*/}
+      {/*          const dateStr = typeof m.date === "string" ? m.date : format(new Date(m.date), "yyyy-MM-dd")*/}
+      {/*          return `${m.name}: ${dateStr}`*/}
+      {/*        })*/}
+      {/*        .join(", ")}*/}
+      {/*    </div>*/}
+      {/*  )}*/}
       {/*</div>*/}
 
       <div className="rounded-md border border-gray-200 dark:border-zinc-700 overflow-hidden">
@@ -692,9 +724,9 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
 
                             {/*/!* Debug info *!/*/}
                             {/*<div className="text-xs text-gray-500 bg-gray-50 dark:bg-zinc-800 p-2 rounded">*/}
-                            {/* Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}*/}
-                            {/* <br />*/}
-                            {/* Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}*/}
+                            {/*  Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}*/}
+                            {/*  <br />*/}
+                            {/*  Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}*/}
                             {/*</div>*/}
 
                             {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
