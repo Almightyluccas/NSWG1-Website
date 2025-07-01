@@ -125,6 +125,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
           })
           continue
         }
+        console.log(recurring.max_personnel)
 
         const trainingData = {
           name: recurring.name,
@@ -133,7 +134,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
           time: recurring.time,
           location: recurring.location,
           instructor: recurring.instructor,
-          maxPersonnel: recurring.max_personnel,
+          maxPersonnel: recurring.max_personnel !== null ? recurring.max_personnel : 40 ,
         }
 
         await createTrainingRecord(trainingData)
