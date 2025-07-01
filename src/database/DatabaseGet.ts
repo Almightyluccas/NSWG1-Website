@@ -7,10 +7,10 @@ const convertUtcToNewYork = (date: Date | string | null): Date | null => {
   if (!date) return null;
 
   const inputDate = typeof date === 'string' ? new Date(date) : date;
-  console.log(inputDate)
+  console.log("NONE CONVERTED TIME",inputDate)
 
   if (process.env.NODE_ENV === 'production') {
-    console.log(toZonedTime(inputDate, 'America/New_York'))
+    console.log("CONVERTED TIME" , toZonedTime(inputDate, 'America/New_York'))
     return toZonedTime(inputDate, 'America/New_York');
 
   } else {
