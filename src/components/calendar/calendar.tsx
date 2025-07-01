@@ -10,6 +10,7 @@ import {
   isSameDay,
   addMonths,
   subMonths,
+  parse
 } from "date-fns"
 import {
   ChevronLeft,
@@ -155,53 +156,43 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return attendanceData.filter((record) => record.date === dateString)
   }
 
-  // Get missions for a specific date - FIXED: properly handle date comparison
   const getMissionsForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
-    const dayMissions = missions.filter((mission) => {
-      // Handle both string dates and Date objects
+    return missions.filter((mission) => {
+      const rawDate = mission.date as unknown
       let missionDateString: string
-      if (typeof mission.date === "string") {
-        // If it's already a string, use it directly
-        missionDateString = mission.date
+
+      if (typeof rawDate === "string") {
+        missionDateString = format(parse(rawDate, "yyyy-MM-dd", new Date()), "yyyy-MM-dd")
+      } else if (rawDate instanceof Date) {
+        missionDateString = format(rawDate, "yyyy-MM-dd")
       } else {
-        // If it's a Date object, format it
-        missionDateString = format(new Date(mission.date), "yyyy-MM-dd")
+        return false // unexpected format
       }
 
-      console.log(`Comparing mission date ${missionDateString} with ${dateString}`)
       return missionDateString === dateString
     })
-
-    if (dayMissions.length > 0) {
-      console.log(`Found ${dayMissions.length} missions for ${dateString}:`, dayMissions)
-    }
-    return dayMissions
   }
 
-  // Get training records for a specific date - FIXED: properly handle date comparison
   const getTrainingForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
-    const dayTraining = trainingRecords.filter((training) => {
-      // Handle both string dates and Date objects
+    return trainingRecords.filter((training) => {
+      const rawDate = training.date as unknown
       let trainingDateString: string
-      if (typeof training.date === "string") {
-        // If it's already a string, use it directly
-        trainingDateString = training.date
+
+      if (typeof rawDate === "string") {
+        trainingDateString = format(parse(rawDate, "yyyy-MM-dd", new Date()), "yyyy-MM-dd")
+      } else if (rawDate instanceof Date) {
+        trainingDateString = format(rawDate, "yyyy-MM-dd")
       } else {
-        // If it's a Date object, format it
-        trainingDateString = format(new Date(training.date), "yyyy-MM-dd")
+        return false // unexpected format
       }
 
-      console.log(`Comparing training date ${trainingDateString} with ${dateString}`)
       return trainingDateString === dateString
     })
-
-    if (dayTraining.length > 0) {
-      console.log(`Found ${dayTraining.length} training records for ${dateString}:`, dayTraining)
-    }
-    return dayTraining
   }
+
+
 
   // Get status color
   const getStatusColor = (status: string) => {
