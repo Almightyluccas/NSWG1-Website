@@ -1,25 +1,17 @@
-* test application..  - **easy**  DONE
+* modify/delete campaign missions and training
 
 
-* add the events to calendar like campaign - **medium to hard**
-    * need a campaigns table
-    * need a missions table
+* modify how showing who has rsvp'd looks like.
 
 
-* fix giving awards to troops - **medium** DONE
-
-
-
-* show green team on perscom page - **easy** DONE
+* create/remove awards 
 
 
 
-* create/remove awards - **medium**
+* profile pictures 
 
 
-
-* profile pictures.  - e**asy**
-
+* make applicaiton look like real life military application
 
 
-* discord bot.  - ????
+* discord bot/notifications

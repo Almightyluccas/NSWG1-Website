@@ -57,4 +57,5 @@ export interface ProcessingResult {
   reason?: string
   error?: string
   rescheduled?: boolean
+  weekOffset?: number
 }

@@ -79,88 +79,90 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
 
   for (const recurring of recurringTrainings) {
     try {
-      // Calculate next training date (1 week from now)
-      const nextWeek = addWeeks(new Date(), 1)
-      const startOfNextWeek = startOfWeek(nextWeek, { weekStartsOn: 0 }) // Sunday = 0
-      const trainingDate = addDays(startOfNextWeek, recurring.day_of_week)
-      const trainingDateStr = format(trainingDate, "yyyy-MM-dd")
+      // Process the next 3 weeks for each recurring training
+      for (let weekOffset = 1; weekOffset <= 3; weekOffset++) {
+        const targetWeek = addWeeks(new Date(), weekOffset)
+        const startOfTargetWeek = startOfWeek(targetWeek, { weekStartsOn: 0 }) // Sunday = 0
+        const trainingDate = addDays(startOfTargetWeek, recurring.day_of_week)
+        const trainingDateStr = format(trainingDate, "yyyy-MM-dd")
 
-      // Check if we already created a training for this date
-      const instanceExists = await dbGet.recurringTrainingInstanceExists(recurring.id, trainingDateStr)
-      if (instanceExists) {
-        continue // Already created for this date
-      }
+        const instanceExists = await dbGet.recurringTrainingInstanceExists(recurring.id, trainingDateStr)
+        if (instanceExists) {
+          results.push({
+            recurringId: recurring.id,
+            name: recurring.name,
+            status: "skipped",
+            reason: `Training already exists for week ${weekOffset} (${trainingDateStr})`,
+          })
+          continue
+        }
 
-      // Check for mission conflicts on this date
-      const missionConflicts = await dbGet.missionConflictsOnDate(trainingDateStr)
+        const missionConflicts = await dbGet.missionConflictsOnDate(trainingDateStr)
 
-      let finalDate = trainingDateStr
-      let conflictResolved = false
+        let finalDate = trainingDateStr
+        let conflictResolved = false
 
-      // If there's a conflict, try the next week
-      if (missionConflicts.length > 0) {
-        const nextWeekDate = addWeeks(trainingDate, 1)
-        const nextWeekDateStr = format(nextWeekDate, "yyyy-MM-dd")
+        if (missionConflicts.length > 0 && weekOffset <= 2) {
+          const nextWeekDate = addWeeks(trainingDate, 1)
+          const nextWeekDateStr = format(nextWeekDate, "yyyy-MM-dd")
 
-        const nextWeekConflicts = await dbGet.missionConflictsOnDate(nextWeekDateStr)
+          const nextWeekConflicts = await dbGet.missionConflictsOnDate(nextWeekDateStr)
 
-        if (nextWeekConflicts.length === 0) {
-          finalDate = nextWeekDateStr
+          if (nextWeekConflicts.length === 0) {
+            finalDate = nextWeekDateStr
+            conflictResolved = true
+          }
+        } else if (missionConflicts.length === 0) {
           conflictResolved = true
         }
-      } else {
-        conflictResolved = true
-      }
 
-      if (!conflictResolved) {
-        results.push({
-          recurringId: recurring.id,
+        if (!conflictResolved) {
+          results.push({
+            recurringId: recurring.id,
+            name: recurring.name,
+            status: "skipped",
+            reason: `Mission conflicts on week ${weekOffset} (${trainingDateStr})`,
+          })
+          continue
+        }
+
+        const trainingData = {
           name: recurring.name,
-          status: "skipped",
-          reason: "Mission conflicts on both weeks",
-        })
-        continue
+          description: recurring.description,
+          date: finalDate,
+          time: recurring.time,
+          location: recurring.location,
+          instructor: recurring.instructor,
+          maxPersonnel: recurring.max_personnel,
+        }
+
+        await createTrainingRecord(trainingData)
+
+        const createdTraining = await dbGet.trainingRecordByDetails(recurring.name, finalDate, recurring.time)
+
+        if (createdTraining) {
+          const instanceId = `instance-${Date.now()}-${weekOffset}-${Math.random().toString(36).substr(2, 9)}`
+
+          await dbPost.recurringTrainingInstance({
+            id: instanceId,
+            recurringTrainingId: recurring.id,
+            trainingId: createdTraining.id,
+            scheduledDate: finalDate,
+          })
+
+          results.push({
+            recurringId: recurring.id,
+            name: recurring.name,
+            trainingId: createdTraining.id,
+            scheduledDate: finalDate,
+            status: "created",
+            rescheduled: finalDate !== trainingDateStr,
+            weekOffset: weekOffset,
+          })
+        }
       }
 
-      // Create the training record using the existing function
-      const trainingData = {
-        name: recurring.name,
-        description: recurring.description,
-        date: finalDate,
-        time: recurring.time,
-        location: recurring.location,
-        instructor: recurring.instructor,
-        maxPersonnel: recurring.max_personnel,
-      }
-
-      await createTrainingRecord(trainingData)
-
-      // Get the created training ID
-      const createdTraining = await dbGet.trainingRecordByDetails(recurring.name, finalDate, recurring.time)
-
-      if (createdTraining) {
-        const instanceId = `instance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-
-        // Create the instance record
-        await dbPost.recurringTrainingInstance({
-          id: instanceId,
-          recurringTrainingId: recurring.id,
-          trainingId: createdTraining.id,
-          scheduledDate: finalDate,
-        })
-
-        // Update instance count
-        await dbPut.recurringTrainingInstanceCount(recurring.id)
-
-        results.push({
-          recurringId: recurring.id,
-          name: recurring.name,
-          trainingId: createdTraining.id,
-          scheduledDate: finalDate,
-          status: "created",
-          rescheduled: finalDate !== trainingDateStr,
-        })
-      }
+      await dbPut.recurringTrainingInstanceCount(recurring.id)
     } catch (error) {
       console.error(`Failed to process recurring training ${recurring.id}:`, error)
       results.push({
