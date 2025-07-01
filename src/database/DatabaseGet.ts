@@ -279,7 +279,7 @@ export class DatabaseGet {
       `,
       [startDate, endDate],
     )
-    console.log("Found training records:", rows.length)
+    console.log("tRAINING RECORD RIGHT OUT OF DB:", rows)
     return rows
   }
 

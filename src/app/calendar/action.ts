@@ -232,6 +232,7 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
 
 
   const training = await db.get.trainingByDateRange(startDate, endDate)
+  console.log(training)
 
   const trainingWithData = await Promise.all(
     training.map(async (trainingRecord) => {
