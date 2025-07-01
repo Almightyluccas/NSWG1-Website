@@ -229,13 +229,7 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
   if (!session?.user) {
     throw new Error("Unauthorized")
   }
-
-
   const training = await db.get.trainingByDateRange(startDate, endDate)
-  console.log(training)
-  const now = new Date()
-  console.log('Node.js locale date string (with options):', now.toLocaleString('en-US', { timeZoneName: 'long' }));
-
 
   const trainingWithData = await Promise.all(
     training.map(async (trainingRecord) => {
