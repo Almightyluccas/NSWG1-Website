@@ -26,18 +26,7 @@ import {
   ChevronsUpDown,
 } from "lucide-react"
 import { format, parseISO, isAfter, isBefore } from "date-fns"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-} from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts"
 import { cn } from "@/lib/utils"
 import { getAttendanceStats, getUsersForSelection } from "@/app/calendar/action"
 
@@ -141,14 +130,18 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6">
+            <div
+              key={i}
+              className="theme-card bg-white dark:bg-zinc-800 rounded-lg shadow-md border border-gray-200 dark:border-zinc-700 p-6"
+            >
               <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
                 <div className="h-4 w-4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
               </div>
               <div className="text-2xl font-bold h-8 w-20 bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />
               <div className="text-xs h-4 w-32 bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />
-              {i % 2 !== 0 && <div className="h-2 w-full bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />} {/* For progress bars */}
+              {i % 2 !== 0 && <div className="h-2 w-full bg-gray-200 dark:bg-zinc-700 rounded mt-2 animate-pulse" />}{" "}
+              {/* For progress bars */}
             </div>
           ))}
         </div>
@@ -186,7 +179,10 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
             </div>
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-700 last:border-0">
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-700 last:border-0"
+                >
                   <div className="flex items-center gap-3">
                     <div className="h-4 w-4 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
                     <div>
@@ -213,7 +209,10 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
               <div className="h-4 w-20 bg-gray-200 dark:bg-zinc-600 rounded animate-pulse" />
             </div>
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-4 h-12 border-b border-gray-100 dark:border-zinc-700 last:border-0 items-center px-4">
+              <div
+                key={i}
+                className="grid grid-cols-4 h-12 border-b border-gray-100 dark:border-zinc-700 last:border-0 items-center px-4"
+              >
                 <div className="h-4 w-24 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
                 <div className="h-4 w-32 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
                 <div className="h-4 w-16 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse" />
@@ -316,9 +315,7 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
             {isAdmin ? "User Selection & Filters" : "Filters & Options"}
           </CardTitle>
           <CardDescription>
-            {isAdmin
-              ? "Select a user and filter their calendar records"
-              : "Filter calendar records and customize view"}
+            {isAdmin ? "Select a user and filter their calendar records" : "Filter calendar records and customize view"}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -159,17 +159,9 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const getMissionsForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     const dayMissions = missions.filter((mission) => {
-      // Handle both string dates and Date objects
-      let missionDateString: string
-      if (typeof mission.date === "string") {
-        // If it's already a string, use it directly
-        missionDateString = mission.date
-      } else {
-        // If it's a Date object, format it
-        missionDateString = format(new Date(mission.date), "yyyy-MM-dd")
-      }
-
-      return missionDateString === dateString
+      // Mission date is already a string in yyyy-mm-dd format from database
+      console.log(`Comparing mission date ${mission.date} with ${dateString}`)
+      return mission.date === dateString
     })
 
     if (dayMissions.length > 0) {
@@ -182,17 +174,9 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const getTrainingForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     const dayTraining = trainingRecords.filter((training) => {
-      // Handle both string dates and Date objects
-      let trainingDateString: string
-      if (typeof training.date === "string") {
-        // If it's already a string, use it directly
-        trainingDateString = training.date
-      } else {
-        // If it's a Date object, format it
-        trainingDateString = format(new Date(training.date), "yyyy-MM-dd")
-      }
-
-      return trainingDateString === dateString
+      // Training date is already a string in yyyy-mm-dd format from database
+      console.log(`Comparing training date ${training.date} with ${dateString}`)
+      return training.date === dateString
     })
 
     if (dayTraining.length > 0) {

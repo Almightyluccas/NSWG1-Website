@@ -3,23 +3,22 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/authOptions"
 import { DatabaseClient } from "@/database/DatabaseClient"
-import { format, isAfter, isBefore } from "date-fns"
+import { format } from "date-fns"
 
 const db = DatabaseClient.getInstance()
 
 function getStatusFromDates(startDate: string, endDate: string, currentStatus: string): string {
   const now = new Date()
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  const nowString = format(now, "yyyy-MM-dd")
 
   // Don't change manually set statuses like 'cancelled'
   if (currentStatus === "cancelled") {
     return currentStatus
   }
 
-  if (isBefore(now, start)) {
+  if (nowString < startDate) {
     return "planning"
-  } else if (isAfter(now, end)) {
+  } else if (nowString > endDate) {
     return "completed"
   } else {
     return "active"
@@ -28,18 +27,27 @@ function getStatusFromDates(startDate: string, endDate: string, currentStatus: s
 
 function getMissionStatusFromDate(date: string, time: string, currentStatus: string): string {
   const now = new Date()
-  const missionDateTime = new Date(`${date}T${time}`)
-  const missionEndTime = new Date(missionDateTime.getTime() + 3 * 60 * 60 * 1000) // Assume 3 hours duration
+  const nowString = format(now, "yyyy-MM-dd")
+  const nowTime = format(now, "HH:mm")
 
   // Don't change manually set statuses like 'cancelled'
   if (currentStatus === "cancelled") {
     return currentStatus
   }
 
-  if (isBefore(now, missionDateTime)) {
+  if (nowString < date || (nowString === date && nowTime < time)) {
     return "scheduled"
-  } else if (isAfter(now, missionEndTime)) {
-    return "completed"
+  } else if (nowString > date || (nowString === date && nowTime > time)) {
+    // Assume 3 hours duration for missions/training
+    const [hours, minutes] = time.split(":").map(Number)
+    const endHours = hours + 3
+    const endTime = `${endHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
+
+    if (nowString === date && nowTime < endTime) {
+      return "in-progress"
+    } else {
+      return "completed"
+    }
   } else {
     return "in-progress"
   }
@@ -181,7 +189,6 @@ export async function getMissionsByDateRange(startDate: string, endDate: string)
     throw new Error("Unauthorized")
   }
 
-
   const missions = await db.get.missionsByDateRange(startDate, endDate)
 
   const missionsWithData = await Promise.all(
@@ -229,6 +236,7 @@ export async function getTrainingByDateRange(startDate: string, endDate: string)
   if (!session?.user) {
     throw new Error("Unauthorized")
   }
+
   const training = await db.get.trainingByDateRange(startDate, endDate)
 
   const trainingWithData = await Promise.all(
@@ -281,7 +289,7 @@ export async function getAttendanceRecords(userId?: string) {
   const records = await db.get.attendanceRecords(targetUserId)
 
   return records.map((record) => ({
-    date: format(new Date(record.date), "yyyy-MM-dd"),
+    date: record.date, // Already formatted as yyyy-mm-dd from database
     status: record.status,
     event: record.event_name,
   }))
@@ -305,11 +313,11 @@ export async function getAttendanceStats(userId?: string) {
   const attendanceRate = totalEvents > 0 ? Math.round((presentCount / totalEvents) * 100) : 0
   const punctualityRate = totalEvents > 0 ? Math.round((presentCount / (presentCount + lateCount)) * 100) : 0
 
-  // Get this month's events
+  // Get this month's events using string comparison
   const now = new Date()
+  const currentMonth = format(now, "yyyy-MM")
   const thisMonthEvents = records.filter((record) => {
-    const recordDate = new Date(record.date)
-    return recordDate.getMonth() === now.getMonth() && recordDate.getFullYear() === now.getFullYear()
+    return record.date.startsWith(currentMonth)
   }).length
 
   return {
@@ -322,7 +330,7 @@ export async function getAttendanceStats(userId?: string) {
     punctualityRate,
     thisMonthEvents,
     records: records.map((record) => ({
-      date: format(new Date(record.date), "yyyy-MM-dd"),
+      date: record.date, // Already formatted as yyyy-mm-dd
       status: record.status,
       event: record.event_name,
       eventType: record.event_type,

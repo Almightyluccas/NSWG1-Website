@@ -42,7 +42,6 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react"
-import { format } from "date-fns"
 import {
   getCampaigns,
   createCampaign,
@@ -128,9 +127,9 @@ export function CampaignsTab() {
     try {
       setLoading(true)
       const campaignData = await getCampaigns()
-      let campaignToDisplay = campaignData;
+      let campaignToDisplay = campaignData
 
-      if (!isAdmin) campaignToDisplay = campaignData.filter((campaign: { status: string }) => campaign.status !== "planning")
+      if (!isAdmin) campaignToDisplay = campaignData.filter((campaign) => campaign.status !== "planning")
       setCampaigns(campaignToDisplay)
     } catch (error) {
       console.error("Failed to load campaigns:", error)
@@ -447,8 +446,7 @@ export function CampaignsTab() {
                       <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-zinc-400 mt-2">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(campaign.start_date), "MMM dd")} -{" "}
-                          {format(new Date(campaign.end_date), "MMM dd, yyyy")}
+                          {campaign.start_date} - {campaign.end_date}
                         </span>
                         <span>{campaign.missions.length} missions</span>
                       </div>
@@ -565,7 +563,7 @@ export function CampaignsTab() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                                   <div className="flex items-center gap-1">
                                     <CalendarIcon className="h-4 w-4 text-accent" />
-                                    {format(new Date(mission.date), "MMM dd, yyyy")}
+                                    {mission.date}
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-4 w-4 text-accent" />

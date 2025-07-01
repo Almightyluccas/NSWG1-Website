@@ -34,12 +34,12 @@ import {
   ChevronUp,
   GraduationCap,
 } from "lucide-react"
-import { format } from "date-fns"
 import {
   getTrainingRecords,
   createTrainingRecord,
   createOrUpdateTrainingRSVP,
   markTrainingAttendance,
+  getUsersForSelection,
 } from "@/app/calendar/action"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -58,7 +58,7 @@ interface TrainingRecord {
   id: string
   name: string
   description: string
-  date: string
+  date: string // Always yyyy-mm-dd format
   time: string
   location: string
   instructor?: string
@@ -92,6 +92,13 @@ interface TrainingAttendance {
   markedAt: string
 }
 
+interface User {
+  id: string
+  name: string
+  discord_username: string
+  role: string[]
+}
+
 export function TrainingTab() {
   const { data: session } = useSession()
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([])
@@ -101,23 +108,55 @@ export function TrainingTab() {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [collapsedTraining, setCollapsedTraining] = useState<Set<string>>(new Set())
+  const [users, setUsers] = useState<User[]>([])
 
   const isAdmin = session?.user?.roles.includes("admin")
 
   useEffect(() => {
     loadTrainingRecords()
-  }, [session])
+    if (isAdmin) {
+      loadUsers()
+    }
+  }, [session, isAdmin])
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await getUsersForSelection()
+      setUsers(usersData)
+    } catch (error) {
+      console.error("Failed to load users:", error)
+      setUsers([])
+    }
+  }
 
   const loadTrainingRecords = async () => {
     try {
       setLoading(true)
       const trainingData = await getTrainingRecords()
-      setTrainingRecords(trainingData)
+      setTrainingRecords(trainingData || [])
     } catch (error) {
       console.error("Failed to load training records:", error)
+      setTrainingRecords([])
     } finally {
       setLoading(false)
     }
+  }
+
+  // Get today's date in yyyy-mm-dd format without timezone conversion
+  const getTodayString = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, "0")
+    const day = String(now.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  }
+
+  // Format date for display (keep as yyyy-mm-dd, no conversion)
+  const formatDateForDisplay = (dateString: string) => {
+    // Input is already yyyy-mm-dd, just return as is or format for display
+    const [year, month, day] = dateString.split("-")
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return `${monthNames[Number.parseInt(month) - 1]} ${Number.parseInt(day)}, ${year}`
   }
 
   const handleCreateTraining = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -126,7 +165,7 @@ export function TrainingTab() {
 
     const name = formData.get("name") as string
     const description = formData.get("description") as string
-    const date = formData.get("date") as string
+    const date = formData.get("date") as string // Keep as yyyy-mm-dd string
     const time = formData.get("time") as string
     const location = formData.get("location") as string
     const instructor = formData.get("instructor") as string
@@ -136,7 +175,7 @@ export function TrainingTab() {
       await createTrainingRecord({
         name,
         description,
-        date,
+        date, // Keep as yyyy-mm-dd string
         time,
         location,
         instructor: instructor || undefined,
@@ -410,7 +449,7 @@ export function TrainingTab() {
                       <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-zinc-400 mt-2">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4" />
-                          {format(new Date(training.date), "MMM dd, yyyy")}
+                          {formatDateForDisplay(training.date)}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
@@ -437,7 +476,7 @@ export function TrainingTab() {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                               <div className="flex items-center gap-1">
                                 <CalendarIcon className="h-4 w-4 text-accent" />
-                                {format(new Date(training.date), "MMM dd, yyyy")}
+                                {formatDateForDisplay(training.date)}
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4 text-accent" />
