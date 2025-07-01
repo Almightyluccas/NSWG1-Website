@@ -106,6 +106,8 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const [missions, setMissions] = useState<Mission[]>([])
   const [trainingRecords, setTrainingRecords] = useState<Training[]>([])
   const [loading, setLoading] = useState(false)
+  const [timeZone, setTimeZone] = useState<string>(Intl.DateTimeFormat().resolvedOptions().timeZone);
+
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
@@ -155,53 +157,29 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return attendanceData.filter((record) => record.date === dateString)
   }
 
-  // Get missions for a specific date - FIXED: properly handle date comparison
+// Update getMissionsForDate and getTrainingForDate
   const getMissionsForDate = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd")
-    const dayMissions = missions.filter((mission) => {
-      // Handle both string dates and Date objects
-      let missionDateString: string
-      if (typeof mission.date === "string") {
-        // If it's already a string, use it directly
-        missionDateString = mission.date
-      } else {
-        // If it's a Date object, format it
-        missionDateString = format(new Date(mission.date), "yyyy-MM-dd")
-      }
-
-      console.log(`Comparing mission date ${missionDateString} with ${dateString}`)
-      return missionDateString === dateString
-    })
-
-    if (dayMissions.length > 0) {
-      console.log(`Found ${dayMissions.length} missions for ${dateString}:`, dayMissions)
-    }
-    return dayMissions
+    const dateString = format(date, "yyyy-MM-dd");
+    return missions.filter((mission) => {
+      const missionDate = new Date(mission.date);
+      const missionDateInLocal = new Date(
+        missionDate.toLocaleString("en-US", { timeZone })
+      );
+      return format(missionDateInLocal, "yyyy-MM-dd") === dateString;
+    });
   }
 
-  // Get training records for a specific date - FIXED: properly handle date comparison
   const getTrainingForDate = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd")
-    const dayTraining = trainingRecords.filter((training) => {
-      // Handle both string dates and Date objects
-      let trainingDateString: string
-      if (typeof training.date === "string") {
-        // If it's already a string, use it directly
-        trainingDateString = training.date
-      } else {
-        // If it's a Date object, format it
-        trainingDateString = format(new Date(training.date), "yyyy-MM-dd")
-      }
-
-      console.log(`Comparing training date ${trainingDateString} with ${dateString}`)
-      return trainingDateString === dateString
-    })
-
-    if (dayTraining.length > 0) {
-      console.log(`Found ${dayTraining.length} training records for ${dateString}:`, dayTraining)
-    }
-    return dayTraining
+    const dateString = format(date, "yyyy-MM-dd");
+    return trainingRecords.filter((training) => {
+      const trainingDate = new Date(training.date);
+      const trainingDateInLocal = new Date(
+        trainingDate.toLocaleString("en-US", { timeZone })
+      );
+      return format(trainingDateInLocal, "yyyy-MM-dd") === dateString;
+    });
   }
+
 
   // Get status color
   const getStatusColor = (status: string) => {
