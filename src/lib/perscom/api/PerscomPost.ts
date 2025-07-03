@@ -29,6 +29,12 @@ export class PerscomPost {
     })
   }
 
+  async clearPerscomCache(): Promise<void> {
+    return this.client.fetch<void>(`/cache`, {
+      method: 'POST',
+    })
+  }
+
   async userCombatRecord(data: CreateCombatRecord): Promise<void> {
     return this.client.fetch<void>(`/users/${data.user_id}/combat-records`, {
       method: 'POST',

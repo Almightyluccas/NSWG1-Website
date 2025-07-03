@@ -15,18 +15,61 @@ import {FadeIn} from "@/components/fade-in";
 import { submitApplication } from "./action";
 
 const unitOptions = [
-  { value: "tf160th", label: "Task Force 160th (Aviation)" },
-  { value: "tacdevron2", label: "TACDEVRON2 (Maritime)" },
+  { value: "160th SOAR(A) Aviator", label: "160th SOAR(A) Aviator" },
+  { value: "SO Special Warfare Operator", label: "SO Special Warfare Operator" },
 ]
 
 const timezoneOptions = [
-  { value: "est", label: "Eastern Time (EST/EDT)" },
-  { value: "cst", label: "Central Time (CST/CDT)" },
-  { value: "mst", label: "Mountain Time (MST/MDT)" },
-  { value: "pst", label: "Pacific Time (PST/PDT)" },
-  { value: "gmt", label: "Greenwich Mean Time (GMT)" },
-  { value: "cet", label: "Central European Time (CET)" },
-  { value: "aest", label: "Australian Eastern Time (AEST)" },
+  { value: "aft", label: "Afghanistan Time (AFT) (UTC+04:30)" },
+  { value: "acst", label: "Australian Central Standard Time (ACST) (UTC+09:30)" }, // Darwin, Adelaide
+  { value: "aest", label: "Australian Eastern Standard Time (AEST) (UTC+10)" }, // Brisbane, Sydney, Melbourne
+  { value: "akst", label: "Alaska Standard Time (AKST) (UTC-09)" },
+  { value: "utc-12", label: "Anywhere on Earth (UTC-12)" }, // Often for deadlines
+  { value: "gst_arabia", label: "Arabia Standard Time (AST/GST) (UTC+03)" }, // Gulf Standard Time (Dubai, Abu Dhabi)
+  { value: "art", label: "Argentina Time (ART) (UTC-03)" },
+  { value: "ast", label: "Atlantic Standard Time (AST/ADT) (UTC-04/-03)" },
+  { value: "awst", label: "Australian Western Standard Time (AWST) (UTC+08)" },
+  { value: "azot", label: "Azores Time (AZOT) (UTC-01)" },
+  { value: "bdt", label: "Bangladesh Standard Time (BST) (UTC+06)" },
+  { value: "bot", label: "Bolivia Time (BOT) (UTC-04)" },
+  { value: "brt", label: "Brasília Time (BRT) (UTC-03)" },
+  { value: "cat", label: "Central Africa Time (CAT) (UTC+02)" },
+  { value: "cet", label: "Central European Time (CET/CEST) (UTC+01/+02)" },
+  { value: "chast", label: "Chatham Standard Time (CHAST) (UTC+12:45)" },
+  { value: "cst", label: "Central Time (CST/CDT) (UTC-06/-05)" },
+  { value: "cst_china", label: "China Standard Time (CST) (UTC+08)" },
+  { value: "clt", label: "Chile Standard Time (CLT/CLST) (UTC-04/-03)" },
+  { value: "cot", label: "Colombia Time (COT) (UTC-05)" },
+  { value: "utc", label: "Coordinated Universal Time (UTC)" }, // Often used as a reference
+  { value: "eat", label: "East Africa Time (EAT) (UTC+03)" },
+  { value: "eet", label: "Eastern European Time (EET/EEST) (UTC+02/+03)" },
+  { value: "est", label: "Eastern Time (EST/EDT) (UTC-05/-04)" },
+  { value: "fjt", label: "Fiji Time (FJT) (UTC+12)" },
+  { value: "gmt", label: "Greenwich Mean Time (GMT) (UTC+00)" },
+  { value: "hst", label: "Hawaii Standard Time (HST) (UTC-10)" },
+  { value: "ict", label: "Indochina Time (ICT) (UTC+07)" }, // Bangkok, Hanoi, Jakarta
+  { value: "ist_india", label: "Indian Standard Time (IST) (UTC+05:30)" },
+  { value: "jst", label: "Japan Standard Time (JST) (UTC+09)" },
+  { value: "kst", label: "Korean Standard Time (KST) (UTC+09)" },
+  { value: "lint", label: "Line Islands Time (LINT) (UTC+14)" },
+  { value: "lhst", label: "Lord Howe Standard Time (LHST) (UTC+10:30)" },
+  { value: "military_alpha", label: "Alpha Time Zone (A) (UTC+01)" }, // Military time zones
+  { value: "military_zulu", label: "Zulu Time Zone (Z) (UTC+00)" }, // Military time zones (same as UTC/GMT)
+  { value: "mmt", label: "Myanmar Time (MMT) (UTC+06:30)" },
+  { value: "msk", label: "Moscow Standard Time (MSK) (UTC+03)" },
+  { value: "mst", label: "Mountain Time (MST/MDT) (UTC-07/-06)" },
+  { value: "nst", label: "Newfoundland Standard Time (NST/NDT) (UTC-03:30/-02:30)" },
+  { value: "npt", label: "Nepal Time (NPT) (UTC+05:45)" },
+  { value: "nzst", label: "New Zealand Standard Time (NZST/NZDT) (UTC+12/+13)" },
+  { value: "pst", label: "Pacific Time (PST/PDT) (UTC-08/-07)" },
+  { value: "pet", label: "Peru Time (PET) (UTC-05)" },
+  { value: "pkt", label: "Pakistan Standard Time (PKT) (UTC+05)" },
+  { value: "sast", label: "South African Standard Time (SAST) (UTC+02)" },
+  { value: "telt", label: "Iran Standard Time (IRST/IRDT) (UTC+03:30/+04:30)" }, // Tehran
+  { value: "tot", label: "Tonga Time (TOT) (UTC+13)" },
+  { value: "vet", label: "Venezuelan Standard Time (VET) (UTC-04:30)" },
+  { value: "wat", label: "West Africa Time (WAT) (UTC+01)" },
+  { value: "wet", label: "Western European Time (WET) (UTC+00)" },
 ]
 
 const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>

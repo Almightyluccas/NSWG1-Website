@@ -1,3 +1,11 @@
+<h2>Urgent</h2>
+
+* allow users to make a new application fi given the opportunity.
+
+* investiage databse limits issue
+
+
+- - -
 <h2>CALENDAR</h2>
 
 
@@ -11,13 +19,6 @@
 
 
 * fix reloading issue of when applying a change on campaigns tab and training tab, specifically the state of whether something was open or not
-
-
-*  
-
-
-
-
 
 
 ----
@@ -35,3 +36,7 @@
 
 
 * Remove all console.logs
+
+
+---
+

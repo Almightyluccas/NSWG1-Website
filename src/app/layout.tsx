@@ -69,13 +69,13 @@ export const metadata: Metadata = {
   publisher: "Naval Special Warfare Group One",
   robots: "index, follow",
   alternates: {
-    canonical: "https://nswg1.vercel.app",
+    canonical: "https://nswg1.org",
   },
   openGraph: {
     title: "Naval Special Warfare Group One | Arma 3 Milsim",
     description:
       "Elite Arma 3 milsim unit based on SEAL Team 6. Realistic training, authentic tactics, and immersive gameplay.",
-    url: "https://nswg1.vercel.app",
+    url: "https://nswg1.org",
     siteName: "NSWG1 Arma 3 Milsim",
     images: [
       {

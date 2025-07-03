@@ -13,7 +13,6 @@ export default async function EnlistmentApplicationsPage() {
     .then(applications => applications.filter(app => app.form_id === 1))
     .then(filtered => filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
-
   return (
     <ServerRoleGuard allowedRoles={[UserRole.instructor, UserRole.admin, UserRole.superAdmin, UserRole.developer]}>
       <div className="space-y-6">
