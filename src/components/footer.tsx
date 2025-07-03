@@ -40,7 +40,9 @@ export function Footer() {
                 </div>
 
                 <div className="border-t border-zinc-800 mt-8 pt-8 text-center text-zinc-500 text-sm">
-                    © {new Date().getFullYear()} Naval Special Warfare Group One. All rights reserved.
+                    © {new Date().getFullYear()} Naval Special Warfare Group One Milsim Unit. All rights reserved.
+                    <br />
+                    Website developed and maintained by <a href="https://luccasportfolio.vercel.app" target="_blank" rel="noopener noreferrer">Luccas Amorim</a>.
                 </div>
             </div>
         </footer>
