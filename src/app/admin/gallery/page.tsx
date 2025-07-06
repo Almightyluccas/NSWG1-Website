@@ -183,7 +183,6 @@ export default function GalleryManagementPage() {
 
   const handleConfirmDelete = () => {
     // In a real app, this would delete from your backend
-    console.log("Deleting item:", selectedItem?.id)
     setIsDeleteConfirmOpen(false)
     // Would refresh data here
   }

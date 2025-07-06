@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // allowedDevOrigins: ["https://4a0e-179-82-0-26.ngrok-free.app"],
   images: {
+    minimumCacheTTL: 60 * 60 * 24 * 7, // 7 days
     remotePatterns: [
       {
         protocol: "https",

@@ -24,6 +24,7 @@ errors
 .DS_Store
 *.pem
 .idea
+.idea/dataSources.xml
 
 # debug
 npm-debug.log*
