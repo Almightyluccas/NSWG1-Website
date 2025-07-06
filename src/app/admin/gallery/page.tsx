@@ -176,7 +176,6 @@ export default function GalleryManagementPage() {
 
   const handleSaveItem = () => {
     // In a real app, this would save to your backend
-    console.log("Saving item:", formData)
     setIsAddEditOpen(false)
     // Would refresh data here
   }

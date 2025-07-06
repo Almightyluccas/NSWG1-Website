@@ -105,7 +105,6 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
 
   const handleReject = async (application: ApplicationData) => {
     if (application.id && application.user_id) {
-      console.log(application.id, application.user_id)
       await rejectApplication(application.id, application.user_id);
       setIsApplicationDetailsOpen(false);
     }

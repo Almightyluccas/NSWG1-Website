@@ -193,13 +193,11 @@ export function TrainingTab() {
     if (!session?.user) return
 
     try {
-      console.log("Updating RSVP for training:", training.id, "status:", status)
       await createOrUpdateTrainingRSVP({
         trainingId: training.id,
         status,
       })
 
-      console.log("RSVP updated, reloading training records...")
       loadTrainingRecords()
     } catch (error) {
       console.error("Failed to update RSVP:", error)

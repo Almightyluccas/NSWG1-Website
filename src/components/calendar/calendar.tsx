@@ -130,9 +130,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
           getTrainingByDateRange(startDate, endDate),
         ])
 
-        console.log("Loaded missions:", missionData.length, missionData)
-        console.log("Loaded training:", trainingData.length, trainingData)
-
         setMissions(missionData)
         setTrainingRecords(trainingData)
       } catch (error) {
@@ -157,14 +154,8 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const getMissionsForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     const dayMissions = missions.filter((mission) => {
-      // Mission date is already a string in yyyy-mm-dd format from database
-      console.log(`Comparing mission date ${mission.date} with ${dateString}`)
       return mission.date === dateString
     })
-
-    if (dayMissions.length > 0) {
-      console.log(`Found ${dayMissions.length} missions for ${dateString}:`, dayMissions)
-    }
     return dayMissions
   }
 
@@ -173,13 +164,8 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     const dateString = format(date, "yyyy-MM-dd")
     const dayTraining = trainingRecords.filter((training) => {
       // Training date is already a string in yyyy-mm-dd format from database
-      console.log(`Comparing training date ${training.date} with ${dateString}`)
       return training.date === dateString
     })
-
-    if (dayTraining.length > 0) {
-      console.log(`Found ${dayTraining.length} training records for ${dateString}:`, dayTraining)
-    }
     return dayTraining
   }
 
@@ -236,7 +222,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     if (!session?.user) return
 
     try {
-      console.log("Updating mission RSVP:", { missionId: mission.id, status })
       await createOrUpdateMissionRSVP({
         missionId: mission.id,
         status,
@@ -247,7 +232,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
       const endDate = format(monthEnd, "yyyy-MM-dd")
       const missionData = await getMissionsByDateRange(startDate, endDate)
       setMissions(missionData)
-      console.log("Mission RSVP updated successfully")
     } catch (error) {
       console.error("Failed to update mission RSVP:", error)
       alert("Failed to update RSVP. Please try again.")
@@ -259,7 +243,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     if (!session?.user) return
 
     try {
-      console.log("Updating training RSVP:", { trainingId: training.id, status })
       await createOrUpdateTrainingRSVP({
         trainingId: training.id,
         status,
@@ -270,7 +253,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
       const endDate = format(monthEnd, "yyyy-MM-dd")
       const trainingData = await getTrainingByDateRange(startDate, endDate)
       setTrainingRecords(trainingData)
-      console.log("Training RSVP updated successfully")
     } catch (error) {
       console.error("Failed to update training RSVP:", error)
       alert("Failed to update RSVP. Please try again.")

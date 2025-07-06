@@ -15,7 +15,6 @@ export async function acceptApplication(submissionId: number, perscomId: number,
 }
 
 export async function rejectApplication(submissionId: number, perscomId: number) {
-  console.log(submissionId);
   await perscom.post.submissionStatus(submissionId, 'Denied');
   await database.put.userRoleByPerscomId('guest', perscomId);
   perscom.invalidateCache('applications');

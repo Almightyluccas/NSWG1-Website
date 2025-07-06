@@ -125,8 +125,6 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
           })
           continue
         }
-        console.log(recurring.max_personnel)
-
         const trainingData = {
           name: recurring.name,
           description: recurring.description,

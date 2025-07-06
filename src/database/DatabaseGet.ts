@@ -199,7 +199,6 @@ export class DatabaseGet {
   }
 
   async missionsByDateRange(startDate: string, endDate: string): Promise<any[]> {
-    console.log("Fetching missions between", startDate, "and", endDate)
     const rows = await this.client.query<any[]>(
       `
           SELECT m.*, c.name as campaign_name, DATE_FORMAT(m.date, '%Y-%m-%d') as date
@@ -210,7 +209,6 @@ export class DatabaseGet {
       `,
       [startDate, endDate],
     )
-    console.log("Found missions:", rows.length)
     return rows
   }
 
@@ -270,7 +268,6 @@ export class DatabaseGet {
   }
 
   async trainingByDateRange(startDate: string, endDate: string): Promise<any[]> {
-    console.log("Fetching training between", startDate, "and", endDate)
     const rows = await this.client.query<any[]>(
       `
           SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date FROM training_records
@@ -279,7 +276,6 @@ export class DatabaseGet {
       `,
       [startDate, endDate],
     )
-    console.log("Found training records:", rows.length)
     return rows
   }
 

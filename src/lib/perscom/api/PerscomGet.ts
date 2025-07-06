@@ -72,7 +72,6 @@ export class PerscomGet {
 
     const data = await this.fetchPaginated<ApplicationData>('/submissions', ['statuses'])
     this.cache.applications = { data, timestamp: Date.now() }
-    console.log(data)
     return data
   }
 

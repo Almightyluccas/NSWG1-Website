@@ -2,6 +2,12 @@
 
 * allow users to make a new application fi given the opportunity.
 
+
+* some issues with new database
+  * already found an issue inside of calendar feature to set attendance.
+
+
+
 * investiage databse limits issue
 
 
@@ -35,7 +41,7 @@
 * discord bot/notifications
 
 
-* Remove all console.logs
+* Remove all s
 
 
 ---

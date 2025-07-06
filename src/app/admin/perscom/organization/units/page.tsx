@@ -67,7 +67,6 @@ export default function UnitsPage() {
     type: "",
   })
 
-  // Filter units based on search query
   const filteredUnits = mockUnits.filter((unit) => {
     const searchLower = searchQuery.toLowerCase()
     return (
@@ -78,15 +77,11 @@ export default function UnitsPage() {
   })
 
   const handleAddUnit = () => {
-    // In a real app, this would send data to your backend
-    console.log("Adding new unit:", newUnit)
     setNewUnit({ name: "", description: "", type: "" })
     setIsAddUnitOpen(false)
   }
 
   const handleEditUnit = () => {
-    // In a real app, this would update the unit in your backend
-    console.log("Editing unit:", editingUnit)
     setEditingUnit(null)
   }
 
