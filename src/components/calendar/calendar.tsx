@@ -124,8 +124,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
         const startDate = format(monthStart, "yyyy-MM-dd")
         const endDate = format(monthEnd, "yyyy-MM-dd")
 
-        console.log("Loading calendar data for:", startDate, "to", endDate)
-
         // Load missions and training
         const [missionData, trainingData] = await Promise.all([
           getMissionsByDateRange(startDate, endDate),

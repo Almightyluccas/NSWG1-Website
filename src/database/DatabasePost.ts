@@ -30,10 +30,10 @@ export class DatabasePost {
   async userProfileImage(userId: string, imageUrl: string): Promise<number | null> {
     const result = await this.client.query<any>(
       `
-          INSERT INTO images (user_id, image_url, image_type, reference_id, reference_type)
-          VALUES (?, ?, 'profile', ?, 'user')
+          INSERT INTO images (author_id, image_url, image_type)
+          VALUES (?, ?, 'profile')
       `,
-      [userId, imageUrl, userId],
+      [userId, imageUrl, userId]
     )
 
     const imageId = result.insertId

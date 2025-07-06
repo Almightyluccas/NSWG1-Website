@@ -249,4 +249,29 @@ CREATE TABLE IF NOT EXISTS recurring_training_instances (
                                                             UNIQUE KEY unique_recurring_date (recurring_training_id, scheduled_date),
                                                             INDEX idx_scheduled_date (scheduled_date)
 );
+
+CREATE TABLE IF NOT EXISTS images  (
+                        id INT PRIMARY KEY AUTO_INCREMENT,
+                        public_id TEXT NOT NULL,
+                        image_url TEXT NOT NULL,
+                        alt_text VARCHAR(255),
+                        title TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        category ENUM('Operations', 'Training', 'Misc'),
+                        unit ENUM('Task Force 160th', 'TACDEVRON2'),
+                        media_type VARCHAR(50) DEFAULT 'Image',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        author_id varchar(255) NOT NULL,
+                        FOREIGN KEY (author_id) REFERENCES users(id)
+);
+*
+CREATE TABLE IF NOT EXISTS images (
+        id VARCHAR(255) PRIMARY KEY,
+        image_url TEXT NOT NULL,
+        alt_text VARCHAR(255),
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+
+
+*
 */
