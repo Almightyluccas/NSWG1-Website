@@ -22,6 +22,7 @@ export function Navbar() {
   const [isOperationCenterOpen, setIsOperationCenterOpen] = useState(false)
   const [isMobileOperationCenterOpen, setIsMobileOperationCenterOpen] = useState(false)
 
+
   const router = useRouter()
   const { data: session } = useSession()
 
