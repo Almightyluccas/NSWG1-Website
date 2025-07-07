@@ -204,8 +204,8 @@ export function Navbar() {
             {session && (
               <>
                 <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
-                  <MobileNavLink href="/attendance" onClick={() => setIsMobileMenuOpen(false)}>
-                    Attendance
+                  <MobileNavLink href="/calendar" onClick={() => setIsMobileMenuOpen(false)}>
+                    Calendar
                   </MobileNavLink>
 
                   <div>

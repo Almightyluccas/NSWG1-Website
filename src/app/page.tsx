@@ -52,14 +52,16 @@ export default function Home() {
                     Recruitment <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
+                <Link href="/about">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-gray-600 hover:bg-gray-800 text-white bg-transparent"
+                  >
+                    Learn More
+                  </Button>
+                </Link>
 
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-gray-600 hover:bg-gray-800 text-white bg-transparent"
-                >
-                  Learn More
-                </Button>
               </div>
             </FadeIn>
           </div>

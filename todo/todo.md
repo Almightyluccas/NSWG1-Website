@@ -3,6 +3,10 @@
 * allow users to make a new application fi given the opportunity.
 
 
+* Learn More doesn't do anything
+
+
+
 * investiage databse limits issue
 
 
