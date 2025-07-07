@@ -14,8 +14,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -30,6 +39,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
 import {
   Plus,
   CalendarIcon,
@@ -44,6 +54,7 @@ import {
   ChevronUp,
   Search,
   Loader2,
+  Trash2,
 } from "lucide-react"
 import {
   getCampaigns,
@@ -51,7 +62,10 @@ import {
   createMission,
   createOrUpdateMissionRSVP,
   markMissionAttendance,
-  updateCampaignEndDate,
+  updateCampaign,
+  deleteCampaign,
+  updateMission,
+  deleteMission,
   getUsersForAttendance,
 } from "@/app/calendar/action"
 
@@ -115,28 +129,451 @@ interface User {
   primaryRole: string
 }
 
+function CreateCampaignModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      startDate: formData.get("startDate") as string,
+      endDate: formData.get("endDate") as string,
+    }
+
+    await onSubmit(data)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Campaign</DialogTitle>
+          <DialogDescription>Create a new campaign to organize multiple missions.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Campaign Name</Label>
+              <Input id="name" name="name" required />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" name="description" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input id="startDate" name="startDate" type="date" required />
+              </div>
+              <div>
+                <Label htmlFor="endDate">End Date</Label>
+                <Input id="endDate" name="endDate" type="date" required />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent-darker text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Campaign"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function EditCampaignModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  campaign,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+  campaign: Campaign | null
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!campaign) return
+
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      startDate: formData.get("startDate") as string,
+      endDate: formData.get("endDate") as string,
+    }
+
+    await onSubmit(data)
+  }
+
+  if (!campaign) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Campaign</DialogTitle>
+          <DialogDescription>Update the campaign details.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editName">Campaign Name</Label>
+              <Input id="editName" name="name" defaultValue={campaign.name} required />
+            </div>
+            <div>
+              <Label htmlFor="editDescription">Description</Label>
+              <Textarea id="editDescription" name="description" defaultValue={campaign.description} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editStartDate">Start Date</Label>
+                <Input id="editStartDate" name="startDate" type="date" defaultValue={campaign.start_date} required />
+              </div>
+              <div>
+                <Label htmlFor="editEndDate">End Date</Label>
+                <Input id="editEndDate" name="endDate" type="date" defaultValue={campaign.end_date} required />
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent-darker text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Campaign"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function DeleteCampaignModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+  campaign,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+  isLoading: boolean
+  campaign: Campaign | null
+}) {
+  return (
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{campaign?.name}"? This will also delete all missions and RSVPs associated
+            with this campaign. Attendance records will be preserved. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-500 hover:bg-red-600" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Campaign"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+function CreateMissionModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  campaign,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+  campaign: Campaign | null
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!campaign) return
+
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      campaignId: campaign.id,
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      date: formData.get("date") as string,
+      time: formData.get("time") as string,
+      location: formData.get("location") as string,
+      maxPersonnel: Number.parseInt(formData.get("maxPersonnel") as string) || 40,
+    }
+
+    await onSubmit(data)
+  }
+
+  if (!campaign) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Mission</DialogTitle>
+          <DialogDescription>Add a new mission to {campaign.name}.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="missionName">Mission Name</Label>
+              <Input id="missionName" name="name" required />
+            </div>
+            <div>
+              <Label htmlFor="missionDescription">Description</Label>
+              <Textarea id="missionDescription" name="description" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="missionDate">Date</Label>
+                <Input id="missionDate" name="date" type="date" required />
+              </div>
+              <div>
+                <Label htmlFor="missionTime">Time</Label>
+                <Input id="missionTime" name="time" type="time" required />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="missionLocation">Location</Label>
+              <Input id="missionLocation" name="location" required />
+            </div>
+            <div>
+              <Label htmlFor="maxPersonnel">Max Personnel (Optional)</Label>
+              <Input id="maxPersonnel" name="maxPersonnel" type="number" />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent-darker text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Mission"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function EditMissionModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  mission,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+  mission: Mission | null
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!mission) return
+
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      date: formData.get("date") as string,
+      time: formData.get("time") as string,
+      location: formData.get("location") as string,
+      maxPersonnel: Number.parseInt(formData.get("maxPersonnel") as string) || undefined,
+    }
+
+    await onSubmit(data)
+  }
+
+  if (!mission) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Mission</DialogTitle>
+          <DialogDescription>Update the mission details.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editMissionName">Mission Name</Label>
+              <Input id="editMissionName" name="name" defaultValue={mission.name} required />
+            </div>
+            <div>
+              <Label htmlFor="editMissionDescription">Description</Label>
+              <Textarea id="editMissionDescription" name="description" defaultValue={mission.description} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editMissionDate">Date</Label>
+                <Input id="editMissionDate" name="date" type="date" defaultValue={mission.date} required />
+              </div>
+              <div>
+                <Label htmlFor="editMissionTime">Time</Label>
+                <Input id="editMissionTime" name="time" type="time" defaultValue={mission.time} required />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="editMissionLocation">Location</Label>
+              <Input id="editMissionLocation" name="location" defaultValue={mission.location} required />
+            </div>
+            <div>
+              <Label htmlFor="editMaxPersonnel">Max Personnel (Optional)</Label>
+              <Input id="editMaxPersonnel" name="maxPersonnel" type="number" defaultValue={mission.max_personnel} />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent-darker text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Mission"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function DeleteMissionModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+  mission,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+  isLoading: boolean
+  mission: Mission | null
+}) {
+  return (
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Mission</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{mission?.name}"? This will also delete all RSVPs for this mission.
+            Attendance records will be preserved. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-500 hover:bg-red-600" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Mission"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function CampaignsTab() {
   const { data: session } = useSession()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
-  const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false)
-  const [isCreateMissionOpen, setIsCreateMissionOpen] = useState(false)
-  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
-  const [isEditCampaignOpen, setIsEditCampaignOpen] = useState(false)
-  const [selectedMission, setSelectedMission] = useState<Mission | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [collapsedCampaigns, setCollapsedCampaigns] = useState<Set<string>>(new Set())
   const [collapsedMissions, setCollapsedMissions] = useState<Set<string>>(new Set())
-
-  // Loading states for buttons
-  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
-  const [isCreatingMission, setIsCreatingMission] = useState(false)
-  const [isUpdatingCampaign, setIsUpdatingCampaign] = useState(false)
-  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({}) // missionId -> status
-  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({}) // userId -> status
-
-  // Attendance modal state
+  const [modals, setModals] = useState({
+    createCampaign: false,
+    editCampaign: false,
+    deleteCampaign: false,
+    createMission: false,
+    editMission: false,
+    deleteMission: false,
+    attendance: false,
+  })
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
+  const [selectedMission, setSelectedMission] = useState<Mission | null>(null)
+  const [loadingStates, setLoadingStates] = useState({
+    creatingCampaign: false,
+    updatingCampaign: false,
+    deletingCampaign: false,
+    creatingMission: false,
+    updatingMission: false,
+    deletingMission: false,
+  })
+  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({})
+  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({})
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -175,12 +612,10 @@ export function CampaignsTab() {
   const filterUsers = () => {
     let filtered = users
 
-    // Filter by role
     if (roleFilter !== "all") {
       filtered = filtered.filter((user) => user.primaryRole === roleFilter)
     }
 
-    // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
       filtered = filtered.filter(
@@ -188,7 +623,6 @@ export function CampaignsTab() {
       )
     }
 
-    // Sort by role, then by name
     filtered.sort((a, b) => {
       if (a.primaryRole !== b.primaryRole) {
         const roleOrder = { tacdevron: 0, "160th": 1, member: 2 }
@@ -202,7 +636,7 @@ export function CampaignsTab() {
 
   const loadCampaigns = async (preserveState = false) => {
     try {
-      setLoading(!preserveState) // Don't show loading if preserving state
+      setLoading(!preserveState)
       const campaignData = await getCampaigns()
       let campaignToDisplay = campaignData
 
@@ -215,83 +649,186 @@ export function CampaignsTab() {
     }
   }
 
-  const handleCreateCampaign = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsCreatingCampaign(true)
+  const openModal = (type: keyof typeof modals, item?: Campaign | Mission) => {
+    if (type.includes("Campaign") && item) setSelectedCampaign(item as Campaign)
+    if (type.includes("Mission") && item) setSelectedMission(item as Mission)
+    if (type === "createMission" && item) setSelectedCampaign(item as Campaign)
+    if (type === "attendance" && item) setSelectedMission(item as Mission)
+    setModals((prev) => ({ ...prev, [type]: true }))
+  }
 
-    const formData = new FormData(e.currentTarget)
+  const closeModal = (type: keyof typeof modals) => {
+    setModals((prev) => ({ ...prev, [type]: false }))
+    if (type.includes("Campaign")) setSelectedCampaign(null)
+    if (type.includes("Mission")) setSelectedMission(null)
+    if (type === "attendance") {
+      setSelectedMission(null)
+      setSearchTerm("")
+      setRoleFilter("all")
+      setLocalAttendance([])
+    }
+  }
 
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
-    const startDate = formData.get("startDate") as string
-    const endDate = formData.get("endDate") as string
+  const handleCreateCampaign = async (data: any) => {
+    setLoadingStates((prev) => ({ ...prev, creatingCampaign: true }))
 
     try {
       await createCampaign({
-        name,
-        description,
-        startDate,
-        endDate,
+        name: data.name,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
       })
 
-      setIsCreateCampaignOpen(false)
-      await loadCampaigns(true) // Preserve state
+      closeModal("createCampaign")
+      await loadCampaigns(true)
+
+      toast.success("Campaign Created", {
+        description: `Campaign "${data.name}" has been created successfully.`,
+      })
     } catch (error) {
       console.error("Failed to create campaign:", error)
+      toast.error("Error", {
+        description: "Failed to create campaign. Please try again.",
+      })
     } finally {
-      setIsCreatingCampaign(false)
+      setLoadingStates((prev) => ({ ...prev, creatingCampaign: false }))
     }
   }
 
-  const handleUpdateCampaignEndDate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleUpdateCampaign = async (data: any) => {
     if (!selectedCampaign) return
 
-    setIsUpdatingCampaign(true)
-    const formData = new FormData(e.currentTarget)
-    const endDate = formData.get("endDate") as string
+    setLoadingStates((prev) => ({ ...prev, updatingCampaign: true }))
 
     try {
-      await updateCampaignEndDate(selectedCampaign.id, endDate)
-      setIsEditCampaignOpen(false)
-      await loadCampaigns(true) // Preserve state
+      await updateCampaign(selectedCampaign.id, {
+        name: data.name,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      })
+
+      closeModal("editCampaign")
+      await loadCampaigns(true)
+
+      toast.success("Campaign Updated", {
+        description: `Campaign "${data.name}" has been updated successfully.`,
+      })
     } catch (error) {
       console.error("Failed to update campaign:", error)
+      toast.error("Error", {
+        description: "Failed to update campaign. Please try again.",
+      })
     } finally {
-      setIsUpdatingCampaign(false)
+      setLoadingStates((prev) => ({ ...prev, updatingCampaign: false }))
     }
   }
 
-  const handleCreateMission = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleDeleteCampaign = async () => {
     if (!selectedCampaign) return
 
-    setIsCreatingMission(true)
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
-    const date = formData.get("date") as string
-    const time = formData.get("time") as string
-    const location = formData.get("location") as string
-    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || 40
+    setLoadingStates((prev) => ({ ...prev, deletingCampaign: true }))
+
+    try {
+      await deleteCampaign(selectedCampaign.id)
+      closeModal("deleteCampaign")
+      await loadCampaigns(true)
+
+      toast.success("Campaign Deleted", {
+        description: `Campaign "${selectedCampaign.name}" has been deleted successfully.`,
+      })
+    } catch (error) {
+      console.error("Failed to delete campaign:", error)
+      toast.error("Error", {
+        description: "Failed to delete campaign. Please try again.",
+      })
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, deletingCampaign: false }))
+    }
+  }
+
+  const handleCreateMission = async (data: any) => {
+    setLoadingStates((prev) => ({ ...prev, creatingMission: true }))
 
     try {
       await createMission({
-        campaignId: selectedCampaign.id,
-        name,
-        description,
-        date,
-        time,
-        location,
-        maxPersonnel,
+        campaignId: data.campaignId,
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        maxPersonnel: data.maxPersonnel,
       })
 
-      setIsCreateMissionOpen(false)
-      await loadCampaigns(true) // Preserve state
+      closeModal("createMission")
+      await loadCampaigns(true)
+
+      toast.success("Mission Created", {
+        description: `Mission "${data.name}" has been created successfully.`,
+      })
     } catch (error) {
       console.error("Failed to create mission:", error)
+      toast.error("Error", {
+        description: "Failed to create mission. Please try again.",
+      })
     } finally {
-      setIsCreatingMission(false)
+      setLoadingStates((prev) => ({ ...prev, creatingMission: false }))
+    }
+  }
+
+  const handleUpdateMission = async (data: any) => {
+    if (!selectedMission) return
+
+    setLoadingStates((prev) => ({ ...prev, updatingMission: true }))
+
+    try {
+      await updateMission(selectedMission.id, {
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        maxPersonnel: data.maxPersonnel,
+      })
+
+      closeModal("editMission")
+      await loadCampaigns(true)
+
+      toast.success("Mission Updated", {
+        description: `Mission "${data.name}" has been updated successfully.`,
+      })
+    } catch (error) {
+      console.error("Failed to update mission:", error)
+      toast.error("Error", {
+        description: "Failed to update mission. Please try again.",
+      })
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, updatingMission: false }))
+    }
+  }
+
+  const handleDeleteMission = async () => {
+    if (!selectedMission) return
+
+    setLoadingStates((prev) => ({ ...prev, deletingMission: true }))
+
+    try {
+      await deleteMission(selectedMission.id)
+      closeModal("deleteMission")
+      await loadCampaigns(true)
+
+      toast.success("Mission Deleted", {
+        description: `Mission "${selectedMission.name}" has been deleted successfully.`,
+      })
+    } catch (error) {
+      console.error("Failed to delete mission:", error)
+      toast.error("Error", {
+        description: "Failed to delete mission. Please try again.",
+      })
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, deletingMission: false }))
     }
   }
 
@@ -307,7 +844,7 @@ export function CampaignsTab() {
         status,
       })
 
-      await loadCampaigns(true) // Preserve state
+      await loadCampaigns(true)
     } catch (error) {
       console.error("Failed to update RSVP:", error)
     } finally {
@@ -338,14 +875,13 @@ export function CampaignsTab() {
         status,
       })
 
-      // Update local attendance state immediately
       const attendanceId = `att-${mission.id}-${userId}`
       const newAttendance: AttendanceRecord = {
         id: attendanceId,
         missionId: mission.id,
-        userId,
-        userName,
-        status,
+        userId: userId,
+        userName: userName,
+        status: status,
         notes: "",
         markedBy: session.user.id!,
         markedAt: new Date().toISOString(),
@@ -356,7 +892,6 @@ export function CampaignsTab() {
         return [...filtered, newAttendance]
       })
 
-      // Also update the campaigns state
       setCampaigns((prevCampaigns) =>
         prevCampaigns.map((campaign) => ({
           ...campaign,
@@ -450,7 +985,6 @@ export function CampaignsTab() {
     }
   }
 
-  // Pagination logic
   const totalPages = Math.ceil(campaigns.length / CAMPAIGNS_PER_PAGE)
   const startIndex = (currentPage - 1) * CAMPAIGNS_PER_PAGE
   const endIndex = startIndex + CAMPAIGNS_PER_PAGE
@@ -519,58 +1053,10 @@ export function CampaignsTab() {
           </p>
         </div>
         {isAdmin && (
-          <Dialog open={isCreateCampaignOpen} onOpenChange={setIsCreateCampaignOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-accent hover:bg-accent-darker text-black">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Campaign
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Campaign</DialogTitle>
-                <DialogDescription>Create a new campaign to organize multiple missions.</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateCampaign}>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Campaign Name</Label>
-                    <Input id="name" name="name" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="startDate">Start Date</Label>
-                      <Input id="startDate" name="startDate" type="date" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="endDate">End Date</Label>
-                      <Input id="endDate" name="endDate" type="date" required />
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter className="mt-6">
-                  <Button
-                    type="submit"
-                    className="bg-accent hover:bg-accent-darker text-black"
-                    disabled={isCreatingCampaign}
-                  >
-                    {isCreatingCampaign ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Campaign"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button className="bg-accent hover:bg-accent-darker text-black" onClick={() => openModal("createCampaign")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Campaign
+          </Button>
         )}
       </div>
 
@@ -611,77 +1097,23 @@ export function CampaignsTab() {
                     </div>
                     {isAdmin && (
                       <div className="flex gap-2 ml-4">
+                        <Button variant="outline" size="sm" onClick={() => openModal("editCampaign", campaign)}>
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setSelectedCampaign(campaign)
-                            setIsEditCampaignOpen(true)
-                          }}
+                          onClick={() => openModal("deleteCampaign", campaign)}
+                          className="text-red-600 hover:text-red-700"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit End Date
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
                         </Button>
-                        <Dialog open={isCreateMissionOpen} onOpenChange={setIsCreateMissionOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedCampaign(campaign)}>
-                              <Plus className="h-4 w-4 mr-1" />
-                              Add Mission
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Create New Mission</DialogTitle>
-                              <DialogDescription>Add a new mission to {selectedCampaign?.name}.</DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleCreateMission}>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="missionName">Mission Name</Label>
-                                  <Input id="missionName" name="name" required />
-                                </div>
-                                <div>
-                                  <Label htmlFor="missionDescription">Description</Label>
-                                  <Textarea id="missionDescription" name="description" required />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <Label htmlFor="missionDate">Date</Label>
-                                    <Input id="missionDate" name="date" type="date" required />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="missionTime">Time</Label>
-                                    <Input id="missionTime" name="time" type="time" required />
-                                  </div>
-                                </div>
-                                <div>
-                                  <Label htmlFor="missionLocation">Location</Label>
-                                  <Input id="missionLocation" name="location" required />
-                                </div>
-                                <div>
-                                  <Label htmlFor="maxPersonnel">Max Personnel (Optional)</Label>
-                                  <Input id="maxPersonnel" name="maxPersonnel" type="number" />
-                                </div>
-                              </div>
-                              <DialogFooter className="mt-6">
-                                <Button
-                                  type="submit"
-                                  className="bg-accent hover:bg-accent-darker text-black"
-                                  disabled={isCreatingMission}
-                                >
-                                  {isCreatingMission ? (
-                                    <>
-                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                      Creating...
-                                    </>
-                                  ) : (
-                                    "Create Mission"
-                                  )}
-                                </Button>
-                              </DialogFooter>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
+                        <Button variant="outline" size="sm" onClick={() => openModal("createMission", campaign)}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Mission
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -725,6 +1157,21 @@ export function CampaignsTab() {
                                     {userAttendance.status}
                                   </Badge>
                                 )}
+                                {isAdmin && (
+                                  <div className="flex gap-1">
+                                    <Button variant="ghost" size="sm" onClick={() => openModal("editMission", mission)}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => openModal("deleteMission", mission)}
+                                      className="text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -751,7 +1198,6 @@ export function CampaignsTab() {
                                   )}
                                 </div>
 
-                                {/* RSVP Actions */}
                                 <div className="flex gap-2 mb-4">
                                   {!userAttendance &&
                                     (mission.status === "scheduled" || mission.status === "in-progress") && (
@@ -811,10 +1257,7 @@ export function CampaignsTab() {
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => {
-                                        setSelectedMission(mission)
-                                        setIsAttendanceModalOpen(true)
-                                      }}
+                                      onClick={() => openModal("attendance", mission)}
                                     >
                                       <Edit className="h-4 w-4 mr-1" />
                                       Mark Attendance
@@ -822,13 +1265,11 @@ export function CampaignsTab() {
                                   )}
                                 </div>
 
-                                {/* Personnel Lists - Visible to Everyone */}
                                 {mission.rsvps.length > 0 && (
                                   <div className="space-y-3">
                                     <h5 className="font-medium text-sm">Personnel Status:</h5>
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                      {/* Attending */}
                                       {attendingRSVPs.length > 0 && (
                                         <div>
                                           <div className="flex items-center gap-2 mb-2">
@@ -871,7 +1312,6 @@ export function CampaignsTab() {
                                         </div>
                                       )}
 
-                                      {/* Maybe */}
                                       {maybeRSVPs.length > 0 && (
                                         <div>
                                           <div className="flex items-center gap-2 mb-2">
@@ -888,7 +1328,6 @@ export function CampaignsTab() {
                                         </div>
                                       )}
 
-                                      {/* Not Attending */}
                                       {notAttendingRSVPs.length > 0 && (
                                         <div>
                                           <div className="flex items-center gap-2 mb-2">
@@ -930,7 +1369,6 @@ export function CampaignsTab() {
         })}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination>
@@ -977,42 +1415,56 @@ export function CampaignsTab() {
         </div>
       )}
 
-      {/* Edit Campaign End Date Modal */}
-      <Dialog open={isEditCampaignOpen} onOpenChange={setIsEditCampaignOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Campaign End Date</DialogTitle>
-            <DialogDescription>Update the end date for {selectedCampaign?.name}.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUpdateCampaignEndDate}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="endDate">New End Date</Label>
-                <Input id="endDate" name="endDate" type="date" defaultValue={selectedCampaign?.end_date} required />
-              </div>
-            </div>
-            <DialogFooter className="mt-6">
-              <Button
-                type="submit"
-                className="bg-accent hover:bg-accent-darker text-black"
-                disabled={isUpdatingCampaign}
-              >
-                {isUpdatingCampaign ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update End Date"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Modals */}
+      <CreateCampaignModal
+        isOpen={modals.createCampaign}
+        onClose={() => closeModal("createCampaign")}
+        onSubmit={handleCreateCampaign}
+        isLoading={loadingStates.creatingCampaign}
+      />
+
+      <EditCampaignModal
+        isOpen={modals.editCampaign}
+        onClose={() => closeModal("editCampaign")}
+        onSubmit={handleUpdateCampaign}
+        isLoading={loadingStates.updatingCampaign}
+        campaign={selectedCampaign}
+      />
+
+      <DeleteCampaignModal
+        isOpen={modals.deleteCampaign}
+        onClose={() => closeModal("deleteCampaign")}
+        onConfirm={handleDeleteCampaign}
+        isLoading={loadingStates.deletingCampaign}
+        campaign={selectedCampaign}
+      />
+
+      <CreateMissionModal
+        isOpen={modals.createMission}
+        onClose={() => closeModal("createMission")}
+        onSubmit={handleCreateMission}
+        isLoading={loadingStates.creatingMission}
+        campaign={selectedCampaign}
+      />
+
+      <EditMissionModal
+        isOpen={modals.editMission}
+        onClose={() => closeModal("editMission")}
+        onSubmit={handleUpdateMission}
+        isLoading={loadingStates.updatingMission}
+        mission={selectedMission}
+      />
+
+      <DeleteMissionModal
+        isOpen={modals.deleteMission}
+        onClose={() => closeModal("deleteMission")}
+        onConfirm={handleDeleteMission}
+        isLoading={loadingStates.deletingMission}
+        mission={selectedMission}
+      />
 
       {/* Attendance Modal */}
-      <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
+      <Dialog open={modals.attendance} onOpenChange={(open) => !open && closeModal("attendance")}>
         <DialogContent className="w-[90vw] md:w-[70vw] !max-w-none overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Mark Attendance - {selectedMission?.name}</DialogTitle>
@@ -1023,7 +1475,6 @@ export function CampaignsTab() {
 
           {selectedMission && (
             <div className="space-y-4">
-              {/* Filters */}
               <div className="flex gap-4 items-center">
                 <div className="flex-1">
                   <div className="relative">
@@ -1051,7 +1502,6 @@ export function CampaignsTab() {
                 </div>
               </div>
 
-              {/* User List */}
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>

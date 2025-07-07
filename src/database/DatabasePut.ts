@@ -54,6 +54,21 @@ export class DatabasePut {
     )
   }
 
+  async campaign(
+    campaignId: string,
+    data: {
+      name: string
+      description: string
+      startDate: string
+      endDate: string
+    },
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE campaigns SET name = ?, description = ?, start_date = ?, end_date = ?, updated_at = NOW() WHERE id = ?`,
+      [data.name, data.description, data.startDate, data.endDate, campaignId],
+    )
+  }
+
   async campaignStatus(campaignId: string, status: string): Promise<void> {
     await this.client.query(
       `
@@ -76,6 +91,23 @@ export class DatabasePut {
     )
   }
 
+  async mission(
+    missionId: string,
+    data: {
+      name: string
+      description: string
+      date: string
+      time: string
+      location: string
+      maxPersonnel?: number
+    },
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE missions SET name = ?, description = ?, date = ?, time = ?, location = ?, max_personnel = ?, updated_at = NOW() WHERE id = ?`,
+      [data.name, data.description, data.date, data.time, data.location, data.maxPersonnel || null, missionId],
+    )
+  }
+
   async missionStatus(missionId: string, status: string): Promise<void> {
     await this.client.query(
       `
@@ -95,6 +127,33 @@ export class DatabasePut {
           WHERE id = ?
       `,
       [status, trainingId],
+    )
+  }
+
+  async trainingRecord(
+    trainingId: string,
+    data: {
+      name: string
+      description: string
+      date: string
+      time: string
+      location: string
+      instructor?: string
+      maxPersonnel?: number
+    },
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE training_records SET name = ?, description = ?, date = ?, time = ?, location = ?, instructor = ?, max_personnel = ?, updated_at = NOW() WHERE id = ?`,
+      [
+        data.name,
+        data.description,
+        data.date,
+        data.time,
+        data.location,
+        data.instructor || null,
+        data.maxPersonnel || null,
+        trainingId,
+      ],
     )
   }
 

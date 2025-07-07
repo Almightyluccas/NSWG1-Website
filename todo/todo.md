@@ -3,11 +3,6 @@
 * allow users to make a new application fi given the opportunity.
 
 
-* some issues with new database
-  * already found an issue inside of calendar feature to set attendance.
-
-
-
 * investiage databse limits issue
 
 
@@ -24,9 +19,6 @@
 * ability to sort displayed campaigsn or training by date or name or have a  specific range
 
 
-* fix reloading issue of when applying a change on campaigns tab and training tab, specifically the state of whether something was open or not
-
-
 ----
 
 * create/remove awards 
@@ -39,9 +31,6 @@
 
 
 * discord bot/notifications
-
-
-* Remove all s
 
 
 ---

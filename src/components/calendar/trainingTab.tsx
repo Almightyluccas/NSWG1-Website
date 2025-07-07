@@ -14,8 +14,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,12 +44,15 @@ import {
   GraduationCap,
   Search,
   Loader2,
+  Trash2,
 } from "lucide-react"
 import {
   getTrainingRecords,
   createTrainingRecord,
   createOrUpdateTrainingRSVP,
   markTrainingAttendance,
+  updateTrainingRecord,
+  deleteTrainingRecord,
   getUsersForAttendance,
 } from "@/app/calendar/action"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -54,6 +66,7 @@ import {
 } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RecurringTrainingManager } from "./recurring-training-manager"
+import { toast } from "sonner"
 
 const TRAINING_PER_PAGE = 5
 
@@ -103,23 +116,252 @@ interface User {
   primaryRole: string
 }
 
+function CreateTrainingModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      date: formData.get("date") as string,
+      time: formData.get("time") as string,
+      location: formData.get("location") as string,
+      instructor: formData.get("instructor") as string,
+      maxPersonnel: Number.parseInt(formData.get("maxPersonnel") as string) || 40,
+    }
+
+    await onSubmit(data)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Training Session</DialogTitle>
+          <DialogDescription>Schedule a new training session for personnel.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Training Name</Label>
+              <Input id="name" name="name" required />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" name="description" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" name="date" type="date" required />
+              </div>
+              <div>
+                <Label htmlFor="time">Time</Label>
+                <Input id="time" name="time" type="time" required />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input id="location" name="location" required />
+            </div>
+            <div>
+              <Label htmlFor="instructor">Instructor (Optional)</Label>
+              <Input id="instructor" name="instructor" />
+            </div>
+            <div>
+              <Label htmlFor="maxPersonnel">Max Personnel (Optional)</Label>
+              <Input id="maxPersonnel" name="maxPersonnel" type="number" />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent/90 text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Training"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function EditTrainingModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading,
+  training,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
+  training: TrainingRecord | null
+}) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!training) return
+
+    const formData = new FormData(e.currentTarget)
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+      date: formData.get("date") as string,
+      time: formData.get("time") as string,
+      location: formData.get("location") as string,
+      instructor: formData.get("instructor") as string,
+      maxPersonnel: Number.parseInt(formData.get("maxPersonnel") as string) || undefined,
+    }
+
+    await onSubmit(data)
+  }
+
+  if (!training) return null
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Training Session</DialogTitle>
+          <DialogDescription>Update the training session details.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editName">Training Name</Label>
+              <Input id="editName" name="name" defaultValue={training.name} required />
+            </div>
+            <div>
+              <Label htmlFor="editDescription">Description</Label>
+              <Textarea id="editDescription" name="description" defaultValue={training.description} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editDate">Date</Label>
+                <Input id="editDate" name="date" type="date" defaultValue={training.date} required />
+              </div>
+              <div>
+                <Label htmlFor="editTime">Time</Label>
+                <Input id="editTime" name="time" type="time" defaultValue={training.time} required />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="editLocation">Location</Label>
+              <Input id="editLocation" name="location" defaultValue={training.location} required />
+            </div>
+            <div>
+              <Label htmlFor="editInstructor">Instructor (Optional)</Label>
+              <Input id="editInstructor" name="instructor" defaultValue={training.instructor} />
+            </div>
+            <div>
+              <Label htmlFor="editMaxPersonnel">Max Personnel (Optional)</Label>
+              <Input id="editMaxPersonnel" name="maxPersonnel" type="number" defaultValue={training.max_personnel} />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent/90 text-black" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Training"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function DeleteTrainingModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+  training,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+  isLoading: boolean
+  training: TrainingRecord | null
+}) {
+  return (
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Training</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{training?.name}"? This will also delete all RSVPs for this training
+            session. Attendance records will be preserved. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-500 hover:bg-red-600" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Training"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function TrainingTab() {
   const { data: session } = useSession()
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([])
-  const [isCreateTrainingOpen, setIsCreateTrainingOpen] = useState(false)
-  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
-  const [selectedTraining, setSelectedTraining] = useState<TrainingRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [collapsedTraining, setCollapsedTraining] = useState<Set<string>>(new Set())
   const [users, setUsers] = useState<User[]>([])
-
-  // Loading states for buttons
-  const [isCreatingTraining, setIsCreatingTraining] = useState(false)
-  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({}) // trainingId -> status
-  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({}) // userId -> status
-
-  // Enhanced attendance modal state
+  const [modals, setModals] = useState({
+    create: false,
+    edit: false,
+    delete: false,
+    attendance: false,
+  })
+  const [selectedTraining, setSelectedTraining] = useState<TrainingRecord | null>(null)
+  const [loadingStates, setLoadingStates] = useState({
+    creating: false,
+    updating: false,
+    deleting: false,
+  })
+  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({})
+  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({})
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
@@ -157,12 +399,10 @@ export function TrainingTab() {
   const filterUsers = () => {
     let filtered = users
 
-    // Filter by role
     if (roleFilter !== "all") {
       filtered = filtered.filter((user) => user.primaryRole === roleFilter)
     }
 
-    // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
       filtered = filtered.filter(
@@ -170,7 +410,6 @@ export function TrainingTab() {
       )
     }
 
-    // Sort by role, then by name
     filtered.sort((a, b) => {
       if (a.primaryRole !== b.primaryRole) {
         const roleOrder = { tacdevron: 0, "160th": 1, member: 2 }
@@ -184,7 +423,7 @@ export function TrainingTab() {
 
   const loadTrainingRecords = async (preserveState = false) => {
     try {
-      setLoading(!preserveState) // Don't show loading if preserving state
+      setLoading(!preserveState)
       const trainingData = await getTrainingRecords()
       setTrainingRecords(trainingData || [])
     } catch (error) {
@@ -195,54 +434,111 @@ export function TrainingTab() {
     }
   }
 
-  // Get today's date in yyyy-mm-dd format without timezone conversion
-  const getTodayString = () => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, "0")
-    const day = String(now.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
+  const openModal = (type: keyof typeof modals, training?: TrainingRecord) => {
+    if (training) setSelectedTraining(training)
+    setModals((prev) => ({ ...prev, [type]: true }))
   }
 
-  // Format date for display (keep as yyyy-mm-dd, no conversion)
+  const closeModal = (type: keyof typeof modals) => {
+    setModals((prev) => ({ ...prev, [type]: false }))
+    if (type !== "attendance") {
+      setSelectedTraining(null)
+    }
+    if (type === "attendance") {
+      setSearchTerm("")
+      setRoleFilter("all")
+      setLocalAttendance([])
+    }
+  }
+
   const formatDateForDisplay = (dateString: string) => {
-    // Input is already yyyy-mm-dd, just return as is or format for display
     const [year, month, day] = dateString.split("-")
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     return `${monthNames[Number.parseInt(month) - 1]} ${Number.parseInt(day)}, ${year}`
   }
 
-  const handleCreateTraining = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsCreatingTraining(true)
-
-    const formData = new FormData(e.currentTarget)
-
-    const name = formData.get("name") as string
-    const description = formData.get("description") as string
-    const date = formData.get("date") as string // Keep as yyyy-mm-dd string
-    const time = formData.get("time") as string
-    const location = formData.get("location") as string
-    const instructor = formData.get("instructor") as string
-    const maxPersonnel = Number.parseInt(formData.get("maxPersonnel") as string) || 40
+  const handleCreateTraining = async (data: any) => {
+    setLoadingStates((prev) => ({ ...prev, creating: true }))
 
     try {
       await createTrainingRecord({
-        name,
-        description,
-        date, // Keep as yyyy-mm-dd string
-        time,
-        location,
-        instructor: instructor || undefined,
-        maxPersonnel,
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        instructor: data.instructor || undefined,
+        maxPersonnel: data.maxPersonnel,
       })
 
-      setIsCreateTrainingOpen(false)
-      await loadTrainingRecords(true) // Preserve state
+      closeModal("create")
+      await loadTrainingRecords(true)
+
+      toast.success("Training Created", {
+        description: `Training session "${data.name}" has been created successfully.`,
+      })
     } catch (error) {
       console.error("Failed to create training:", error)
+      toast.error("Error", {
+        description: "Failed to create training session. Please try again.",
+      })
     } finally {
-      setIsCreatingTraining(false)
+      setLoadingStates((prev) => ({ ...prev, creating: false }))
+    }
+  }
+
+  const handleUpdateTraining = async (data: any) => {
+    if (!selectedTraining) return
+
+    setLoadingStates((prev) => ({ ...prev, updating: true }))
+
+    try {
+      await updateTrainingRecord(selectedTraining.id, {
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        instructor: data.instructor || undefined,
+        maxPersonnel: data.maxPersonnel,
+      })
+
+      closeModal("edit")
+      await loadTrainingRecords(true)
+
+      toast.success("Training Updated", {
+        description: `Training session "${data.name}" has been updated successfully.`,
+      })
+    } catch (error) {
+      console.error("Failed to update training:", error)
+      toast.error("Error", {
+        description: "Failed to update training session. Please try again.",
+      })
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, updating: false }))
+    }
+  }
+
+  const handleDeleteTraining = async () => {
+    if (!selectedTraining) return
+
+    setLoadingStates((prev) => ({ ...prev, deleting: true }))
+
+    try {
+      await deleteTrainingRecord(selectedTraining.id)
+      closeModal("delete")
+      await loadTrainingRecords(true)
+
+      toast.success("Training Deleted", {
+        description: `Training session "${selectedTraining.name}" has been deleted successfully.`,
+      })
+    } catch (error) {
+      console.error("Failed to delete training:", error)
+      toast.error("Error", {
+        description: "Failed to delete training session. Please try again.",
+      })
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, deleting: false }))
     }
   }
 
@@ -258,10 +554,12 @@ export function TrainingTab() {
         status,
       })
 
-      await loadTrainingRecords(true) // Preserve state
+      await loadTrainingRecords(true)
     } catch (error) {
       console.error("Failed to update RSVP:", error)
-      alert("Failed to update RSVP. Please try again.")
+      toast.error("Error", {
+        description: "Failed to update RSVP. Please try again.",
+      })
     } finally {
       setRsvpLoadingStates((prev) => {
         const newState = { ...prev }
@@ -290,7 +588,6 @@ export function TrainingTab() {
         status,
       })
 
-      // Update local attendance state immediately
       const attendanceId = `tatt-${training.id}-${userId}`
       const newAttendance: TrainingAttendance = {
         id: attendanceId,
@@ -308,7 +605,6 @@ export function TrainingTab() {
         return [...filtered, newAttendance]
       })
 
-      // Also update the training records state
       setTrainingRecords((prevRecords) =>
         prevRecords.map((record) => {
           if (record.id === training.id) {
@@ -323,6 +619,9 @@ export function TrainingTab() {
       )
     } catch (error) {
       console.error("Failed to mark attendance:", error)
+      toast.error("Error", {
+        description: "Failed to mark attendance. Please try again.",
+      })
     } finally {
       setAttendanceLoadingStates((prev) => {
         const newState = { ...prev }
@@ -387,7 +686,6 @@ export function TrainingTab() {
     }
   }
 
-  // Pagination logic
   const totalPages = Math.ceil(trainingRecords.length / TRAINING_PER_PAGE)
   const startIndex = (currentPage - 1) * TRAINING_PER_PAGE
   const endIndex = startIndex + TRAINING_PER_PAGE
@@ -400,7 +698,6 @@ export function TrainingTab() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Recurring Training Manager Loading - Only for admins */}
         {isAdmin && (
           <Card className="theme-card">
             <CardHeader>
@@ -415,7 +712,6 @@ export function TrainingTab() {
           </Card>
         )}
 
-        {/* Training Records Loading */}
         <div className="flex justify-between items-center">
           <div>
             <div className="h-8 w-48 bg-gray-200 dark:bg-zinc-700 rounded animate-pulse mb-2" />
@@ -459,14 +755,12 @@ export function TrainingTab() {
 
   return (
     <div className="space-y-6">
-      {/* Recurring Training Manager - Only visible to admins */}
       {isAdmin && (
         <div className="mb-8">
           <RecurringTrainingManager />
         </div>
       )}
 
-      {/* Individual Training Sessions */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Training Records</h2>
@@ -476,70 +770,10 @@ export function TrainingTab() {
           </p>
         </div>
         {isAdmin && (
-          <Dialog open={isCreateTrainingOpen} onOpenChange={setIsCreateTrainingOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-accent hover:bg-accent/90 text-black">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Training
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Training Session</DialogTitle>
-                <DialogDescription>Schedule a new training session for personnel.</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateTraining}>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Training Name</Label>
-                    <Input id="name" name="name" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" required />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="date">Date</Label>
-                      <Input id="date" name="date" type="date" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="time">Time</Label>
-                      <Input id="time" name="time" type="time" required />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="location">Location</Label>
-                    <Input id="location" name="location" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="instructor">Instructor (Optional)</Label>
-                    <Input id="instructor" name="instructor" />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxPersonnel">Max Personnel (Optional)</Label>
-                    <Input id="maxPersonnel" name="maxPersonnel" type="number" />
-                  </div>
-                </div>
-                <DialogFooter className="mt-6">
-                  <Button
-                    type="submit"
-                    className="bg-accent hover:bg-accent/90 text-black"
-                    disabled={isCreatingTraining}
-                  >
-                    {isCreatingTraining ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Training"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button className="bg-accent hover:bg-accent/90 text-black" onClick={() => openModal("create")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Training
+          </Button>
         )}
       </div>
 
@@ -590,6 +824,23 @@ export function TrainingTab() {
                         <span>{training.rsvps.length} RSVPs</span>
                       </div>
                     </div>
+                    {isAdmin && (
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openModal("edit", training)}>
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openModal("delete", training)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardHeader>
 
@@ -639,7 +890,6 @@ export function TrainingTab() {
                           </div>
                         </div>
 
-                        {/* RSVP Actions */}
                         <div className="flex gap-2 mb-4">
                           {(() => {
                             const userAttendance = getUserAttendance(training)
@@ -715,10 +965,7 @@ export function TrainingTab() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => {
-                                setSelectedTraining(training)
-                                setIsAttendanceModalOpen(true)
-                              }}
+                              onClick={() => openModal("attendance", training)}
                               className="bg-transparent"
                             >
                               <Edit className="h-4 w-4 mr-1" />
@@ -727,13 +974,11 @@ export function TrainingTab() {
                           )}
                         </div>
 
-                        {/* Personnel Lists - Visible to Everyone */}
                         {training.rsvps.length > 0 && (
                           <div className="space-y-3">
                             <h5 className="font-medium text-sm">Personnel Status:</h5>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {/* Attending */}
                               {(() => {
                                 const attendingRSVPs = training.rsvps.filter((r) => r.status === "attending")
                                 if (attendingRSVPs.length > 0) {
@@ -775,7 +1020,6 @@ export function TrainingTab() {
                                 return null
                               })()}
 
-                              {/* Maybe */}
                               {(() => {
                                 const maybeRSVPs = training.rsvps.filter((r) => r.status === "maybe")
                                 if (maybeRSVPs.length > 0) {
@@ -798,7 +1042,6 @@ export function TrainingTab() {
                                 return null
                               })()}
 
-                              {/* Not Attending */}
                               {(() => {
                                 const notAttendingRSVPs = training.rsvps.filter((r) => r.status === "not-attending")
                                 if (notAttendingRSVPs.length > 0) {
@@ -835,7 +1078,6 @@ export function TrainingTab() {
         })}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination>
@@ -882,8 +1124,32 @@ export function TrainingTab() {
         </div>
       )}
 
+      {/* Modals */}
+      <CreateTrainingModal
+        isOpen={modals.create}
+        onClose={() => closeModal("create")}
+        onSubmit={handleCreateTraining}
+        isLoading={loadingStates.creating}
+      />
+
+      <EditTrainingModal
+        isOpen={modals.edit}
+        onClose={() => closeModal("edit")}
+        onSubmit={handleUpdateTraining}
+        isLoading={loadingStates.updating}
+        training={selectedTraining}
+      />
+
+      <DeleteTrainingModal
+        isOpen={modals.delete}
+        onClose={() => closeModal("delete")}
+        onConfirm={handleDeleteTraining}
+        isLoading={loadingStates.deleting}
+        training={selectedTraining}
+      />
+
       {/* Attendance Modal */}
-      <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
+      <Dialog open={modals.attendance} onOpenChange={(open) => !open && closeModal("attendance")}>
         <DialogContent className="w-[90vw] md:w-[70vw] !max-w-none overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Mark Attendance - {selectedTraining?.name}</DialogTitle>
@@ -894,7 +1160,6 @@ export function TrainingTab() {
 
           {selectedTraining && (
             <div className="space-y-4">
-              {/* Filters */}
               <div className="flex gap-4 items-center">
                 <div className="flex-1">
                   <div className="relative">
@@ -922,7 +1187,6 @@ export function TrainingTab() {
                 </div>
               </div>
 
-              {/* User List */}
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>

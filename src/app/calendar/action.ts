@@ -595,3 +595,104 @@ export async function markTrainingAttendance(data: {
 
   return attendanceId
 }
+
+export async function updateCampaign(
+  campaignId: string,
+  data: {
+    name: string
+    description: string
+    startDate: string
+    endDate: string
+  },
+) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  await db.put.campaign(campaignId, data)
+
+  const newStatus = getStatusFromDates(data.startDate, data.endDate, "planning")
+  await db.put.campaignStatus(campaignId, newStatus)
+
+  return true
+}
+
+export async function deleteCampaign(campaignId: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  await db.delete.campaign(campaignId)
+  return true
+}
+
+export async function updateMission(
+  missionId: string,
+  data: {
+    name: string
+    description: string
+    date: string
+    time: string
+    location: string
+    maxPersonnel?: number
+  },
+) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  const status = getMissionStatusFromDate(data.date, data.time, "scheduled")
+
+  await db.put.mission(missionId, data)
+  await db.put.missionStatus(missionId, status)
+
+  return true
+}
+
+export async function deleteMission(missionId: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  await db.delete.mission(missionId)
+  return true
+}
+
+export async function updateTrainingRecord(
+  trainingId: string,
+  data: {
+    name: string
+    description: string
+    date: string
+    time: string
+    location: string
+    instructor?: string
+    maxPersonnel?: number
+  },
+) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  const status = getMissionStatusFromDate(data.date, data.time, "scheduled")
+
+  await db.put.trainingRecord(trainingId, data)
+  await db.put.trainingStatus(trainingId, status)
+
+  return true
+}
+
+export async function deleteTrainingRecord(trainingId: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  await db.delete.trainingRecord(trainingId)
+  return true
+}
