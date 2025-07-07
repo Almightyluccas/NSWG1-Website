@@ -33,13 +33,14 @@ import {
   ChevronDown,
   ChevronUp,
   GraduationCap,
+  Search,
 } from "lucide-react"
 import {
   getTrainingRecords,
   createTrainingRecord,
   createOrUpdateTrainingRSVP,
   markTrainingAttendance,
-  getUsersForSelection,
+  getUsersForAttendance,
 } from "@/app/calendar/action"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -50,6 +51,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RecurringTrainingManager } from "./recurring-training-manager"
 
 const TRAINING_PER_PAGE = 5
@@ -97,6 +99,7 @@ interface User {
   name: string
   discord_username: string
   role: string[]
+  primaryRole: string
 }
 
 export function TrainingTab() {
@@ -110,6 +113,12 @@ export function TrainingTab() {
   const [collapsedTraining, setCollapsedTraining] = useState<Set<string>>(new Set())
   const [users, setUsers] = useState<User[]>([])
 
+  // Enhanced attendance modal state
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
+  const [roleFilter, setRoleFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [localAttendance, setLocalAttendance] = useState<TrainingAttendance[]>([])
+
   const isAdmin = session?.user?.roles.includes("admin")
 
   useEffect(() => {
@@ -119,14 +128,52 @@ export function TrainingTab() {
     }
   }, [session, isAdmin])
 
+  useEffect(() => {
+    filterUsers()
+  }, [users, roleFilter, searchTerm])
+
+  useEffect(() => {
+    if (selectedTraining) {
+      setLocalAttendance([...selectedTraining.attendance])
+    }
+  }, [selectedTraining])
+
   const loadUsers = async () => {
     try {
-      const usersData = await getUsersForSelection()
+      const usersData = await getUsersForAttendance()
       setUsers(usersData)
     } catch (error) {
       console.error("Failed to load users:", error)
       setUsers([])
     }
+  }
+
+  const filterUsers = () => {
+    let filtered = users
+
+    // Filter by role
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((user) => user.primaryRole === roleFilter)
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(
+        (user) => user.name.toLowerCase().includes(search) || user.discord_username.toLowerCase().includes(search),
+      )
+    }
+
+    // Sort by role, then by name
+    filtered.sort((a, b) => {
+      if (a.primaryRole !== b.primaryRole) {
+        const roleOrder = { tacdevron: 0, "160th": 1, member: 2 }
+        return roleOrder[a.primaryRole as keyof typeof roleOrder] - roleOrder[b.primaryRole as keyof typeof roleOrder]
+      }
+      return a.name.localeCompare(b.name)
+    })
+
+    setFilteredUsers(filtered)
   }
 
   const loadTrainingRecords = async () => {
@@ -221,7 +268,37 @@ export function TrainingTab() {
         status,
       })
 
-      loadTrainingRecords()
+      // Update local attendance state immediately
+      const attendanceId = `tatt-${training.id}-${userId}`
+      const newAttendance: TrainingAttendance = {
+        id: attendanceId,
+        trainingId: training.id,
+        userId,
+        userName,
+        status,
+        notes: "",
+        markedBy: session.user.id!,
+        markedAt: new Date().toISOString(),
+      }
+
+      setLocalAttendance((prev) => {
+        const filtered = prev.filter((att) => att.userId !== userId)
+        return [...filtered, newAttendance]
+      })
+
+      // Also update the training records state
+      setTrainingRecords((prevRecords) =>
+        prevRecords.map((record) => {
+          if (record.id === training.id) {
+            const updatedAttendance = record.attendance.filter((att) => att.userId !== userId)
+            return {
+              ...record,
+              attendance: [...updatedAttendance, newAttendance],
+            }
+          }
+          return record
+        }),
+      )
     } catch (error) {
       console.error("Failed to mark attendance:", error)
     }
@@ -268,6 +345,17 @@ export function TrainingTab() {
         return <AlertCircle className="h-4 w-4 text-yellow-500" />
       default:
         return null
+    }
+  }
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "tacdevron":
+        return "bg-red-500 text-white"
+      case "160th":
+        return "bg-blue-500 text-white"
+      default:
+        return "bg-gray-500 text-white"
     }
   }
 
@@ -741,92 +829,152 @@ export function TrainingTab() {
 
       {/* Attendance Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[90vw] md:w-[70vw] !max-w-none overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Mark Attendance - {selectedTraining?.name}</DialogTitle>
-            <DialogDescription>Mark attendance for personnel who RSVPed to this training session.</DialogDescription>
+            <DialogDescription>
+              Mark attendance for personnel. Showing all eligible users with their current status.
+            </DialogDescription>
           </DialogHeader>
 
           {selectedTraining && (
             <div className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Personnel</TableHead>
-                    <TableHead>RSVP Status</TableHead>
-                    <TableHead>Attendance</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedTraining.rsvps.map((rsvp) => {
-                    const attendance = selectedTraining.attendance.find((a) => a.userId === rsvp.userId)
+              {/* Filters */}
+              <div className="flex gap-4 items-center">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by name..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="w-48">
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="tacdevron">Tacdevron2</SelectItem>
+                      <SelectItem value="160th">160th</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                    return (
-                      <TableRow key={rsvp.id}>
-                        <TableCell>{rsvp.userName}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getRSVPIcon(rsvp.status)}
-                            {rsvp.status}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {attendance ? (
-                            <Badge variant={attendance.status === "present" ? "default" : "secondary"}>
-                              {attendance.status}
+              {/* User List */}
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>RSVP Status</TableHead>
+                      <TableHead>Attendance Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => {
+                      const rsvp = selectedTraining.rsvps.find((r) => r.userId === user.id)
+                      const attendance = localAttendance.find((a) => a.userId === user.id)
+
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell>
+                            <Badge className={getRoleBadgeColor(user.primaryRole)}>
+                              {user.primaryRole === "tacdevron"
+                                ? "Tacdevron2"
+                                : user.primaryRole === "160th"
+                                  ? "160th"
+                                  : "Member"}
                             </Badge>
-                          ) : (
-                            <span className="text-gray-500 dark:text-zinc-400">Not marked</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "present" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "present")
-                              }
-                              className="bg-transparent"
-                            >
-                              Present
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "absent" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "absent")
-                              }
-                              className="bg-transparent"
-                            >
-                              Absent
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "late" ? "default" : "outline"}
-                              onClick={() => handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "late")}
-                              className="bg-transparent"
-                            >
-                              Late
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "excused" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedTraining, rsvp.userId, rsvp.userName, "excused")
-                              }
-                              className="bg-transparent"
-                            >
-                              Excused
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+                          </TableCell>
+                          <TableCell>
+                            {rsvp ? (
+                              <div className="flex items-center gap-2">
+                                {getRSVPIcon(rsvp.status)}
+                                <span className="capitalize">{rsvp.status.replace("-", " ")}</span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">No RSVP</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {attendance ? (
+                              <Badge
+                                variant={attendance.status === "present" ? "default" : "secondary"}
+                                className={
+                                  attendance.status === "present"
+                                    ? "bg-green-500 text-white"
+                                    : attendance.status === "absent"
+                                      ? "bg-red-500 text-white"
+                                      : attendance.status === "late"
+                                        ? "bg-yellow-500 text-white"
+                                        : "bg-blue-500 text-white"
+                                }
+                              >
+                                {attendance.status}
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-500">Not marked</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "present" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "present")}
+                                className={attendance?.status === "present" ? "bg-green-500 hover:bg-green-600" : ""}
+                              >
+                                Present
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "absent" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "absent")}
+                                className={attendance?.status === "absent" ? "bg-red-500 hover:bg-red-600" : ""}
+                              >
+                                Absent
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "late" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "late")}
+                                className={attendance?.status === "late" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                              >
+                                Late
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "excused" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "excused")}
+                                className={attendance?.status === "excused" ? "bg-blue-500 hover:bg-blue-600" : ""}
+                              >
+                                Excused
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredUsers.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No users found matching your search criteria.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

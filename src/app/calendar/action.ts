@@ -65,6 +65,23 @@ export async function getUsersForSelection() {
   return users.filter((user) => user.role.includes("member"))
 }
 
+export async function getUsersForAttendance() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.roles.includes("admin")) {
+    throw new Error("Unauthorized")
+  }
+
+  const users = await db.get.usersForSelection()
+
+  // Filter to only include users with member, tacdevron, or 160th roles
+  return users
+    .filter((user) => user.role.includes("member") || user.role.includes("tacdevron") || user.role.includes("160th"))
+    .map((user) => ({
+      ...user,
+      primaryRole: user.role.includes("tacdevron") ? "tacdevron" : user.role.includes("160th") ? "160th" : "member",
+    }))
+}
+
 export async function getCampaigns() {
   const session = await getServerSession(authOptions)
   if (!session?.user) {
@@ -461,6 +478,13 @@ export async function createOrUpdateMissionRSVP(data: {
     throw new Error("Unauthorized")
   }
 
+  console.log("Creating/updating mission RSVP:", {
+    missionId: data.missionId,
+    userId: session.user.id,
+    userName: session.user.name,
+    status: data.status,
+  })
+
   const rsvpId = `rsvp-${data.missionId}-${session.user.id}`
 
   try {
@@ -473,6 +497,7 @@ export async function createOrUpdateMissionRSVP(data: {
       notes: data.notes,
     })
 
+    console.log("Mission RSVP created/updated successfully")
     return rsvpId
   } catch (error) {
     console.error("Failed to create/update mission RSVP:", error)
@@ -490,6 +515,13 @@ export async function createOrUpdateTrainingRSVP(data: {
     throw new Error("Unauthorized")
   }
 
+  console.log("Creating/updating training RSVP:", {
+    trainingId: data.trainingId,
+    userId: session.user.id,
+    userName: session.user.name,
+    status: data.status,
+  })
+
   const rsvpId = `trsvp-${data.trainingId}-${session.user.id}`
 
   try {
@@ -502,6 +534,7 @@ export async function createOrUpdateTrainingRSVP(data: {
       notes: data.notes,
     })
 
+    console.log("Training RSVP created/updated successfully")
     return rsvpId
   } catch (error) {
     console.error("Failed to create/update training RSVP:", error)

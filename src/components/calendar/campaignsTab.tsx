@@ -29,6 +29,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Plus,
   CalendarIcon,
@@ -41,6 +42,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react"
 import {
   getCampaigns,
@@ -49,6 +51,7 @@ import {
   createOrUpdateMissionRSVP,
   markMissionAttendance,
   updateCampaignEndDate,
+  getUsersForAttendance,
 } from "@/app/calendar/action"
 
 const CAMPAIGNS_PER_PAGE = 5
@@ -103,6 +106,14 @@ interface AttendanceRecord {
   markedAt: string
 }
 
+interface User {
+  id: string
+  name: string
+  discord_username: string
+  role: string[]
+  primaryRole: string
+}
+
 export function CampaignsTab() {
   const { data: session } = useSession()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -116,12 +127,65 @@ export function CampaignsTab() {
   const [currentPage, setCurrentPage] = useState(1)
   const [collapsedCampaigns, setCollapsedCampaigns] = useState<Set<string>>(new Set())
   const [collapsedMissions, setCollapsedMissions] = useState<Set<string>>(new Set())
+  const [users, setUsers] = useState<User[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
+  const [roleFilter, setRoleFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [localAttendance, setLocalAttendance] = useState<AttendanceRecord[]>([])
 
   const isAdmin = session?.user?.roles.includes("admin")
 
   useEffect(() => {
     loadCampaigns()
-  }, [session])
+    if (isAdmin) {
+      loadUsers()
+    }
+  }, [session, isAdmin])
+
+  useEffect(() => {
+    filterUsers()
+  }, [users, roleFilter, searchTerm])
+
+  useEffect(() => {
+    if (selectedMission) {
+      setLocalAttendance([...selectedMission.attendance])
+    }
+  }, [selectedMission])
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await getUsersForAttendance()
+      setUsers(usersData)
+    } catch (error) {
+      console.error("Failed to load users:", error)
+      setUsers([])
+    }
+  }
+
+  const filterUsers = () => {
+    let filtered = users
+
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((user) => user.primaryRole === roleFilter)
+    }
+
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(
+        (user) => user.name.toLowerCase().includes(search) || user.discord_username.toLowerCase().includes(search),
+      )
+    }
+
+    filtered.sort((a, b) => {
+      if (a.primaryRole !== b.primaryRole) {
+        const roleOrder = { tacdevron: 0, "160th": 1, member: 2 }
+        return roleOrder[a.primaryRole as keyof typeof roleOrder] - roleOrder[b.primaryRole as keyof typeof roleOrder]
+      }
+      return a.name.localeCompare(b.name)
+    })
+
+    setFilteredUsers(filtered)
+  }
 
   const loadCampaigns = async () => {
     try {
@@ -239,11 +303,40 @@ export function CampaignsTab() {
         status,
       })
 
-      // Close modal and reload data
-      setIsAttendanceModalOpen(false)
-      loadCampaigns()
+      const attendanceId = `att-${mission.id}-${userId}`
+      const newAttendance: AttendanceRecord = {
+        id: attendanceId,
+        missionId: mission.id,
+        userId,
+        userName,
+        status,
+        notes: "",
+        markedBy: session.user.id!,
+        markedAt: new Date().toISOString(),
+      }
+
+      setLocalAttendance((prev) => {
+        const filtered = prev.filter((att) => att.userId !== userId)
+        return [...filtered, newAttendance]
+      })
+
+      setCampaigns((prevCampaigns) =>
+        prevCampaigns.map((campaign) => ({
+          ...campaign,
+          missions: campaign.missions.map((m) => {
+            if (m.id === mission.id) {
+              const updatedAttendance = m.attendance.filter((att) => att.userId !== userId)
+              return {
+                ...m,
+                attendance: [...updatedAttendance, newAttendance],
+              }
+            }
+            return m
+          }),
+        })),
+      )
     } catch (error) {
-      console.error("Failed to mark calendar:", error)
+      console.error("Failed to mark attendance:", error)
     }
   }
 
@@ -303,7 +396,17 @@ export function CampaignsTab() {
     }
   }
 
-  // Pagination logic
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "tacdevron":
+        return "bg-red-500 text-white"
+      case "160th":
+        return "bg-blue-500 text-white"
+      default:
+        return "bg-gray-500 text-white"
+    }
+  }
+
   const totalPages = Math.ceil(campaigns.length / CAMPAIGNS_PER_PAGE)
   const startIndex = (currentPage - 1) * CAMPAIGNS_PER_PAGE
   const endIndex = startIndex + CAMPAIGNS_PER_PAGE
@@ -817,88 +920,152 @@ export function CampaignsTab() {
 
       {/* Attendance Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[90vw] md:w-[70vw] !max-w-none overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Mark Attendance - {selectedMission?.name}</DialogTitle>
-            <DialogDescription>Mark attendance for personnel who RSVPed to this mission.</DialogDescription>
+            <DialogDescription>
+              Mark attendance for personnel. Showing all eligible users with their current status.
+            </DialogDescription>
           </DialogHeader>
 
           {selectedMission && (
             <div className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Personnel</TableHead>
-                    <TableHead>RSVP Status</TableHead>
-                    <TableHead>Attendance</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedMission.rsvps.map((rsvp) => {
-                    const attendance = selectedMission.attendance.find((a) => a.userId === rsvp.userId)
+              {/* Filters */}
+              <div className="flex gap-4 items-center">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by name..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="w-48">
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="tacdevron">Tacdevron2</SelectItem>
+                      <SelectItem value="160th">160th</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                    return (
-                      <TableRow key={rsvp.id}>
-                        <TableCell>{rsvp.userName}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getRSVPIcon(rsvp.status)}
-                            {rsvp.status}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {attendance ? (
-                            <Badge variant={attendance.status === "present" ? "default" : "secondary"}>
-                              {attendance.status}
+              {/* User List */}
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>RSVP Status</TableHead>
+                      <TableHead>Attendance Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => {
+                      const rsvp = selectedMission.rsvps.find((r) => r.userId === user.id)
+                      const attendance = localAttendance.find((a) => a.userId === user.id)
+
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell>
+                            <Badge className={getRoleBadgeColor(user.primaryRole)}>
+                              {user.primaryRole === "tacdevron"
+                                ? "Tacdevron2"
+                                : user.primaryRole === "160th"
+                                  ? "160th"
+                                  : "Member"}
                             </Badge>
-                          ) : (
-                            <span className="text-gray-500 dark:text-zinc-400">Not marked</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "present" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedMission, rsvp.userId, rsvp.userName, "present")
-                              }
-                            >
-                              Present
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "absent" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedMission, rsvp.userId, rsvp.userName, "absent")
-                              }
-                            >
-                              Absent
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "late" ? "default" : "outline"}
-                              onClick={() => handleMarkAttendance(selectedMission, rsvp.userId, rsvp.userName, "late")}
-                            >
-                              Late
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={attendance?.status === "excused" ? "default" : "outline"}
-                              onClick={() =>
-                                handleMarkAttendance(selectedMission, rsvp.userId, rsvp.userName, "excused")
-                              }
-                            >
-                              Excused
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+                          </TableCell>
+                          <TableCell>
+                            {rsvp ? (
+                              <div className="flex items-center gap-2">
+                                {getRSVPIcon(rsvp.status)}
+                                <span className="capitalize">{rsvp.status.replace("-", " ")}</span>
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">No RSVP</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {attendance ? (
+                              <Badge
+                                variant={attendance.status === "present" ? "default" : "secondary"}
+                                className={
+                                  attendance.status === "present"
+                                    ? "bg-green-500 text-white"
+                                    : attendance.status === "absent"
+                                      ? "bg-red-500 text-white"
+                                      : attendance.status === "late"
+                                        ? "bg-yellow-500 text-white"
+                                        : "bg-blue-500 text-white"
+                                }
+                              >
+                                {attendance.status}
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-500">Not marked</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "present" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "present")}
+                                className={attendance?.status === "present" ? "bg-green-500 hover:bg-green-600" : ""}
+                              >
+                                Present
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "absent" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "absent")}
+                                className={attendance?.status === "absent" ? "bg-red-500 hover:bg-red-600" : ""}
+                              >
+                                Absent
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "late" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "late")}
+                                className={attendance?.status === "late" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                              >
+                                Late
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={attendance?.status === "excused" ? "default" : "outline"}
+                                onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "excused")}
+                                className={attendance?.status === "excused" ? "bg-blue-500 hover:bg-blue-600" : ""}
+                              >
+                                Excused
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredUsers.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No users found matching your search criteria.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
