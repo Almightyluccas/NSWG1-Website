@@ -9,6 +9,7 @@ import  { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Script from "next/script";
 
 
 const inter = Inter({
@@ -111,6 +112,19 @@ export default async function RootLayout({
     <>
       <meta name="google-site-verification" content="EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o" />
       <html lang="en" suppressHydrationWarning>
+      <Script
+        id="clarity-script"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+              (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "sb9pbe9haz");
+            `
+        }}
+      />
       <body className={`${inter.variable} font-sans`}>
       <SessionWrapper session={session}>
         <ThemeProvider>
