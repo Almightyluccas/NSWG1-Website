@@ -43,6 +43,7 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
+  Loader2,
 } from "lucide-react"
 import {
   getCampaigns,
@@ -127,6 +128,15 @@ export function CampaignsTab() {
   const [currentPage, setCurrentPage] = useState(1)
   const [collapsedCampaigns, setCollapsedCampaigns] = useState<Set<string>>(new Set())
   const [collapsedMissions, setCollapsedMissions] = useState<Set<string>>(new Set())
+
+  // Loading states for buttons
+  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
+  const [isCreatingMission, setIsCreatingMission] = useState(false)
+  const [isUpdatingCampaign, setIsUpdatingCampaign] = useState(false)
+  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({}) // missionId -> status
+  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({}) // userId -> status
+
+  // Attendance modal state
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -165,10 +175,12 @@ export function CampaignsTab() {
   const filterUsers = () => {
     let filtered = users
 
+    // Filter by role
     if (roleFilter !== "all") {
       filtered = filtered.filter((user) => user.primaryRole === roleFilter)
     }
 
+    // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
       filtered = filtered.filter(
@@ -176,6 +188,7 @@ export function CampaignsTab() {
       )
     }
 
+    // Sort by role, then by name
     filtered.sort((a, b) => {
       if (a.primaryRole !== b.primaryRole) {
         const roleOrder = { tacdevron: 0, "160th": 1, member: 2 }
@@ -187,9 +200,9 @@ export function CampaignsTab() {
     setFilteredUsers(filtered)
   }
 
-  const loadCampaigns = async () => {
+  const loadCampaigns = async (preserveState = false) => {
     try {
-      setLoading(true)
+      setLoading(!preserveState) // Don't show loading if preserving state
       const campaignData = await getCampaigns()
       let campaignToDisplay = campaignData
 
@@ -198,12 +211,14 @@ export function CampaignsTab() {
     } catch (error) {
       console.error("Failed to load campaigns:", error)
     } finally {
-      setLoading(false)
+      if (!preserveState) setLoading(false)
     }
   }
 
   const handleCreateCampaign = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsCreatingCampaign(true)
+
     const formData = new FormData(e.currentTarget)
 
     const name = formData.get("name") as string
@@ -220,9 +235,11 @@ export function CampaignsTab() {
       })
 
       setIsCreateCampaignOpen(false)
-      loadCampaigns()
+      await loadCampaigns(true) // Preserve state
     } catch (error) {
       console.error("Failed to create campaign:", error)
+    } finally {
+      setIsCreatingCampaign(false)
     }
   }
 
@@ -230,15 +247,18 @@ export function CampaignsTab() {
     e.preventDefault()
     if (!selectedCampaign) return
 
+    setIsUpdatingCampaign(true)
     const formData = new FormData(e.currentTarget)
     const endDate = formData.get("endDate") as string
 
     try {
       await updateCampaignEndDate(selectedCampaign.id, endDate)
       setIsEditCampaignOpen(false)
-      loadCampaigns()
+      await loadCampaigns(true) // Preserve state
     } catch (error) {
       console.error("Failed to update campaign:", error)
+    } finally {
+      setIsUpdatingCampaign(false)
     }
   }
 
@@ -246,6 +266,7 @@ export function CampaignsTab() {
     e.preventDefault()
     if (!selectedCampaign) return
 
+    setIsCreatingMission(true)
     const formData = new FormData(e.currentTarget)
     const name = formData.get("name") as string
     const description = formData.get("description") as string
@@ -266,14 +287,19 @@ export function CampaignsTab() {
       })
 
       setIsCreateMissionOpen(false)
-      loadCampaigns()
+      await loadCampaigns(true) // Preserve state
     } catch (error) {
       console.error("Failed to create mission:", error)
+    } finally {
+      setIsCreatingMission(false)
     }
   }
 
   const handleRSVP = async (mission: Mission, status: "attending" | "not-attending" | "maybe") => {
     if (!session?.user) return
+
+    const loadingKey = mission.id
+    setRsvpLoadingStates((prev) => ({ ...prev, [loadingKey]: status }))
 
     try {
       await createOrUpdateMissionRSVP({
@@ -281,9 +307,15 @@ export function CampaignsTab() {
         status,
       })
 
-      loadCampaigns()
+      await loadCampaigns(true) // Preserve state
     } catch (error) {
       console.error("Failed to update RSVP:", error)
+    } finally {
+      setRsvpLoadingStates((prev) => {
+        const newState = { ...prev }
+        delete newState[loadingKey]
+        return newState
+      })
     }
   }
 
@@ -295,6 +327,9 @@ export function CampaignsTab() {
   ) => {
     if (!session?.user) return
 
+    const loadingKey = userId
+    setAttendanceLoadingStates((prev) => ({ ...prev, [loadingKey]: status }))
+
     try {
       await markMissionAttendance({
         missionId: mission.id,
@@ -303,6 +338,7 @@ export function CampaignsTab() {
         status,
       })
 
+      // Update local attendance state immediately
       const attendanceId = `att-${mission.id}-${userId}`
       const newAttendance: AttendanceRecord = {
         id: attendanceId,
@@ -320,6 +356,7 @@ export function CampaignsTab() {
         return [...filtered, newAttendance]
       })
 
+      // Also update the campaigns state
       setCampaigns((prevCampaigns) =>
         prevCampaigns.map((campaign) => ({
           ...campaign,
@@ -337,6 +374,12 @@ export function CampaignsTab() {
       )
     } catch (error) {
       console.error("Failed to mark attendance:", error)
+    } finally {
+      setAttendanceLoadingStates((prev) => {
+        const newState = { ...prev }
+        delete newState[loadingKey]
+        return newState
+      })
     }
   }
 
@@ -407,6 +450,7 @@ export function CampaignsTab() {
     }
   }
 
+  // Pagination logic
   const totalPages = Math.ceil(campaigns.length / CAMPAIGNS_PER_PAGE)
   const startIndex = (currentPage - 1) * CAMPAIGNS_PER_PAGE
   const endIndex = startIndex + CAMPAIGNS_PER_PAGE
@@ -509,8 +553,19 @@ export function CampaignsTab() {
                   </div>
                 </div>
                 <DialogFooter className="mt-6">
-                  <Button type="submit" className="bg-accent hover:bg-accent-darker text-black">
-                    Create Campaign
+                  <Button
+                    type="submit"
+                    className="bg-accent hover:bg-accent-darker text-black"
+                    disabled={isCreatingCampaign}
+                  >
+                    {isCreatingCampaign ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Campaign"
+                    )}
                   </Button>
                 </DialogFooter>
               </form>
@@ -609,8 +664,19 @@ export function CampaignsTab() {
                                 </div>
                               </div>
                               <DialogFooter className="mt-6">
-                                <Button type="submit" className="bg-accent hover:bg-accent-darker text-black">
-                                  Create Mission
+                                <Button
+                                  type="submit"
+                                  className="bg-accent hover:bg-accent-darker text-black"
+                                  disabled={isCreatingMission}
+                                >
+                                  {isCreatingMission ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      Creating...
+                                    </>
+                                  ) : (
+                                    "Create Mission"
+                                  )}
                                 </Button>
                               </DialogFooter>
                             </form>
@@ -631,6 +697,7 @@ export function CampaignsTab() {
                         const maybeRSVPs = mission.rsvps.filter((r) => r.status === "maybe")
                         const notAttendingRSVPs = mission.rsvps.filter((r) => r.status === "not-attending")
                         const isMissionCollapsed = collapsedMissions.has(mission.id)
+                        const rsvpLoading = rsvpLoadingStates[mission.id]
 
                         return (
                           <div key={mission.id} className="border rounded-lg p-4 border-gray-200 dark:border-zinc-700">
@@ -693,33 +760,48 @@ export function CampaignsTab() {
                                           size="sm"
                                           variant={userRSVP?.status === "attending" ? "default" : "outline"}
                                           onClick={() => handleRSVP(mission, "attending")}
+                                          disabled={rsvpLoading === "attending"}
                                           className={
                                             userRSVP?.status === "attending" ? "bg-green-500 hover:bg-green-600" : ""
                                           }
                                         >
-                                          <CheckCircle className="h-4 w-4 mr-1" />
+                                          {rsvpLoading === "attending" ? (
+                                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                          ) : (
+                                            <CheckCircle className="h-4 w-4 mr-1" />
+                                          )}
                                           Attending
                                         </Button>
                                         <Button
                                           size="sm"
                                           variant={userRSVP?.status === "maybe" ? "default" : "outline"}
                                           onClick={() => handleRSVP(mission, "maybe")}
+                                          disabled={rsvpLoading === "maybe"}
                                           className={
                                             userRSVP?.status === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""
                                           }
                                         >
-                                          <AlertCircle className="h-4 w-4 mr-1" />
+                                          {rsvpLoading === "maybe" ? (
+                                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                          ) : (
+                                            <AlertCircle className="h-4 w-4 mr-1" />
+                                          )}
                                           Maybe
                                         </Button>
                                         <Button
                                           size="sm"
                                           variant={userRSVP?.status === "not-attending" ? "default" : "outline"}
                                           onClick={() => handleRSVP(mission, "not-attending")}
+                                          disabled={rsvpLoading === "not-attending"}
                                           className={
                                             userRSVP?.status === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""
                                           }
                                         >
-                                          <XCircle className="h-4 w-4 mr-1" />
+                                          {rsvpLoading === "not-attending" ? (
+                                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                          ) : (
+                                            <XCircle className="h-4 w-4 mr-1" />
+                                          )}
                                           Can't Attend
                                         </Button>
                                       </>
@@ -910,8 +992,19 @@ export function CampaignsTab() {
               </div>
             </div>
             <DialogFooter className="mt-6">
-              <Button type="submit" className="bg-accent hover:bg-accent-darker text-black">
-                Update End Date
+              <Button
+                type="submit"
+                className="bg-accent hover:bg-accent-darker text-black"
+                disabled={isUpdatingCampaign}
+              >
+                {isUpdatingCampaign ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update End Date"
+                )}
               </Button>
             </DialogFooter>
           </form>
@@ -974,6 +1067,7 @@ export function CampaignsTab() {
                     {filteredUsers.map((user) => {
                       const rsvp = selectedMission.rsvps.find((r) => r.userId === user.id)
                       const attendance = localAttendance.find((a) => a.userId === user.id)
+                      const attendanceLoading = attendanceLoadingStates[user.id]
 
                       return (
                         <TableRow key={user.id}>
@@ -1023,33 +1117,49 @@ export function CampaignsTab() {
                                 size="sm"
                                 variant={attendance?.status === "present" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "present")}
+                                disabled={attendanceLoading === "present"}
                                 className={attendance?.status === "present" ? "bg-green-500 hover:bg-green-600" : ""}
                               >
-                                Present
+                                {attendanceLoading === "present" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Present"
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "absent" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "absent")}
+                                disabled={attendanceLoading === "absent"}
                                 className={attendance?.status === "absent" ? "bg-red-500 hover:bg-red-600" : ""}
                               >
-                                Absent
+                                {attendanceLoading === "absent" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Absent"
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "late" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "late")}
+                                disabled={attendanceLoading === "late"}
                                 className={attendance?.status === "late" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
                               >
-                                Late
+                                {attendanceLoading === "late" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Late"}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "excused" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedMission, user.id, user.name, "excused")}
+                                disabled={attendanceLoading === "excused"}
                                 className={attendance?.status === "excused" ? "bg-blue-500 hover:bg-blue-600" : ""}
                               >
-                                Excused
+                                {attendanceLoading === "excused" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Excused"
+                                )}
                               </Button>
                             </div>
                           </TableCell>

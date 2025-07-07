@@ -34,6 +34,7 @@ import {
   ChevronUp,
   GraduationCap,
   Search,
+  Loader2,
 } from "lucide-react"
 import {
   getTrainingRecords,
@@ -113,6 +114,11 @@ export function TrainingTab() {
   const [collapsedTraining, setCollapsedTraining] = useState<Set<string>>(new Set())
   const [users, setUsers] = useState<User[]>([])
 
+  // Loading states for buttons
+  const [isCreatingTraining, setIsCreatingTraining] = useState(false)
+  const [rsvpLoadingStates, setRsvpLoadingStates] = useState<Record<string, string>>({}) // trainingId -> status
+  const [attendanceLoadingStates, setAttendanceLoadingStates] = useState<Record<string, string>>({}) // userId -> status
+
   // Enhanced attendance modal state
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -176,16 +182,16 @@ export function TrainingTab() {
     setFilteredUsers(filtered)
   }
 
-  const loadTrainingRecords = async () => {
+  const loadTrainingRecords = async (preserveState = false) => {
     try {
-      setLoading(true)
+      setLoading(!preserveState) // Don't show loading if preserving state
       const trainingData = await getTrainingRecords()
       setTrainingRecords(trainingData || [])
     } catch (error) {
       console.error("Failed to load training records:", error)
       setTrainingRecords([])
     } finally {
-      setLoading(false)
+      if (!preserveState) setLoading(false)
     }
   }
 
@@ -208,6 +214,8 @@ export function TrainingTab() {
 
   const handleCreateTraining = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsCreatingTraining(true)
+
     const formData = new FormData(e.currentTarget)
 
     const name = formData.get("name") as string
@@ -230,14 +238,19 @@ export function TrainingTab() {
       })
 
       setIsCreateTrainingOpen(false)
-      loadTrainingRecords()
+      await loadTrainingRecords(true) // Preserve state
     } catch (error) {
       console.error("Failed to create training:", error)
+    } finally {
+      setIsCreatingTraining(false)
     }
   }
 
   const handleRSVP = async (training: TrainingRecord, status: "attending" | "not-attending" | "maybe") => {
     if (!session?.user) return
+
+    const loadingKey = training.id
+    setRsvpLoadingStates((prev) => ({ ...prev, [loadingKey]: status }))
 
     try {
       await createOrUpdateTrainingRSVP({
@@ -245,10 +258,16 @@ export function TrainingTab() {
         status,
       })
 
-      loadTrainingRecords()
+      await loadTrainingRecords(true) // Preserve state
     } catch (error) {
       console.error("Failed to update RSVP:", error)
       alert("Failed to update RSVP. Please try again.")
+    } finally {
+      setRsvpLoadingStates((prev) => {
+        const newState = { ...prev }
+        delete newState[loadingKey]
+        return newState
+      })
     }
   }
 
@@ -259,6 +278,9 @@ export function TrainingTab() {
     status: "present" | "absent" | "late" | "excused",
   ) => {
     if (!session?.user) return
+
+    const loadingKey = userId
+    setAttendanceLoadingStates((prev) => ({ ...prev, [loadingKey]: status }))
 
     try {
       await markTrainingAttendance({
@@ -301,6 +323,12 @@ export function TrainingTab() {
       )
     } catch (error) {
       console.error("Failed to mark attendance:", error)
+    } finally {
+      setAttendanceLoadingStates((prev) => {
+        const newState = { ...prev }
+        delete newState[loadingKey]
+        return newState
+      })
     }
   }
 
@@ -494,8 +522,19 @@ export function TrainingTab() {
                   </div>
                 </div>
                 <DialogFooter className="mt-6">
-                  <Button type="submit" className="bg-accent hover:bg-accent/90 text-black">
-                    Create Training
+                  <Button
+                    type="submit"
+                    className="bg-accent hover:bg-accent/90 text-black"
+                    disabled={isCreatingTraining}
+                  >
+                    {isCreatingTraining ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Training"
+                    )}
                   </Button>
                 </DialogFooter>
               </form>
@@ -507,6 +546,7 @@ export function TrainingTab() {
       <div className="grid gap-6">
         {paginatedTraining.map((training) => {
           const isCollapsed = collapsedTraining.has(training.id)
+          const rsvpLoading = rsvpLoadingStates[training.id]
 
           return (
             <Card key={training.id} className="theme-card">
@@ -615,39 +655,54 @@ export function TrainingTab() {
                                     size="sm"
                                     variant={userRSVP?.status === "attending" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "attending")}
+                                    disabled={rsvpLoading === "attending"}
                                     className={
                                       userRSVP?.status === "attending"
                                         ? "bg-green-500 hover:bg-green-600"
                                         : "bg-transparent"
                                     }
                                   >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    {rsvpLoading === "attending" ? (
+                                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    ) : (
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                    )}
                                     Attending
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant={userRSVP?.status === "maybe" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "maybe")}
+                                    disabled={rsvpLoading === "maybe"}
                                     className={
                                       userRSVP?.status === "maybe"
                                         ? "bg-yellow-500 hover:bg-yellow-600"
                                         : "bg-transparent"
                                     }
                                   >
-                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    {rsvpLoading === "maybe" ? (
+                                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    ) : (
+                                      <AlertCircle className="h-4 w-4 mr-1" />
+                                    )}
                                     Maybe
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant={userRSVP?.status === "not-attending" ? "default" : "outline"}
                                     onClick={() => handleRSVP(training, "not-attending")}
+                                    disabled={rsvpLoading === "not-attending"}
                                     className={
                                       userRSVP?.status === "not-attending"
                                         ? "bg-red-500 hover:bg-red-600"
                                         : "bg-transparent"
                                     }
                                   >
-                                    <XCircle className="h-4 w-4 mr-1" />
+                                    {rsvpLoading === "not-attending" ? (
+                                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    ) : (
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                    )}
                                     Can't Attend
                                   </Button>
                                 </>
@@ -883,6 +938,7 @@ export function TrainingTab() {
                     {filteredUsers.map((user) => {
                       const rsvp = selectedTraining.rsvps.find((r) => r.userId === user.id)
                       const attendance = localAttendance.find((a) => a.userId === user.id)
+                      const attendanceLoading = attendanceLoadingStates[user.id]
 
                       return (
                         <TableRow key={user.id}>
@@ -932,33 +988,49 @@ export function TrainingTab() {
                                 size="sm"
                                 variant={attendance?.status === "present" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "present")}
+                                disabled={attendanceLoading === "present"}
                                 className={attendance?.status === "present" ? "bg-green-500 hover:bg-green-600" : ""}
                               >
-                                Present
+                                {attendanceLoading === "present" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Present"
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "absent" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "absent")}
+                                disabled={attendanceLoading === "absent"}
                                 className={attendance?.status === "absent" ? "bg-red-500 hover:bg-red-600" : ""}
                               >
-                                Absent
+                                {attendanceLoading === "absent" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Absent"
+                                )}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "late" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "late")}
+                                disabled={attendanceLoading === "late"}
                                 className={attendance?.status === "late" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
                               >
-                                Late
+                                {attendanceLoading === "late" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Late"}
                               </Button>
                               <Button
                                 size="sm"
                                 variant={attendance?.status === "excused" ? "default" : "outline"}
                                 onClick={() => handleMarkAttendance(selectedTraining, user.id, user.name, "excused")}
+                                disabled={attendanceLoading === "excused"}
                                 className={attendance?.status === "excused" ? "bg-blue-500 hover:bg-blue-600" : ""}
                               >
-                                Excused
+                                {attendanceLoading === "excused" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Excused"
+                                )}
                               </Button>
                             </div>
                           </TableCell>
