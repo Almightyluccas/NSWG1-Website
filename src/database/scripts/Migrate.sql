@@ -164,3 +164,46 @@ CREATE TABLE IF NOT EXISTS recurring_training_instances (
                                                             UNIQUE KEY unique_recurring_date (recurring_training_id, scheduled_date),
                                                             INDEX idx_scheduled_date (scheduled_date)
 );
+
+CREATE TABLE IF NOT EXISTS images (
+                                      id INT AUTO_INCREMENT PRIMARY KEY,
+                                      public_id TEXT,
+                                      image_url TEXT NOT NULL,
+                                      alt_text VARCHAR(255),
+                                      title TEXT,
+                                      description TEXT,
+                                      category ENUM('Operations', 'Training', 'Misc'),
+                                      unit ENUM('Task Force 160th', 'TACDEVRON2'),
+                                      image_type VARCHAR(255) DEFAULT 'Gallery',
+                                      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                      author_id VARCHAR(255),
+                                      CONSTRAINT images_ibfk_1 FOREIGN KEY (author_id) REFERENCES users(id),
+                                      INDEX idx_author_id (author_id)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+                                     id VARCHAR(255) PRIMARY KEY,
+                                     perscom_id INT UNIQUE,
+                                     steam_id VARCHAR(255),
+                                     discord_username VARCHAR(255) NOT NULL,
+                                     name VARCHAR(255),
+                                     date_of_birth DATE,
+                                     email VARCHAR(255) NOT NULL,
+                                     profile_image_id VARCHAR(255),
+                                     refresh_token TEXT,
+                                     refresh_token_expires_at DATETIME,
+                                     role TEXT,
+                                     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                     INDEX idx_perscom_id (perscom_id),
+                                     INDEX idx_discord_username (discord_username),
+                                     INDEX idx_email (email)
+);
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+                                              id VARCHAR(255) PRIMARY KEY,
+                                              token_hash VARCHAR(255) NOT NULL,
+                                              expires_at DATETIME NOT NULL,
+                                              created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                              INDEX idx_token_hash (token_hash),
+                                              INDEX idx_expires_at (expires_at)
+);

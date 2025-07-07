@@ -81,7 +81,7 @@ const galleryItems: GalleryItem[] = [
     },
     {
         id: 6,
-        title: "idk what to call this",
+        title: "NSWG1 compilation",
         category: "operations",
         unit: ["tf160th", "tacdevron2"],
         type: "video",

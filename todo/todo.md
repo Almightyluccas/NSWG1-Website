@@ -10,7 +10,7 @@
 <h2>CALENDAR</h2>
 
 
-* modify/delete campaign missions and training
+* edit deleting missions or training so it doesn't delete attenendce.
 
 
 * modify how showing who has rsvp'd looks like to better fit 40+ people.

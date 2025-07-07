@@ -1,14 +1,14 @@
 import Image from "next/image"
 import { FadeIn } from "@/components/fade-in"
 import { Button } from "@/components/ui/button"
-import {ChevronRight, Shield, Target, Users} from "lucide-react"
+import { ChevronRight, Shield, Target, Users } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { UnitCard } from "@/components/unit-card"
 import { StatCard } from "@/components/stat-card"
-import { VideoPlayer } from "@/components/video-player"
-import {Footer} from "@/components/footer";
-import {ReadyToJoinSection} from "@/components/ready-to-join-section";
-import Link from "next/link";
+import { YouTubePlayer } from "@/components/youtube-player"
+import { Footer } from "@/components/footer"
+import { ReadyToJoinSection } from "@/components/ready-to-join-section"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -20,15 +20,15 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-100 dark:to-zinc-900">
             <Image
-                src="/images/tacdev/hero-background.png"
-                alt="Hero background"
-                fill
-                className="object-cover brightness-50"
-                priority
+              src="/images/tacdev/hero-background.png"
+              alt="Hero background"
+              fill
+              className="object-cover brightness-50"
+              priority
             />
-          {/*<video autoPlay muted loop playsInline className="w-full h-full object-cover">*/}
-          {/*  <source src="/videos/hero-background.mp4" type="video/mp4" />*/}
-          {/*</video>*/}
+            {/*<video autoPlay muted loop playsInline className="w-full h-full object-cover">*/}
+            {/*  <source src="/videos/hero-background.mp4" type="video/mp4" />*/}
+            {/*</video>*/}
           </div>
         </div>
 
@@ -48,12 +48,16 @@ export default function Home() {
 
               <div className="flex flex-wrap gap-4 mt-8">
                 <Link href="/join">
-                  <Button size="lg" className="bg-accent hover:bg-accent-darker text-black" >
+                  <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
                     Recruitment <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
 
-                <Button size="lg" variant="outline" className="border-gray-600 hover:bg-gray-800 text-white">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-gray-600 hover:bg-gray-800 text-white bg-transparent"
+                >
                   Learn More
                 </Button>
               </div>
@@ -79,17 +83,18 @@ export default function Home() {
               description="Setting the standard in tactical operations since 2022"
             />
             <StatCard
-              icon={<Target className="h-10 w-10 text-accent" />}
-              number="100+"
-              label="Successful Operations"
-              description="Precision execution across diverse operational environments"
-            />
-            <StatCard
               icon={<Users className="h-10 w-10 text-accent" />}
               number="90%"
               label="Participation Rate"
               description="Consistent engagement from our personnel drives the operational precision and strategic advantage that distinguish us from our counterparts"
             />
+            <StatCard
+              icon={<Target className="h-10 w-10 text-accent" />}
+              number="100+"
+              label="Successful Operations"
+              description="Precision execution across diverse operational environments"
+            />
+
           </div>
         </div>
       </section>
@@ -121,8 +126,8 @@ export default function Home() {
                   Naval Special Warfare Group One, we meticulously replicate every aspect of military operations.
                 </p>
                 <p className="text-lg text-zinc-300 mb-8">
-                  From tactics and procedures to precise equipment and environmental details, our unit ensures
-                  that every mission and training scenario mirrors real-world conditions.
+                  From tactics and procedures to precise equipment and environmental details, our unit ensures that
+                  every mission and training scenario mirrors real-world conditions.
                 </p>
                 <Button className="bg-accent hover:bg-accent-darker text-black">Discover Our Approach</Button>
                 <div className="absolute -bottom-10 -right-10 w-40 h-40 border-r-2 border-b-2 border-accent opacity-50"></div>
@@ -130,7 +135,11 @@ export default function Home() {
             </FadeIn>
 
             <FadeIn delay={200}>
-              <VideoPlayer src="/videos/bomb.mp4" poster="/images/tactical-training.png" />
+              <YouTubePlayer
+                videoId="LyKKQ4Ocowg"
+                title="NSWG-1 Operations Overview"
+                thumbnail="/images/home-page-thumbnail.png"
+              />
             </FadeIn>
           </div>
         </div>
@@ -152,7 +161,7 @@ export default function Home() {
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/*<div className="grid grid-cols-1 md:grid-cols-3 gap-8">*/}
+            {/*<div className="grid grid-cols-1 md:grid-cols-3 gap-8">*/}
             <UnitCard
               image="/images/160th/160th-emblem.png"
               title="Task Force 160th"
