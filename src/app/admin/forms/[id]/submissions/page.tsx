@@ -1,4 +1,3 @@
-import { Suspense } from "react"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/authOptions"
 import { redirect, notFound } from "next/navigation"
@@ -6,7 +5,6 @@ import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, FileText, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { getFormById, getFormSubmissions } from "../../actions"
@@ -169,7 +167,7 @@ async function SubmissionsContent({ params }: SubmissionsPageProps) {
 
 
 
-export default function SubmissionsPage({ params }: SubmissionsPageProps) {
+export default async function SubmissionsPage({ params }: SubmissionsPageProps) {
   return (
     <ServerRoleGuard allowedRoles={["admin", "moderator"]}>
         <SubmissionsContent params={params} />
