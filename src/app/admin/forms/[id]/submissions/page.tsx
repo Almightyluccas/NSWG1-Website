@@ -160,10 +160,11 @@ async function SubmissionsContent({ params }: { params: { id: string } }) {
   )
 }
 
-export default async function SubmissionsPage({ params }: { params: { id: string } }) {
+export default async function SubmissionsPage() {
   return (
     <ServerRoleGuard allowedRoles={["admin", "moderator"]}>
-      <SubmissionsContent params={params} />
+      {/*TODO: REmove this params*/}
+      <SubmissionsContent params={{id: 'test'}} />
     </ServerRoleGuard>
   )
 }
