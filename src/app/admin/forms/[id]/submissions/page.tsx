@@ -9,13 +9,8 @@ import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, FileText, BarChart3 } from
 import Link from "next/link"
 import { getFormById, getFormSubmissions } from "../../actions"
 
-interface SubmissionsPageProps {
-  params: {
-    id: string
-  }
-}
 
-async function SubmissionsContent({ params }: SubmissionsPageProps) {
+async function SubmissionsContent({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -165,12 +160,11 @@ async function SubmissionsContent({ params }: SubmissionsPageProps) {
   )
 }
 
-
-
-export default async function SubmissionsPage({ params }: SubmissionsPageProps) {
+export default async function SubmissionsPage({ params }: { params: { id: string } }) {
   return (
     <ServerRoleGuard allowedRoles={["admin", "moderator"]}>
-        <SubmissionsContent params={params} />
+      <SubmissionsContent params={params} />
     </ServerRoleGuard>
   )
 }
+
