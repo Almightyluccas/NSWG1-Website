@@ -121,6 +121,12 @@ export function Navbar() {
                         >
                           Calendar
                         </Link>
+                        <Link
+                          href="/forms"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Forms
+                        </Link>
 
                       </div>
                     )}
@@ -231,9 +237,24 @@ export function Navbar() {
             {session && (
               <>
                 <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
-                  <MobileNavLink href="/calendar" onClick={() => setIsMobileMenuOpen(false)}>
-                    Calendar
-                  </MobileNavLink>
+                  {isMobileOperationCenterOpen && (
+                    <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
+                      <Link
+                        href="/calendar"
+                        className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                        onClick={() => setIsMobileOperationCenterOpen(false)}
+                      >
+                        Calendar
+                      </Link>
+                      <Link
+                        href="/forms"
+                        className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                        onClick={() => setIsMobileOperationCenterOpen(false)}
+                      >
+                        Forms
+                      </Link>
+                    </div>
+                  )}
 
                   <div>
                     <button

@@ -1,6 +1,7 @@
 import type { User } from "@/types/database"
 import type { DatabaseClient } from "./DatabaseClient"
 import type { RecurringTraining, RecurringTrainingWithStats } from "@/types/recurring-training"
+import type { Form, FormSubmission } from "@/types/forms"
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -404,5 +405,81 @@ export class DatabaseGet {
       [name, date, time],
     )
     return rows.length > 0 ? rows[0] : null
+  }
+
+  // Forms methods
+  async forms(): Promise<Form[]> {
+    const rows = await this.client.query<any[]>(`
+        SELECT * FROM forms 
+        WHERE status = 'active'
+        ORDER BY name ASC
+    `)
+
+    return rows.map((row) => ({
+      ...row,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at),
+      fields: row.fields ? JSON.parse(row.fields) : null,
+    }))
+  }
+
+  async allForms(): Promise<Form[]> {
+    const rows = await this.client.query<any[]>(`
+        SELECT * FROM forms 
+        ORDER BY created_at DESC
+    `)
+
+    return rows.map((row) => ({
+      ...row,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at),
+      fields: row.fields ? JSON.parse(row.fields) : null,
+    }))
+  }
+
+  async formById(id: string): Promise<Form | null> {
+    const rows = await this.client.query<any[]>(`SELECT * FROM forms WHERE id = ?`, [id])
+
+    if (rows.length === 0) return null
+
+    const row = rows[0]
+    return {
+      ...row,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at),
+      fields: row.fields ? JSON.parse(row.fields) : null,
+    }
+  }
+
+  async formSubmissions(formId?: string): Promise<FormSubmission[]> {
+    const query = formId
+      ? `SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC`
+      : `SELECT * FROM form_submissions ORDER BY created_at DESC`
+
+    const params = formId ? [formId] : []
+    const rows = await this.client.query<any[]>(query, params)
+
+    return rows.map((row) => ({
+      ...row,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at),
+      reviewed_at: row.reviewed_at ? new Date(row.reviewed_at) : null,
+      submission_data: JSON.parse(row.submission_data),
+    }))
+  }
+
+  async formSubmissionById(id: string): Promise<FormSubmission | null> {
+    const rows = await this.client.query<any[]>(`SELECT * FROM form_submissions WHERE id = ?`, [id])
+
+    if (rows.length === 0) return null
+
+    const row = rows[0]
+    return {
+      ...row,
+      created_at: new Date(row.created_at),
+      updated_at: new Date(row.updated_at),
+      reviewed_at: row.reviewed_at ? new Date(row.reviewed_at) : null,
+      submission_data: JSON.parse(row.submission_data),
+    }
   }
 }

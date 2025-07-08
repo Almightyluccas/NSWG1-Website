@@ -1,5 +1,6 @@
 import type { DatabaseClient } from "./DatabaseClient"
 import type { CreateRecurringTrainingData } from "@/types/recurring-training"
+import type { Form, FormSubmission } from "@/types/forms"
 
 export class DatabasePost {
   constructor(private client: DatabaseClient) {}
@@ -33,7 +34,7 @@ export class DatabasePost {
           INSERT INTO images (author_id, image_url, image_type)
           VALUES (?, ?, 'profile')
       `,
-      [userId, imageUrl, userId]
+      [userId, imageUrl, userId],
     )
 
     const imageId = result.insertId
@@ -252,6 +253,45 @@ export class DatabasePost {
           VALUES (?, ?, ?, ?)
       `,
       [data.id, data.recurringTrainingId, data.trainingId, data.scheduledDate],
+    )
+  }
+
+  // Forms methods
+  async form(data: Omit<Form, "created_at" | "updated_at">): Promise<void> {
+    await this.client.query(
+      `
+          INSERT INTO forms (id, name, description, type, status, url, fields, created_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        data.id,
+        data.name,
+        data.description,
+        data.type,
+        data.status,
+        data.url,
+        data.fields ? JSON.stringify(data.fields) : null,
+        data.created_by,
+      ],
+    )
+  }
+
+  async formSubmission(data: Omit<FormSubmission, "created_at" | "updated_at" | "reviewed_at">): Promise<void> {
+    await this.client.query(
+      `
+          INSERT INTO form_submissions (id, form_id, user_id, user_name, submission_data, status, reviewed_by, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        data.id,
+        data.form_id,
+        data.user_id,
+        data.user_name,
+        JSON.stringify(data.submission_data),
+        data.status,
+        data.reviewed_by,
+        data.notes,
+      ],
     )
   }
 }
