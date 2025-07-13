@@ -20,7 +20,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-100 dark:to-zinc-900">
             <Image
-              src="/images/tacdev/allMembersTogether.png"
+              src="/images/tacdev/hero-background.png"
               alt="Hero background"
               fill
               className="object-cover brightness-50"
