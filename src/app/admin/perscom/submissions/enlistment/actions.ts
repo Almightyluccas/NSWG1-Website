@@ -7,7 +7,7 @@ import { database } from "@/database";
 export async function acceptApplication(submissionId: number, perscomId: number, name: string, email: string) {
   await perscom.post.submissionStatus(submissionId, 'Accepted');
   await database.put.userRoleByPerscomId('member', perscomId);
-  await perscom.patch.userApproval(perscomId, true, name, email);
+  await perscom.patch.userApproval(perscomId, true, name);
   perscom.invalidateCache('applications');
   await perscom.post.clearPerscomCache()
   revalidatePath('/admin/perscom/submissions/enlistment');
