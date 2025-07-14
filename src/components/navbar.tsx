@@ -120,6 +120,18 @@ export function Navbar() {
                         >
                           Calendar
                         </Link>
+                        <Link
+                          href="/forms"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Forms
+                        </Link>
+                        <Link
+                          href="/documents"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Documents
+                        </Link>
 
                       </div>
                     )}
@@ -230,9 +242,43 @@ export function Navbar() {
             {session && (
               <>
                 <RoleGuard roles={session.user.roles} allowedRoles={['member', 'greenTeam']} hide={true}>
-                  <MobileNavLink href="/calendar" onClick={() => setIsMobileMenuOpen(false)}>
-                    Calendar
-                  </MobileNavLink>
+                  <div>
+                    <button
+                      className="flex items-center justify-between w-full text-gray-700 dark:text-zinc-300 hover:text-accent transition-colors py-2 border-b border-gray-200 dark:border-zinc-800"
+                      onClick={() => setIsMobileOperationCenterOpen(!isMobileOperationCenterOpen)}
+                    >
+                      <span>Operations Center</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${isMobileOperationCenterOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {isMobileOperationCenterOpen && (
+                      <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
+                        <Link
+                          href="/calendar"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileOperationCenterOpen(false)}
+                        >
+                          Calendar
+                        </Link>
+                        <Link
+                          href="/forms"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileOperationCenterOpen(false)}
+                        >
+                          Forms
+                        </Link>
+                        <Link
+                          href="/documents"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileOperationCenterOpen(false)}
+                        >
+                          Documents
+                        </Link>
+                      </div>
+                    )}
+                  </div>
 
                   <div>
                     <button

@@ -157,7 +157,6 @@ export class DatabasePut {
     )
   }
 
-  // Recurring Training methods
   async recurringTraining(id: string, data: UpdateRecurringTrainingData): Promise<void> {
     const updates: string[] = []
     const values: any[] = []
@@ -211,4 +210,32 @@ export class DatabasePut {
       [recurringId],
     )
   }
+
+  async updateFormDefinition(formId: number, title: string, description: string): Promise<void> {
+    await this.client.query(
+      `UPDATE form_definitions 
+       SET title = ?, description = ?, updated_at = NOW()
+       WHERE id = ?`,
+      [title, description, formId],
+    )
+  }
+
+  async updateFormSubmissionStatus(
+    submissionId: number,
+    status: "pending" | "reviewed" | "approved" | "rejected",
+    reviewedBy: string,
+    notes?: string,
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE form_submissions
+       SET status = ?, reviewed_by = ?, reviewed_at = NOW(), notes = ?
+       WHERE id = ?`,
+      [status, reviewedBy, notes, submissionId],
+    )
+  }
+
+  async updateFormActiveStatus(formId: number, isActive: boolean): Promise<void> {
+    await this.client.query(`UPDATE form_definitions SET is_active = ? WHERE id = ?`, [isActive, formId])
+  }
+
 }

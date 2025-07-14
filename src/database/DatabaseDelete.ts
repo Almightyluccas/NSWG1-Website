@@ -29,4 +29,8 @@ export class DatabaseDelete {
     await this.client.query(`DELETE FROM training_rsvps WHERE training_id = ?`, [trainingId])
     await this.client.query(`DELETE FROM training_records WHERE id = ?`, [trainingId])
   }
+
+  async deleteFormQuestionsByFormId(formId: number): Promise<void> {
+    await this.client.query(`DELETE FROM form_questions WHERE form_id = ?`, [formId])
+  }
 }

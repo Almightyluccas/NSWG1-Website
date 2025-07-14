@@ -12,6 +12,14 @@
 * investiage databse limits issue
 
 
+* add option to upload image in forms.
+
+
+* improve how my submitted forms looks and when you view your submission.
+
+
+* imporove forms ui and add toast for when submitting form..
+
 - - -
 <h2>CALENDAR</h2>
 

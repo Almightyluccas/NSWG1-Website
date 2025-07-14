@@ -1,6 +1,8 @@
 import type { User } from "@/types/database"
 import type { DatabaseClient } from "./DatabaseClient"
 import type { RecurringTraining, RecurringTrainingWithStats } from "@/types/recurring-training"
+import type { FormDefinition, FormQuestion, FormSubmission, FormSubmissionAnswer, RawSubmissionQueryResult } from "@/types/forms"
+import type { DocumentAccessLog } from "@/types/forms"
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -404,5 +406,231 @@ export class DatabaseGet {
       [name, date, time],
     )
     return rows.length > 0 ? rows[0] : null
+  }
+
+  // Forms methods
+  async getForms(): Promise<FormDefinition[]> {
+    const forms = await this.client.query<FormDefinition[]>(
+      `SELECT * FROM form_definitions WHERE is_active = true ORDER BY created_at DESC`,
+    )
+    return forms
+  }
+
+  async getFormWithQuestions(formId: number): Promise<FormDefinition | null> {
+    const [form] = await this.client.query<FormDefinition[]>(`SELECT * FROM form_definitions WHERE id = ?`, [formId])
+
+    if (!form) return null
+
+    const questions = await this.client.query<FormQuestion[]>(
+      `SELECT * FROM form_questions WHERE form_id = ? ORDER BY order_index ASC`,
+      [formId],
+    )
+
+    const parsedQuestions = questions.map((q) => {
+      let options: string[] | undefined = undefined
+
+      if (q.options !== null && typeof q.options !== "undefined") {
+
+        const optionsValue = q.options
+
+        if (Array.isArray(optionsValue)) {
+          options = optionsValue.map((opt) => String(opt).trim()).filter((opt) => opt.length > 0)
+        } else {
+          const optionsStr = String(optionsValue)
+
+          try {
+            const parsedJson = JSON.parse(optionsStr)
+            if (Array.isArray(parsedJson)) {
+              options = parsedJson.map((opt) => String(opt).trim()).filter((opt) => opt.length > 0)
+            } else if (typeof parsedJson === "string" && parsedJson.includes(",")) {
+              options = parsedJson
+                .split(",")
+                .map((opt) => opt.trim())
+                .filter((opt) => opt.length > 0)
+            } else if (typeof parsedJson === "string" && parsedJson.length > 0) {
+              options = [parsedJson.trim()]
+            }
+          } catch {
+            if (optionsStr.includes(",")) {
+              options = optionsStr
+                .split(",")
+                .map((opt) => opt.trim())
+                .filter((opt) => opt.length > 0)
+            } else if (optionsStr.length > 0) {
+              options = [optionsStr.trim()]
+            }
+          }
+        }
+      }
+
+      return {
+        ...q,
+        options,
+      }
+    })
+
+    return { ...form, questions: parsedQuestions }
+  }
+
+  async getFormSubmissions(formId: number): Promise<FormSubmission[]> {
+    const submissions = await this.client.query<FormSubmission[]>(
+      `SELECT * FROM form_submissions WHERE form_id = ? ORDER BY submitted_at DESC`,
+      [formId],
+    )
+
+    for (const submission of submissions) {
+      const answers = await this.client.query<FormSubmissionAnswer[]>(
+        `SELECT fsa.*, fq.question_text, fq.question_type
+         FROM form_submission_answers fsa
+                  JOIN form_questions fq ON fsa.question_id = fq.id
+         WHERE fsa.submission_id = ?
+         ORDER BY fq.order_index ASC`,
+        [submission.id],
+      )
+
+      submission.answers = answers.map((a) => ({
+        ...a,
+        answer_json: a.answer_json ? JSON.parse(a.answer_json as string) : undefined,
+      }))
+    }
+
+    return submissions
+  }
+
+  async getDocumentAccessLogs(limit = 100): Promise<DocumentAccessLog[]> {
+    const logs = await this.client.query<DocumentAccessLog[]>(
+      `SELECT * FROM document_access_logs 
+       ORDER BY accessed_at DESC 
+       LIMIT ?`,
+      [limit],
+    )
+
+    return logs
+  }
+
+  async getUserFormSubmissions(userId: string): Promise<FormSubmission[]> {
+    const submissionsData = await this.client.query<RawSubmissionQueryResult[]>(
+      `
+          SELECT
+              fs.id AS submission_id,
+              fs.form_id,
+              fs.user_id,
+              fs.user_name,
+              fs.user_email,
+              fs.submitted_at,
+              fs.status,
+              fs.reviewed_by,
+              fs.reviewed_at,
+              fs.notes,
+              fd.title AS form_title,
+              fd.description AS form_description,
+              fq.id AS question_id,
+              fq.question_text,
+              fq.question_type,
+              fq.is_required,
+              fq.options,
+              fq.order_index,
+              fsa.id AS answer_id,
+              fsa.answer_text,
+              fsa.answer_json
+          FROM
+              form_submissions fs
+                  JOIN
+              form_definitions fd ON fs.form_id = fd.id
+                  LEFT JOIN
+              users u ON fs.user_id = u.id
+                  LEFT JOIN
+              form_submission_answers fsa ON fs.id = fsa.submission_id
+                  LEFT JOIN
+              form_questions fq ON fsa.question_id = fq.id
+          WHERE
+              fs.user_id = ?
+          ORDER BY
+              fs.submitted_at DESC, fq.order_index ASC
+      `,
+      [userId],
+    );
+
+    const submissionsMap = new Map<number, FormSubmission>();
+
+    for (const row of submissionsData) {
+      let submission = submissionsMap.get(row.submission_id);
+
+      if (!submission) {
+        submission = {
+          id: row.submission_id,
+          form_id: row.form_id,
+          user_id: row.user_id ?? undefined,
+          user_name: row.user_name ?? undefined,
+          user_email: row.user_email ?? undefined,
+          submitted_at: new Date(row.submitted_at),
+          status: row.status,
+          reviewed_by: row.reviewed_by ?? undefined,
+          reviewed_at: row.reviewed_at ? new Date(row.reviewed_at) : undefined,
+          notes: row.notes ?? undefined,
+          form_title: row.form_title,
+          form_description: row.form_description ?? undefined,
+          answers: [],
+        };
+        submissionsMap.set(row.submission_id, submission);
+      }
+
+      if (row.question_id !== null) {
+        let parsedOptions: string[] | undefined;
+        if (row.options !== null && typeof row.options !== 'undefined') {
+          if (typeof row.options === 'string') {
+            try {
+              let optionsString = row.options.trim();
+              if (optionsString.startsWith('[') && optionsString.endsWith(']') && optionsString.includes("'")) {
+                optionsString = optionsString.replace(/'/g, '"');
+              }
+              parsedOptions = JSON.parse(optionsString);
+            } catch (e) {
+              console.error(`Error parsing options for question ID ${row.question_id} (string format):`, row.options, e);
+              parsedOptions = undefined;
+            }
+          } else if (Array.isArray(row.options)) {
+            parsedOptions = row.options as string[];
+          } else {
+            console.warn(`Unexpected type for options for question ID ${row.question_id}:`, typeof row.options, row.options);
+            parsedOptions = undefined;
+          }
+        }
+
+        let parsedAnswerJson: any | undefined;
+        try {
+          if (row.answer_json) {
+            parsedAnswerJson = JSON.parse(row.answer_json);
+          }
+        } catch (e) {
+          console.error(`Error parsing answer_json for answer ID ${row.answer_id}:`, row.answer_json, e);
+          parsedAnswerJson = undefined;
+        }
+
+        const answer: FormSubmissionAnswer = {
+          id: row.answer_id!,
+          submission_id: row.submission_id,
+          question_id: row.question_id,
+          answer_text: row.answer_text ?? undefined,
+          answer_json: parsedAnswerJson,
+          created_at: new Date().toISOString(),
+          question: {
+            id: row.question_id,
+            form_id: row.form_id,
+            question_text: row.question_text!,
+            question_type: row.question_type!,
+            is_required: row.is_required!,
+            options: parsedOptions,
+            order_index: row.order_index!,
+            created_at: new Date().toISOString(),
+          },
+          question_text: row.question_text!,
+          question_type: row.question_type!,
+        };
+        submission.answers!.push(answer);
+      }
+    }
+
+    return Array.from(submissionsMap.values());
   }
 }
