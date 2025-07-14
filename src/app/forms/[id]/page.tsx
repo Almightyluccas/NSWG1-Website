@@ -5,16 +5,14 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 interface FormPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
-  searchParams?: {
-    [key: string]: string | string[] | undefined;
-  };
+  }>;
 }
 
 export default async function FormPage({ params }: FormPageProps) {
-  const formId = Number.parseInt(params.id);
+  const { id } = await params;
+  const formId = Number.parseInt(id);
   if (isNaN(formId)) {
     notFound();
   }
