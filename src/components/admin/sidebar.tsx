@@ -118,6 +118,20 @@ export function AdminSidebar({ className }: SidebarProps) {
                 Gallery Management
               </Link>
             </li>
+            <li>
+              <Link
+                href="/admin/forms"
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  pathname === "/admin/gallery"
+                    ? "bg-accent text-black"
+                    : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
+                )}
+              >
+                <FileText className="h-4 w-4" />
+                Forms
+              </Link>
+            </li>
           </RoleGuard>
           <li className="mt-6">
             <div
