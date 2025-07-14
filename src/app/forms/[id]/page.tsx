@@ -4,8 +4,16 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
+interface FormPageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
+}
 
-export default async function FormPage({ params }: { params: { id: string } }) {
+export default async function FormPage({ params }: FormPageProps) {
   const formId = Number.parseInt(params.id);
   if (isNaN(formId)) {
     notFound();
