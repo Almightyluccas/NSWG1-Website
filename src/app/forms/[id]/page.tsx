@@ -1,25 +1,20 @@
-import { getFormWithQuestions } from "@/app/forms/action" // Updated import
-import FormViewer from "../[id]/form-viewer"
-import { notFound } from "next/navigation"
+import { getFormWithQuestions } from "@/app/forms/action";
+import FormViewer from "../[id]/form-viewer";
+import { notFound } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
-interface FormPageProps {
-  params: {
-    id: string
-  }
-}
 
-export default async function FormPage({ params }: FormPageProps) {
-  const formId = Number.parseInt(params.id)
+export default async function FormPage({ params }: { params: { id: string } }) {
+  const formId = Number.parseInt(params.id);
   if (isNaN(formId)) {
-    notFound()
+    notFound();
   }
 
-  const form = await getFormWithQuestions(formId)
+  const form = await getFormWithQuestions(formId);
 
   if (!form) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -30,5 +25,5 @@ export default async function FormPage({ params }: FormPageProps) {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
