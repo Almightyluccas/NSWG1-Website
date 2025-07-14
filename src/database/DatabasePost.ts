@@ -1,5 +1,6 @@
 import type { DatabaseClient } from "./DatabaseClient"
 import type { CreateRecurringTrainingData } from "@/types/recurring-training"
+import type { FormQuestion } from "@/types/forms"
 
 export class DatabasePost {
   constructor(private client: DatabaseClient) {}
@@ -33,7 +34,7 @@ export class DatabasePost {
           INSERT INTO images (author_id, image_url, image_type)
           VALUES (?, ?, 'profile')
       `,
-      [userId, imageUrl, userId]
+      [userId, imageUrl, userId],
     )
 
     const imageId = result.insertId
@@ -252,6 +253,68 @@ export class DatabasePost {
           VALUES (?, ?, ?, ?)
       `,
       [data.id, data.recurringTrainingId, data.trainingId, data.scheduledDate],
+    )
+  }
+
+  // Forms methods
+  async createFormDefinition(title: string, description: string, createdBy: string): Promise<number> {
+    const formResult = await this.client.query<any>(
+      `INSERT INTO form_definitions (title, description, created_by)
+       VALUES (?, ?, ?)`,
+      [title, description, createdBy],
+    )
+    return formResult.insertId
+  }
+
+  async createFormQuestion(
+    formId: number,
+    question: Omit<FormQuestion, "id" | "form_id" | "created_at">,
+  ): Promise<void> {
+    await this.client.query(
+      `INSERT INTO form_questions (form_id, question_text, question_type, is_required, options, order_index)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        formId,
+        question.question_text.trim(),
+        question.question_type,
+        question.is_required || false,
+        question.options ? JSON.stringify(question.options) : null,
+        question.order_index,
+      ],
+    )
+  }
+
+  async createFormSubmission(formId: number, userId?: string, userName?: string, userEmail?: string): Promise<number> {
+    const submissionResult = await this.client.query<any>(
+      `INSERT INTO form_submissions (form_id, user_id, user_name, user_email)
+       VALUES (?, ?, ?, ?)`,
+      [formId, userId, userName, userEmail],
+    )
+    return submissionResult.insertId
+  }
+
+  async createFormSubmissionAnswer(submissionId: number, questionId: number, answerText: string): Promise<void> {
+    await this.client.query(
+      `INSERT INTO form_submission_answers (submission_id, question_id, answer_text)
+       VALUES (?, ?, ?)`,
+      [submissionId, questionId, answerText],
+    )
+  }
+
+  // Document methods
+  async logDocumentAccess(
+    documentPath: string,
+    documentName: string,
+    accessType: "view" | "download",
+    userId?: string,
+    userName?: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<void> {
+    await this.client.query(
+      `INSERT INTO document_access_logs (document_path, document_name, user_id, user_name, access_type, ip_address, user_agent)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [documentPath, documentName, userId, userName, accessType, ipAddress, userAgent],
     )
   }
 }

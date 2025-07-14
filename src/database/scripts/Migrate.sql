@@ -207,3 +207,90 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
                                               INDEX idx_token_hash (token_hash),
                                               INDEX idx_expires_at (expires_at)
 );
+
+-- Forms and Documents Management System Tables
+
+-- Forms and Documents Management System Tables
+
+-- Table for storing form definitions
+CREATE TABLE IF NOT EXISTS form_definitions (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                title VARCHAR(255) NOT NULL,
+                                                description TEXT,
+                                                is_active BOOLEAN DEFAULT TRUE,
+                                                created_by VARCHAR(255) NOT NULL,
+                                                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                                INDEX idx_is_active (is_active),
+                                                INDEX idx_created_by (created_by),
+                                                FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table for storing form questions/fields
+CREATE TABLE IF NOT EXISTS form_questions (
+                                              id INT AUTO_INCREMENT PRIMARY KEY,
+                                              form_id INT NOT NULL,
+                                              question_text TEXT NOT NULL,
+                                              question_type ENUM('short_answer', 'paragraph', 'multiple_choice', 'checkboxes', 'dropdown', 'date', 'time', 'email', 'number') NOT NULL,
+                                              is_required BOOLEAN DEFAULT FALSE,
+                                              options JSON, -- For multiple choice, checkboxes, dropdown options
+                                              order_index INT NOT NULL,
+                                              created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                              INDEX idx_form_id (form_id),
+                                              INDEX idx_order_index (order_index),
+                                              FOREIGN KEY (form_id) REFERENCES form_definitions(id) ON DELETE CASCADE
+);
+
+-- Table for storing form submissions
+CREATE TABLE IF NOT EXISTS form_submissions (
+                                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                                form_id INT NOT NULL,
+                                                user_id VARCHAR(255),
+                                                user_name VARCHAR(255),
+                                                user_email VARCHAR(255),
+                                                submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                status ENUM('pending', 'reviewed', 'approved', 'rejected') DEFAULT 'pending',
+                                                reviewed_by VARCHAR(255),
+                                                reviewed_at DATETIME,
+                                                notes TEXT,
+                                                INDEX idx_form_id (form_id),
+                                                INDEX idx_user_id (user_id),
+                                                INDEX idx_status (status),
+                                                INDEX idx_submitted_at (submitted_at),
+                                                FOREIGN KEY (form_id) REFERENCES form_definitions(id) ON DELETE CASCADE,
+                                                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+                                                FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Table for storing form submission answers
+CREATE TABLE IF NOT EXISTS form_submission_answers (
+                                                       id INT AUTO_INCREMENT PRIMARY KEY,
+                                                       submission_id INT NOT NULL,
+                                                       question_id INT NOT NULL,
+                                                       answer_text TEXT,
+                                                       answer_json JSON, -- For complex answers like multiple selections
+                                                       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                       INDEX idx_submission_id (submission_id),
+                                                       INDEX idx_question_id (question_id),
+                                                       FOREIGN KEY (submission_id) REFERENCES form_submissions(id) ON DELETE CASCADE,
+                                                       FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE
+);
+
+-- Table for tracking document access/downloads
+CREATE TABLE IF NOT EXISTS document_access_logs (
+                                                    id INT AUTO_INCREMENT PRIMARY KEY,
+                                                    document_path VARCHAR(500) NOT NULL,
+                                                    document_name VARCHAR(255) NOT NULL,
+                                                    user_id VARCHAR(255),
+                                                    user_name VARCHAR(255),
+                                                    access_type ENUM('view', 'download') NOT NULL,
+                                                    accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                    ip_address VARCHAR(45),
+                                                    user_agent TEXT,
+                                                    INDEX idx_document_path (document_path),
+                                                    INDEX idx_user_id (user_id),
+                                                    INDEX idx_access_type (access_type),
+                                                    INDEX idx_accessed_at (accessed_at),
+                                                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
