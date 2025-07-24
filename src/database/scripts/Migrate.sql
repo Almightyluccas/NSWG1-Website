@@ -190,29 +190,27 @@ CREATE TABLE IF NOT EXISTS users (
                                      date_of_birth DATE,
                                      email VARCHAR(255) NOT NULL,
                                      profile_image_id VARCHAR(255),
-                                     refresh_token TEXT,
-                                     refresh_token_expires_at DATETIME,
-                                     role TEXT,
+                                     role set('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'instructor', 'admin', 'superAdmin', 'developer'),
                                      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                      INDEX idx_perscom_id (perscom_id),
                                      INDEX idx_discord_username (discord_username),
                                      INDEX idx_email (email)
 );
 
+
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-                                              id VARCHAR(255) PRIMARY KEY,
-                                              token_hash VARCHAR(255) NOT NULL,
+                                              id INT AUTO_INCREMENT PRIMARY KEY,
+                                              user_id VARCHAR(255) NOT NULL,
+                                              token_hash VARCHAR(255) NOT NULL UNIQUE,
                                               expires_at DATETIME NOT NULL,
+                                              revoked_at DATETIME NULL DEFAULT NULL,
                                               created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                              INDEX idx_token_hash (token_hash),
-                                              INDEX idx_expires_at (expires_at)
+                                              ip_address VARCHAR(255),
+                                              user_agent TEXT,
+                                              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                                              INDEX idx_user_id (user_id)
 );
 
--- Forms and Documents Management System Tables
-
--- Forms and Documents Management System Tables
-
--- Table for storing form definitions
 CREATE TABLE IF NOT EXISTS form_definitions (
                                                 id INT AUTO_INCREMENT PRIMARY KEY,
                                                 title VARCHAR(255) NOT NULL,
@@ -226,7 +224,6 @@ CREATE TABLE IF NOT EXISTS form_definitions (
                                                 FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Table for storing form questions/fields
 CREATE TABLE IF NOT EXISTS form_questions (
                                               id INT AUTO_INCREMENT PRIMARY KEY,
                                               form_id INT NOT NULL,
@@ -241,7 +238,6 @@ CREATE TABLE IF NOT EXISTS form_questions (
                                               FOREIGN KEY (form_id) REFERENCES form_definitions(id) ON DELETE CASCADE
 );
 
--- Table for storing form submissions
 CREATE TABLE IF NOT EXISTS form_submissions (
                                                 id INT AUTO_INCREMENT PRIMARY KEY,
                                                 form_id INT NOT NULL,
@@ -262,7 +258,6 @@ CREATE TABLE IF NOT EXISTS form_submissions (
                                                 FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Table for storing form submission answers
 CREATE TABLE IF NOT EXISTS form_submission_answers (
                                                        id INT AUTO_INCREMENT PRIMARY KEY,
                                                        submission_id INT NOT NULL,
@@ -276,7 +271,6 @@ CREATE TABLE IF NOT EXISTS form_submission_answers (
                                                        FOREIGN KEY (question_id) REFERENCES form_questions(id) ON DELETE CASCADE
 );
 
--- Table for tracking document access/downloads
 CREATE TABLE IF NOT EXISTS document_access_logs (
                                                     id INT AUTO_INCREMENT PRIMARY KEY,
                                                     document_path VARCHAR(500) NOT NULL,

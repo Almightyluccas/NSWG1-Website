@@ -33,29 +33,51 @@ export async function submitApplication(formData: FormData, user_id: string, dis
     preferredPosition: formEntries.preferredPosition?.toString() || ""
   }
 
-  const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
-  const createPerscomUserResponse: PerscomUserCreationResponse = await perscom.post.user(perscomUser);
-  if (!createPerscomUserResponse) throw new Error("Failed to create perscom user");
-
-  const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
-    {
-      form_id: 1,
-      user_id: createPerscomUserResponse.data.id,
-      arma_3_id: data.steamId,
-      first_name: data.name,
-      discord_name: data.discordName,
-      date_of_birth: data.dateOfBirth.toISOString(),
-      email_address: data.email as string,
-      previous_unit: `${data.hasPreviousExperience}. ${data.previousUnits}`,
-      preferred_position: data.preferredPosition,
-      what_is_your_time_zone: data.timezone,
-      arma_experience_in_hours: data.armaExperience,
-      why_do_you_want_to_join_red_squadron: data.reason,
-      what_makes_you_more_capable_than_other_candidates: data.capabilities,
-      confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: "yes",
+  let createPerscomUserResponse: PerscomUserCreationResponse;
+  try {
+    const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
+    createPerscomUserResponse = await perscom.post.user(perscomUser);
+    if (!createPerscomUserResponse?.data?.id) {
+      throw new Error("Invalid response from PERSCOM user creation.");
     }
-  );
-  if (!applicationResponse) throw new Error("Failed to create application submission");
+  } catch (error) {
+    console.error("PERSCOM User Creation Error:", error);
+    throw new Error("An error occurred with the PERSCOM service during user creation.");
+  }
 
-  await database.put.userAfterApplication(user_id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
+
+  try {
+    const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
+      {
+        form_id: 1,
+        user_id: createPerscomUserResponse.data.id,
+        arma_3_id: data.steamId,
+        first_name: data.name,
+        discord_name: data.discordName,
+        date_of_birth: data.dateOfBirth.toISOString(),
+        email_address: data.email as string,
+        previous_unit: `${data.hasPreviousExperience}. ${data.previousUnits}`,
+        preferred_position: data.preferredPosition,
+        what_is_your_time_zone: data.timezone,
+        arma_experience_in_hours: data.armaExperience,
+        why_do_you_want_to_join_red_squadron: data.reason,
+        what_makes_you_more_capable_than_other_candidates: data.capabilities,
+        confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: "yes",
+      }
+    );
+    if (!applicationResponse) {
+      throw new Error("Invalid response from PERSCOM application submission.");
+    }
+  } catch(error) {
+    console.error("PERSCOM Application Submission Error:", error);
+    throw new Error("An error occurred with the PERSCOM service during application submission.");
+  }
+
+
+  try {
+    await database.put.userAfterApplication(user_id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
+  } catch (error) {
+    console.error("Database Update Error:", error);
+    throw new Error("An error occurred while updating the user database.");
+  }
 }

@@ -18,14 +18,20 @@ export class DatabasePost {
     )
   }
 
-  async refreshToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+  async createRefreshToken(
+    userId: string,
+    tokenHash: string,
+    expiresAt: Date,
+    ipAddress: string,
+    userAgent: string
+  ): Promise<void> {
     await this.client.query(
       `
-          INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
-          VALUES (?, ?, ?)
+          INSERT INTO refresh_tokens (user_id, token_hash, expires_at, ip_address, user_agent)
+          VALUES (?, ?, ?, ?, ?)
       `,
-      [userId, tokenHash, expiresAt],
-    )
+      [userId, tokenHash, expiresAt, ipAddress, userAgent],
+    );
   }
 
   async userProfileImage(userId: string, imageUrl: string): Promise<number | null> {

@@ -1,5 +1,6 @@
 import type { User } from "@/types/database"
 import type { DatabaseClient } from "./DatabaseClient"
+import type { RefreshTokenRow } from "@/types/database"
 import type { RecurringTraining, RecurringTrainingWithStats } from "@/types/recurring-training"
 import type { FormDefinition, FormQuestion, FormSubmission, FormSubmissionAnswer, RawSubmissionQueryResult } from "@/types/forms"
 import type { DocumentAccessLog } from "@/types/forms"
@@ -150,6 +151,17 @@ export class DatabaseGet {
     if (!rows || (rows as any[]).length === 0) throw new Error("No refresh token found")
 
     return (rows as any[])[0].refresh_token
+  }
+
+  async getRefreshTokenByHash(tokenHash: string): Promise<{ user_id: string, expires_at: Date } | null> {
+    const [rows] = await this.client.query<[RefreshTokenRow[]]>(
+      `
+      SELECT user_id, expires_at FROM refresh_tokens
+      WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW()
+    `,
+      [tokenHash],
+    );
+    return rows[0] || null;
   }
 
   // Campaign methods
@@ -391,6 +403,8 @@ export class DatabaseGet {
     )
     return rows.length > 0
   }
+
+
 
   async missionConflictsOnDate(date: string): Promise<any[]> {
     const rows = await this.client.query<any[]>(
