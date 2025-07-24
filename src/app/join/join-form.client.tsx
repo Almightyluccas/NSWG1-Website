@@ -21,11 +21,11 @@ const unitOptions = [
 
 const timezoneOptions = [
   { value: "aft", label: "Afghanistan Time (AFT) (UTC+04:30)" },
-  { value: "acst", label: "Australian Central Standard Time (ACST) (UTC+09:30)" }, // Darwin, Adelaide
-  { value: "aest", label: "Australian Eastern Standard Time (AEST) (UTC+10)" }, // Brisbane, Sydney, Melbourne
+  { value: "acst", label: "Australian Central Standard Time (ACST) (UTC+09:30)" },
+  { value: "aest", label: "Australian Eastern Standard Time (AEST) (UTC+10)" },
   { value: "akst", label: "Alaska Standard Time (AKST) (UTC-09)" },
-  { value: "utc-12", label: "Anywhere on Earth (UTC-12)" }, // Often for deadlines
-  { value: "gst_arabia", label: "Arabia Standard Time (AST/GST) (UTC+03)" }, // Gulf Standard Time (Dubai, Abu Dhabi)
+  { value: "utc-12", label: "Anywhere on Earth (UTC-12)" },
+  { value: "gst_arabia", label: "Arabia Standard Time (AST/GST) (UTC+03)" },
   { value: "art", label: "Argentina Time (ART) (UTC-03)" },
   { value: "ast", label: "Atlantic Standard Time (AST/ADT) (UTC-04/-03)" },
   { value: "awst", label: "Australian Western Standard Time (AWST) (UTC+08)" },
@@ -40,21 +40,21 @@ const timezoneOptions = [
   { value: "cst_china", label: "China Standard Time (CST) (UTC+08)" },
   { value: "clt", label: "Chile Standard Time (CLT/CLST) (UTC-04/-03)" },
   { value: "cot", label: "Colombia Time (COT) (UTC-05)" },
-  { value: "utc", label: "Coordinated Universal Time (UTC)" }, // Often used as a reference
+  { value: "utc", label: "Coordinated Universal Time (UTC)" },
   { value: "eat", label: "East Africa Time (EAT) (UTC+03)" },
   { value: "eet", label: "Eastern European Time (EET/EEST) (UTC+02/+03)" },
   { value: "est", label: "Eastern Time (EST/EDT) (UTC-05/-04)" },
   { value: "fjt", label: "Fiji Time (FJT) (UTC+12)" },
   { value: "gmt", label: "Greenwich Mean Time (GMT) (UTC+00)" },
   { value: "hst", label: "Hawaii Standard Time (HST) (UTC-10)" },
-  { value: "ict", label: "Indochina Time (ICT) (UTC+07)" }, // Bangkok, Hanoi, Jakarta
+  { value: "ict", label: "Indochina Time (ICT) (UTC+07)" },
   { value: "ist_india", label: "Indian Standard Time (IST) (UTC+05:30)" },
   { value: "jst", label: "Japan Standard Time (JST) (UTC+09)" },
   { value: "kst", label: "Korean Standard Time (KST) (UTC+09)" },
   { value: "lint", label: "Line Islands Time (LINT) (UTC+14)" },
   { value: "lhst", label: "Lord Howe Standard Time (LHST) (UTC+10:30)" },
-  { value: "military_alpha", label: "Alpha Time Zone (A) (UTC+01)" }, // Military time zones
-  { value: "military_zulu", label: "Zulu Time Zone (Z) (UTC+00)" }, // Military time zones (same as UTC/GMT)
+  { value: "military_alpha", label: "Alpha Time Zone (A) (UTC+01)" },
+  { value: "military_zulu", label: "Zulu Time Zone (Z) (UTC+00)" },
   { value: "mmt", label: "Myanmar Time (MMT) (UTC+06:30)" },
   { value: "msk", label: "Moscow Standard Time (MSK) (UTC+03)" },
   { value: "mst", label: "Mountain Time (MST/MDT) (UTC-07/-06)" },
@@ -65,7 +65,7 @@ const timezoneOptions = [
   { value: "pet", label: "Peru Time (PET) (UTC-05)" },
   { value: "pkt", label: "Pakistan Standard Time (PKT) (UTC+05)" },
   { value: "sast", label: "South African Standard Time (SAST) (UTC+02)" },
-  { value: "telt", label: "Iran Standard Time (IRST/IRDT) (UTC+03:30/+04:30)" }, // Tehran
+  { value: "telt", label: "Iran Standard Time (IRST/IRDT) (UTC+03:30/+04:30)" },
   { value: "tot", label: "Tonga Time (TOT) (UTC+13)" },
   { value: "vet", label: "Venezuelan Standard Time (VET) (UTC-04:30)" },
   { value: "wat", label: "West Africa Time (WAT) (UTC+01)" },
@@ -93,6 +93,7 @@ export default function JoinFormClient() {
     confirmRequirements: false,
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -142,37 +143,55 @@ export default function JoinFormClient() {
     }
   }
 
-  const validateForm = () => {
+  const validateForm = (data: typeof formData) => {
     const errors: Record<string, string> = {}
 
-    if (!formData.name) errors.name = "Name is required"
-    if (!formData.discordName) errors.discordName = "Discord name is required"
-    if (!formData.email) errors.email = "Email address is required"
-    if (!formData.email.includes("@")) errors.email = "Please enter a valid email address"
-    if (!formData.dateOfBirth) errors.dateOfBirth = "Date of birth is required"
-    if (!formData.steamId) errors.steamId = "Steam ID is required"
-    if (!formData.mos) errors.mos = "Please select a unit/role you want to join"
-    if (formData.hasPreviousExperience === "yes" && !formData.previousUnits) {
+    if (!data.name) {
+      errors.name = "Name is required"
+    } else {
+      const nameRegex = /^[A-Z]\.\s.+$/
+      if (!nameRegex.test(data.name)) {
+        errors.name =
+          "Invalid format. Name must be your first initial, a period, a space, and your last name (e.g., J. Doe)."
+      }
+    }
+    if (!data.discordName) errors.discordName = "Discord name is required"
+    if (!data.email) errors.email = "Email address is required"
+    if (!data.email.includes("@")) errors.email = "Please enter a valid email address"
+    if (!data.dateOfBirth) errors.dateOfBirth = "Date of birth is required"
+    if (!data.steamId) errors.steamId = "Steam ID is required"
+    if (!data.mos) errors.mos = "Please select a unit/role you want to join"
+    if (data.hasPreviousExperience === "yes" && !data.previousUnits) {
       errors.previousUnits = "Please provide details of your previous units"
     }
-    if (!formData.reason) errors.reason = "Please tell us why you want to join"
-    if (!formData.timezone) errors.timezone = "Please select your timezone"
-    if (!formData.armaExperience) errors.armaExperience = "Please enter your Arma experience in hours"
-    if (!formData.capabilities) errors.capabilities = "Please tell us what makes you capable"
-    if (!formData.confirmRequirements) {
+    if (!data.reason) errors.reason = "Please tell us why you want to join"
+    if (!data.timezone) errors.timezone = "Please select your timezone"
+    if (!data.armaExperience) errors.armaExperience = "Please enter your Arma experience in hours"
+    if (!data.capabilities) errors.capabilities = "Please tell us what makes you capable"
+    if (!data.confirmRequirements) {
       errors.confirmRequirements = "You must confirm that you have read the requirements"
     }
 
     return errors
   }
-  // TODO: fix form validation especially for name to match regex
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSubmissionError(null);
 
-    const errors = validateForm();
+    const correctedData = { ...formData }
+    const nameValue = correctedData.name.trim()
+    const missingSpaceRegex = /^[A-Z]\.[^\s]/
+    if (missingSpaceRegex.test(nameValue)) {
+      correctedData.name = nameValue.replace(".", ". ")
+    }
+
+    const errors = validateForm(correctedData)
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      if (correctedData.name !== formData.name) {
+        setFormData(correctedData)
+      }
       const firstErrorField = document.querySelector(
         `[name="${Object.keys(errors)[0]}"]`
       );
@@ -180,11 +199,38 @@ export default function JoinFormClient() {
       return;
     }
     setIsSubmitting(true)
-    await submitApplication(new FormData(e.currentTarget), session!.user.id!, session!.user.discordName!).then(() => setIsSubmitted(true));
+    setFormData(correctedData)
+
+    const formDataForAction = new FormData()
+    Object.entries(correctedData).forEach(([key, value]) => {
+      if (key === "mos") {
+        formDataForAction.append("preferredPosition", value.toString())
+      } else {
+        formDataForAction.append(key, value.toString())
+      }
+    })
+
+    try {
+      await submitApplication(formDataForAction, session!.user.id!, session!.user.discordName!)
+      setIsSubmitted(true);
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error("Application Submission Failed:", error);
+      if (error instanceof Error) {
+        if (error.message.includes("PERSCOM")) {
+          setSubmissionError("There was a problem submitting to our recruitment service (PERSCOM). Please check your details and try again, or contact support if the issue persists.");
+        } else if (error.message.includes("database")) {
+          setSubmissionError("There was a problem updating our user records. Please contact support.");
+        } else {
+          setSubmissionError("An unknown error occurred during submission. Please try again later.");
+        }
+      } else {
+        setSubmissionError("An unexpected error occurred. Please try again later.");
+      }
+    }
   };
 
   return (
-
     <FadeIn>
       {isSubmitted ? (
         <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-8 text-center">
@@ -434,7 +480,6 @@ export default function JoinFormClient() {
                     ))}
                   </SelectContent>
                 </Select>
-                {/* Hidden input for Timezone */}
                 <input type="hidden" name="timezone" value={formData.timezone} />
                 {formErrors.timezone && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
@@ -508,6 +553,12 @@ export default function JoinFormClient() {
                   )}
                 </div>
               </div>
+
+              {submissionError && (
+                <p className="text-red-500 text-sm flex items-center mt-1 p-2 bg-red-500/10 rounded-md">
+                  <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" /> {submissionError}
+                </p>
+              )}
 
               <Button
                 type="submit"
