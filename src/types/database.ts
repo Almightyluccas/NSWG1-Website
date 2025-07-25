@@ -16,6 +16,26 @@ export enum UserRole {
   developer = 'developer',
 }
 
+export const roleHierarchy: Record<string, number> = {
+  [UserRole.guest]: 0,
+  [UserRole.applicant]: 10,
+  [UserRole.candidate]: 20,
+  [UserRole.greenTeam]: 30,
+  [UserRole.member]: 40,
+  [UserRole.instructor]: 50,
+  [UserRole.admin]: 80,
+  [UserRole.superAdmin]: 90,
+  [UserRole.developer]: 100,
+
+};
+
+
+export type RefreshTokenRow = {
+  user_id: string;
+  expires_at: Date;
+};
+
+
 export interface User {
   id: string;
   perscom_id: number | null;

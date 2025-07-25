@@ -45,13 +45,20 @@ export class DatabasePut {
     )
   }
 
-  async userRefreshToken(userId: string, refreshToken: string | null, expiresAt: number | null): Promise<void> {
+  async updateRefreshToken(oldTokenHash: string, newTokenHash: string, newExpiresAt: Date): Promise<void> {
+    await this.client.query(
+      `UPDATE refresh_tokens SET token_hash = ?, expires_at = ? WHERE token_hash = ?`,
+      [newTokenHash, newExpiresAt, oldTokenHash],
+    );
+  }
+
+  async revokeRefreshToken(tokenHash: string): Promise<void> {
     await this.client.query(
       `
-          UPDATE users SET refresh_token = ?, refresh_token_expires_at = DATE_ADD(NOW(), INTERVAL ? SECOND) WHERE id = ?
-      `,
-      [refreshToken, expiresAt, userId],
-    )
+      UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = ?
+    `,
+      [tokenHash],
+    );
   }
 
   async campaign(
