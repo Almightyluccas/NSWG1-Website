@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -45,6 +45,8 @@ import {
   Search,
   Loader2,
   Trash2,
+  Filter,
+  X,
 } from "lucide-react"
 import {
   getTrainingRecords,
@@ -114,6 +116,13 @@ interface User {
   discord_username: string
   role: string[]
   primaryRole: string
+}
+
+interface FilterState {
+  dateFrom: string
+  dateTo: string
+  sortOrder: "newest" | "oldest" | "upcoming"
+  eventType: "all" | "upcoming" | "past"
 }
 
 function CreateTrainingModal({
@@ -366,6 +375,13 @@ export function TrainingTab() {
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [localAttendance, setLocalAttendance] = useState<TrainingAttendance[]>([])
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    dateFrom: "",
+    dateTo: "",
+    sortOrder: "upcoming",
+    eventType: "upcoming",
+  })
 
   const isAdmin = session?.user?.roles.includes("admin")
 
@@ -433,6 +449,73 @@ export function TrainingTab() {
       if (!preserveState) setLoading(false)
     }
   }
+
+  const filteredAndSortedTraining = useMemo(() => {
+    let filtered = [...trainingRecords]
+    const today = new Date().toISOString().split("T")[0]
+
+    if (filters.dateFrom || filters.dateTo) {
+      filtered = filtered.filter((training) => {
+        const trainingDate = training.date
+
+        if (filters.dateFrom && trainingDate < filters.dateFrom) return false
+        if (filters.dateTo && trainingDate > filters.dateTo) return false
+
+        return true
+      })
+    }
+
+    if (filters.eventType !== "all") {
+      filtered = filtered.filter((training) => {
+        const trainingDate = training.date
+        const isUpcoming = trainingDate >= today
+        const isPast = trainingDate < today
+
+        if (filters.eventType === "upcoming") return isUpcoming
+        if (filters.eventType === "past") return isPast
+
+        return true
+      })
+    }
+
+    filtered.sort((a, b) => {
+
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const todayTimestamp = startOfToday.getTime();
+
+      const aDate = new Date(a.date).getTime();
+      const bDate = new Date(b.date).getTime();
+
+      if (filters.sortOrder === "upcoming") {
+        const aIsUpcoming = aDate >= todayTimestamp;
+        const bIsUpcoming = bDate >= todayTimestamp;
+
+        if (aIsUpcoming && !bIsUpcoming) return -1;
+        if (!aIsUpcoming && bIsUpcoming) return 1;
+
+        return aDate - bDate;
+      } else if (filters.sortOrder === "newest") {
+        return bDate - aDate;
+      } else {
+        return aDate - bDate;
+      }
+    });
+
+    return filtered;
+  }, [trainingRecords, filters]);
+
+  const clearFilters = () => {
+    setFilters({
+      dateFrom: "",
+      dateTo: "",
+      sortOrder: "upcoming",
+      eventType: "upcoming",
+    })
+  }
+
+  const hasActiveFilters =
+    filters.dateFrom || filters.dateTo || filters.sortOrder !== "upcoming" || filters.eventType !== "upcoming"
 
   const openModal = (type: keyof typeof modals, training?: TrainingRecord) => {
     if (training) setSelectedTraining(training)
@@ -686,14 +769,19 @@ export function TrainingTab() {
     }
   }
 
-  const totalPages = Math.ceil(trainingRecords.length / TRAINING_PER_PAGE)
+  const totalPages = Math.ceil(filteredAndSortedTraining.length / TRAINING_PER_PAGE)
   const startIndex = (currentPage - 1) * TRAINING_PER_PAGE
   const endIndex = startIndex + TRAINING_PER_PAGE
-  const paginatedTraining = trainingRecords.slice(startIndex, endIndex)
+  const paginatedTraining = filteredAndSortedTraining.slice(startIndex, endIndex)
 
   const goToPage = (page: number) => {
     setCurrentPage(page)
   }
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
 
   if (loading) {
     return (
@@ -765,17 +853,103 @@ export function TrainingTab() {
         <div>
           <h2 className="text-2xl font-bold">Training Records</h2>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Showing {startIndex + 1}-{Math.min(endIndex, trainingRecords.length)} of {trainingRecords.length} training
-            sessions
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedTraining.length)} of{" "}
+            {filteredAndSortedTraining.length} training sessions
           </p>
         </div>
-        {isAdmin && (
-          <Button className="bg-accent hover:bg-accent/90 text-black" onClick={() => openModal("create")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Training
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className={hasActiveFilters ? "border-accent text-accent" : ""}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 text-xs">
+                !
+              </Badge>
+            )}
           </Button>
-        )}
+          {isAdmin && (
+            <Button className="bg-accent hover:bg-accent/90 text-black" onClick={() => openModal("create")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Training
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Filter Section */}
+      {showFilters && (
+        <Card className="theme-card">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg">Filter Training Sessions</CardTitle>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="dateFrom">From Date</Label>
+                <Input
+                  id="dateFrom"
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="dateTo">To Date</Label>
+                <Input
+                  id="dateTo"
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="sortOrder">Sort Order</Label>
+                <Select
+                  value={filters.sortOrder}
+                  onValueChange={(value: any) => setFilters((prev) => ({ ...prev, sortOrder: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming First</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="eventType">Event Type</Label>
+                <Select
+                  value={filters.eventType}
+                  onValueChange={(value: any) => setFilters((prev) => ({ ...prev, eventType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming Only</SelectItem>
+                    <SelectItem value="past">Past Only</SelectItem>
+                    <SelectItem value="all">All Events</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6">
         {paginatedTraining.map((training) => {
@@ -1112,14 +1286,16 @@ export function TrainingTab() {
         </div>
       )}
 
-      {trainingRecords.length === 0 && (
+      {filteredAndSortedTraining.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-zinc-400">
           <GraduationCap className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">No Training Records Available</h3>
+          <h3 className="text-lg font-medium mb-2">No Training Sessions Found</h3>
           <p>
-            {isAdmin
-              ? "Create your first training session to start tracking attendance."
-              : "You haven't been assigned to any training sessions yet."}
+            {hasActiveFilters
+              ? "No training sessions match your current filters. Try adjusting your search criteria."
+              : isAdmin
+                ? "Create your first training session to start tracking attendance."
+                : "You haven't been assigned to any training sessions yet."}
           </p>
         </div>
       )}
