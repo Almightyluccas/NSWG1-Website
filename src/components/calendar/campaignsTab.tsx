@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -55,6 +55,8 @@ import {
   Search,
   Loader2,
   Trash2,
+  Filter,
+  X,
 } from "lucide-react"
 import {
   getCampaigns,
@@ -127,6 +129,13 @@ interface User {
   discord_username: string
   role: string[]
   primaryRole: string
+}
+
+interface FilterState {
+  dateFrom: string
+  dateTo: string
+  sortOrder: "newest" | "oldest" | "upcoming"
+  eventType: "all" | "upcoming" | "past"
 }
 
 function CreateCampaignModal({
@@ -579,6 +588,13 @@ export function CampaignsTab() {
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [localAttendance, setLocalAttendance] = useState<AttendanceRecord[]>([])
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    dateFrom: "",
+    dateTo: "",
+    sortOrder: "upcoming",
+    eventType: "upcoming",
+  })
 
   const isAdmin = session?.user?.roles.includes("admin")
 
@@ -648,6 +664,74 @@ export function CampaignsTab() {
       if (!preserveState) setLoading(false)
     }
   }
+
+  const filteredAndSortedCampaigns = useMemo(() => {
+    let filtered = [...campaigns]
+    const today = new Date().toISOString().split("T")[0]
+
+    if (filters.dateFrom || filters.dateTo) {
+      filtered = filtered.filter((campaign) => {
+        const campaignStartDate = campaign.start_date
+        const campaignEndDate = campaign.end_date
+
+        if (filters.dateFrom && campaignEndDate < filters.dateFrom) return false
+        if (filters.dateTo && campaignStartDate > filters.dateTo) return false
+
+        return true
+      })
+    }
+
+    if (filters.eventType !== "all") {
+      filtered = filtered.filter((campaign) => {
+        const campaignEndDate = campaign.end_date
+        const isUpcoming = campaignEndDate >= today
+        const isPast = campaignEndDate < today
+
+        if (filters.eventType === "upcoming") return isUpcoming
+        if (filters.eventType === "past") return isPast
+
+        return true
+      })
+    }
+
+    filtered.sort((a, b) => {
+
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const todayTimestamp = startOfToday.getTime();
+
+      const aDate = new Date(a.start_date).getTime();
+      const bDate = new Date(b.start_date).getTime();
+
+      if (filters.sortOrder === "upcoming") {
+        const aIsUpcoming = new Date(a.end_date).getTime() >= todayTimestamp;
+        const bIsUpcoming = new Date(b.end_date).getTime() >= todayTimestamp;
+
+        if (aIsUpcoming && !bIsUpcoming) return -1;
+        if (!aIsUpcoming && bIsUpcoming) return 1;
+
+        return aDate - bDate;
+      } else if (filters.sortOrder === "newest") {
+        return bDate - aDate;
+      } else {
+        return aDate - bDate;
+      }
+    });
+
+    return filtered;
+  }, [campaigns, filters]);
+
+  const clearFilters = () => {
+    setFilters({
+      dateFrom: "",
+      dateTo: "",
+      sortOrder: "upcoming",
+      eventType: "upcoming",
+    })
+  }
+
+  const hasActiveFilters =
+    filters.dateFrom || filters.dateTo || filters.sortOrder !== "upcoming" || filters.eventType !== "upcoming"
 
   const openModal = (type: keyof typeof modals, item?: Campaign | Mission) => {
     if (type.includes("Campaign") && item) setSelectedCampaign(item as Campaign)
@@ -985,14 +1069,19 @@ export function CampaignsTab() {
     }
   }
 
-  const totalPages = Math.ceil(campaigns.length / CAMPAIGNS_PER_PAGE)
+  const totalPages = Math.ceil(filteredAndSortedCampaigns.length / CAMPAIGNS_PER_PAGE)
   const startIndex = (currentPage - 1) * CAMPAIGNS_PER_PAGE
   const endIndex = startIndex + CAMPAIGNS_PER_PAGE
-  const paginatedCampaigns = campaigns.slice(startIndex, endIndex)
+  const paginatedCampaigns = filteredAndSortedCampaigns.slice(startIndex, endIndex)
 
   const goToPage = (page: number) => {
     setCurrentPage(page)
   }
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
 
   if (loading) {
     return (
@@ -1049,16 +1138,103 @@ export function CampaignsTab() {
         <div>
           <h2 className="text-2xl font-bold">Campaigns</h2>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Showing {startIndex + 1}-{Math.min(endIndex, campaigns.length)} of {campaigns.length} campaigns
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedCampaigns.length)} of{" "}
+            {filteredAndSortedCampaigns.length} campaigns
           </p>
         </div>
-        {isAdmin && (
-          <Button className="bg-accent hover:bg-accent-darker text-black" onClick={() => openModal("createCampaign")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Campaign
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className={hasActiveFilters ? "border-accent text-accent" : ""}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 text-xs">
+                !
+              </Badge>
+            )}
           </Button>
-        )}
+          {isAdmin && (
+            <Button className="bg-accent hover:bg-accent-darker text-black" onClick={() => openModal("createCampaign")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Campaign
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Filter Section */}
+      {showFilters && (
+        <Card className="theme-card">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg">Filter Campaigns</CardTitle>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="dateFrom">From Date</Label>
+                <Input
+                  id="dateFrom"
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="dateTo">To Date</Label>
+                <Input
+                  id="dateTo"
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="sortOrder">Sort Order</Label>
+                <Select
+                  value={filters.sortOrder}
+                  onValueChange={(value: any) => setFilters((prev) => ({ ...prev, sortOrder: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming First</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="eventType">Event Type</Label>
+                <Select
+                  value={filters.eventType}
+                  onValueChange={(value: any) => setFilters((prev) => ({ ...prev, eventType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming Only</SelectItem>
+                    <SelectItem value="past">Past Only</SelectItem>
+                    <SelectItem value="all">All Events</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6">
         {paginatedCampaigns.map((campaign) => {
@@ -1403,14 +1579,16 @@ export function CampaignsTab() {
         </div>
       )}
 
-      {campaigns.length === 0 && (
+      {filteredAndSortedCampaigns.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-zinc-400">
           <CalendarIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-2">No Campaigns Available</h3>
+          <h3 className="text-lg font-medium mb-2">No Campaigns Found</h3>
           <p>
-            {isAdmin
-              ? "Create your first campaign to start organizing missions."
-              : "You haven't been assigned to any campaigns yet."}
+            {hasActiveFilters
+              ? "No campaigns match your current filters. Try adjusting your search criteria."
+              : isAdmin
+                ? "Create your first campaign to start organizing missions."
+                : "You haven't been assigned to any campaigns yet."}
           </p>
         </div>
       )}

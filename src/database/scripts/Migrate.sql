@@ -202,11 +202,11 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
                                               id INT AUTO_INCREMENT PRIMARY KEY,
                                               user_id VARCHAR(255) NOT NULL,
                                               token_hash VARCHAR(255) NOT NULL UNIQUE,
-                                              expires_at DATETIME NOT NULL,
-                                              revoked_at DATETIME NULL DEFAULT NULL,
-                                              created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                              expires_at TIMESTAMP NOT NULL,
+                                              revoked_at TIMESTAMP NULL DEFAULT NULL,
                                               ip_address VARCHAR(255),
                                               user_agent TEXT,
+                                              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                               FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                                               INDEX idx_user_id (user_id)
 );
