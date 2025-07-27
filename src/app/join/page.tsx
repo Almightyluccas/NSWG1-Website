@@ -13,9 +13,15 @@ import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 
 export default async function JoinPage() {
-  const session = getServerSession(authOptions)
+  const session = await getServerSession(authOptions)
 
   if (!session) redirect("/login");
+
+  const roles = session.user.roles ?? [];
+  if (roles.includes(UserRole.member)) {
+    redirect("/");
+  }
+
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.guest]} >

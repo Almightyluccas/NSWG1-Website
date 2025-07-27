@@ -217,12 +217,20 @@ export default function JoinFormClient() {
       setIsSubmitting(false);
       console.error("Application Submission Failed:", error);
       if (error instanceof Error) {
-        if (error.message.includes("PERSCOM")) {
-          setSubmissionError("There was a problem submitting to our recruitment service (PERSCOM). Please check your details and try again, or contact support if the issue persists.");
-        } else if (error.message.includes("database")) {
-          setSubmissionError("There was a problem updating our user records. Please contact support.");
-        } else {
-          setSubmissionError("An unknown error occurred during submission. Please try again later.");
+        if (error.message.includes("PERSCOM_REPLACE_FAILED") || error.message.includes("PERSCOM_REPLACE_NOT_FOUND")) {
+          setSubmissionError("This email is already in use. We tried to fix this automatically but failed. Please contact support.");
+        }
+        else if (error.message.includes("PERSCOM_CREATE_FAILED")) {
+          setSubmissionError("There was a problem creating your user profile. Please check your details and try again.");
+        }
+        else if (error.message.includes("PERSCOM")) {
+          setSubmissionError("There was a problem with our recruitment service. Please try again later or contact support.");
+        }
+        else if (error.message.includes("database")) {
+          setSubmissionError("There was a problem updating our records. Please contact us.");
+        }
+        else {
+          setSubmissionError("An unknown error occurred. Please try again later.");
         }
       } else {
         setSubmissionError("An unexpected error occurred. Please try again later.");
