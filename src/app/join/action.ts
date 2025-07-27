@@ -35,14 +35,37 @@ export async function submitApplication(formData: FormData, user_id: string, dis
 
   let createPerscomUserResponse: PerscomUserCreationResponse;
   try {
-    const perscomUser: CreatePerscomUser = { name: data.name, email: data.email }
+    const perscomUser: CreatePerscomUser = { name: data.name, email: data.email };
     createPerscomUserResponse = await perscom.post.user(perscomUser);
-    if (!createPerscomUserResponse?.data?.id) {
-      throw new Error("Invalid response from PERSCOM user creation.");
+  } catch (error: any) {
+    const isEmailTakenError = error?.errorBody?.error?.message === 'The email has already been taken.';
+
+    if (isEmailTakenError) {
+      try {
+        const allUsers: PerscomUserResponse[] = await perscom.get.users();
+        const existingUser = allUsers.find(user => user.email === data.email);
+
+        if (!existingUser?.id) {
+          throw new Error('**PERSCOM_REPLACE_NOT_FOUND**');
+        }
+
+        await perscom.delete.user(existingUser.id);
+
+        const perscomUser: CreatePerscomUser = { name: data.name, email: data.email };
+        createPerscomUserResponse = await perscom.post.user(perscomUser);
+
+      } catch (retryError) {
+        console.error("Error during PERSCOM user replacement process:", retryError);
+        throw new Error('**PERSCOM_REPLACE_FAILED**');
+      }
+    } else {
+      console.error("PERSCOM User Creation Error:", error);
+      throw new Error('**PERSCOM_CREATE_FAILED**');
     }
-  } catch (error) {
-    console.error("PERSCOM User Creation Error:", error);
-    throw new Error("An error occurred with the PERSCOM service during user creation.");
+  }
+
+  if (!createPerscomUserResponse?.data?.id) {
+    throw new Error("Invalid response from PERSCOM user creation after all attempts.");
   }
 
 

@@ -1,6 +1,7 @@
 import { PerscomGet } from './PerscomGet'
 import { PerscomPost } from './PerscomPost'
 import { PerscomPatch } from './PerscomPatch'
+import {PerscomDelete} from "@/lib/perscom/api/PerscomDelete";
 
 export const sharedCache: Record<string, { data: any; timestamp: number }> = {};
 export const CACHE_DURATION_MS = 5 * 60 * 1000
@@ -12,6 +13,7 @@ export class PerscomClient {
   private _get?: PerscomGet
   private _post?: PerscomPost
   private _patch?: PerscomPatch
+  private _delete?: PerscomDelete
   private pendingRequests: Map<string, Promise<any>> = new Map()
 
   constructor() {
@@ -32,6 +34,11 @@ export class PerscomClient {
   get patch(): PerscomPatch {
     if (!this._patch) this._patch = new PerscomPatch(this)
     return this._patch
+  }
+
+  get delete(): PerscomDelete {
+    if (!this._delete) this._delete = new PerscomDelete(this)
+    return this._delete
   }
 
   invalidateCache(endpoint: string): void {
