@@ -1,5 +1,5 @@
 import { DiscordWebhook } from "@/lib/discord/Discord";
-import { DiscordWebhookPayload, InstructorMessageType, MessageType } from "@/types/discord";
+import { DiscordWebhookPayload, InstructorMessageType } from "@/types/discord";
 
 export class InstructorWebhook extends DiscordWebhook {
 
@@ -15,8 +15,9 @@ export class InstructorWebhook extends DiscordWebhook {
 
     return {
       embeds: [{
-        title: 'New Submission',
+        title: 'New Application!',
         description: `${mentions} please review this application.`,
+
         color: 255,
         fields: [
           {
@@ -33,13 +34,17 @@ export class InstructorWebhook extends DiscordWebhook {
             name: 'Position',
             value: data.applyingPosition,
             inline: true
+          },
+          {
+            name: 'Application Link',
+            value: `[Click here to view the application](${'https://nswg1.org/admin/perscom/submissions/enlistment'})`
           }
         ]
       }]
     };
   }
 
-  async sendMessage(data: InstructorMessageType): Promise<string> {
+  async sendMessage(data: InstructorMessageType): Promise<any> {
     const payload: DiscordWebhookPayload = this.formatMessage(data);
     return super.send(payload)
   }

@@ -15,8 +15,7 @@ export class CandidateWebhook extends DiscordWebhook {
           return {
             embeds: [{
               title: "Application Accepted",
-              description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact 
-              <@667833642248175673> or <@492142030831616010> or <@1015660008534454282> for an interview`,
+              description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact either <@667833642248175673>, <@492142030831616010> or <@1015660008534454282> for an interview`,
               color: 65280
             }]
           };
@@ -24,8 +23,7 @@ export class CandidateWebhook extends DiscordWebhook {
         return {
           embeds: [{
             title: "Application Accepted",
-            description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact 
-            <@249242679211196417> for an interview`,
+            description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact <@249242679211196417> for an interview`,
             color: 65280
           }]
         };
@@ -33,35 +31,32 @@ export class CandidateWebhook extends DiscordWebhook {
       case 'rejected': {
         const defaultReasons: Record<string, string> = {
           age: "The applicant's age does not meet the requirement.",
-          lack_of_effort: "The application lacked sufficient effort.",
-          default: "The application was rejected for unspecified reasons."
+          lackOfEffort: "The application lacked sufficient effort.",
+          default: "No specific reason was provided."
         };
 
-        if (data.customReason) {
-          return {
-            embeds: [{
-              title: "Application Rejected",
-              description: `Submission denied: ${data.customReason}`,
-              color: 16711680
-            }]
-          };
-        } else if (data.reasonKey && defaultReasons[data.reasonKey]) {
-          return {
-            embeds: [{
-              title: "Application Rejected",
-              description: `Submission denied: ${defaultReasons[data.reasonKey]}`,
-              color: 16711680
-            }]
-          };
-        }
+        const reason = data.customReason || defaultReasons[data.reasonKey] || defaultReasons.default;
+
+        const description = data.candidateDiscordId
+          ? `<@${data.candidateDiscordId}>, your application has been denied.`
+          : 'The application has been denied.';
+
         return {
           embeds: [{
             title: "Application Rejected",
-            description: "Submission denied for unspecified reason.",
-            color: 16711680
+            description: description,
+            color: 16711680,
+            fields: [
+              {
+                name: 'Reason',
+                value: reason,
+                inline: false
+              }
+            ]
           }]
-        }
+        };
       }
+
     }
   }
 
