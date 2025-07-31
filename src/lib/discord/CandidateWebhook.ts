@@ -1,5 +1,5 @@
 import { DiscordWebhook } from "@/lib/discord/Discord";
-import { CandidateMessageType, DiscordWebhookPayload, InstructorMessageType, MessageType } from "@/types/discord";
+import { CandidateMessageType, DiscordWebhookPayload } from "@/types/discord";
 
 export class CandidateWebhook extends DiscordWebhook {
 
@@ -53,6 +53,13 @@ export class CandidateWebhook extends DiscordWebhook {
               color: 16711680
             }]
           };
+        }
+        return {
+          embeds: [{
+            title: "Application Rejected",
+            description: "Submission denied for unspecified reason.",
+            color: 16711680
+          }]
         }
       }
     }
