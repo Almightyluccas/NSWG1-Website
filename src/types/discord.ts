@@ -1,7 +1,7 @@
 export interface BaseMessage {
-  title: string;
-  description: string;
-  color: number;
+  title?: string;
+  description?: string;
+  color?: number;
   unit: '160th' | 'tacdevron';
   candidateName: string;
   candidateDiscordId: string;
