@@ -1,4 +1,7 @@
 "use client"
+// At the top of your file
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {CheckCircle, Eye, Filter, Search, XCircle} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
@@ -19,8 +22,10 @@ import {
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation";
+import {ReasonKey, Units} from "@/types/discord";
 
 const itemsPerPage = 10;
+
 
 
 export const ApplicationsTable = ({ applications }: { applications: ApplicationData[] }) => {
@@ -34,6 +39,8 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState<'accept' | 'reject' | null>(null);
   const [applicationToConfirm, setApplicationToConfirm] = useState<ApplicationData | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<ReasonKey>('default');
+  const [customRejectionReason, setCustomRejectionReason] = useState('');
   const router = useRouter();
 
 
@@ -82,30 +89,24 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
     setSelectedApplication(application)
     setIsApplicationDetailsOpen(true)
   }
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsApplicationDetailsOpen(open);
-    if (!open) {
-      setSelectedApplication(null);
-      document.body.focus();
-      setTimeout(() => {
-        document.body.style.pointerEvents = "auto";
-      }, 100);
-    }
-  };
+
   const isAccepted = (application: ApplicationData) => {
     return application.statuses && application.statuses.length > 0 && application.statuses[0].name === 'Accepted';
   };
 
   const handleAccept = async (application: ApplicationData) => {
     if (application.id && application.user_id && application.first_name) {
-      await acceptApplication(application.id, application.user_id, application.first_name, application.email_address);
+      const unit: Units = application.preferred_position.includes('160th') ? '160th' : 'tacdevron';
+      await acceptApplication(application.id, application.user_id, application.first_name, application.email_address, application.preferred_position, unit);
       setIsApplicationDetailsOpen(false);
     }
   };
 
-  const handleReject = async (application: ApplicationData) => {
+  const handleReject = async (application: ApplicationData, reason: ReasonKey, customReason?: string) => {
     if (application.id && application.user_id) {
-      await rejectApplication(application.id, application.user_id);
+      const unit: Units = application.preferred_position.includes('160th') ? '160th' : 'tacdevron';
+
+      await rejectApplication(application.id, application.user_id, reason, application.first_name, application.preferred_position, unit, customReason);
       setIsApplicationDetailsOpen(false);
     }
   };
@@ -123,15 +124,30 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
       if (actionToConfirm === 'accept') {
         await handleAccept(applicationToConfirm);
       } else if (actionToConfirm === 'reject') {
-        await handleReject(applicationToConfirm);
+        await handleReject(
+          applicationToConfirm,
+          rejectionReason,
+          customRejectionReason
+        );
       }
       router.refresh();
     } catch (error) {
-      throw new Error('Error at handleConfirmationAction'+ error);
+      console.error('Error at handleConfirmationAction', error);
     } finally {
       setShowConfirmDialog(false);
       setActionToConfirm(null);
       setApplicationToConfirm(null);
+      setRejectionReason('default');
+      setCustomRejectionReason('');
+    }
+  };
+  const handleConfirmDialogOpenChange = (open: boolean) => {
+    setShowConfirmDialog(open);
+    if (!open) {
+      setActionToConfirm(null);
+      setApplicationToConfirm(null);
+      setRejectionReason('default');
+      setCustomRejectionReason('');
     }
   };
 
@@ -314,11 +330,6 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
           onPageChange={setCurrentPage}
         />
 
-
-        {/*
-        TODO: Fix on mobile devices
-        TODO: Fix Date of birth
-        */}
         {/* Application Details Dialog */}
         {selectedApplication && (
           <Dialog open={isApplicationDetailsOpen} onOpenChange={setIsApplicationDetailsOpen}>
@@ -432,7 +443,7 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
             </DialogContent>
           </Dialog>
         )}
-        <Dialog open={showConfirmDialog} onOpenChange={handleDialogOpenChange}>
+        <Dialog open={showConfirmDialog} onOpenChange={handleConfirmDialogOpenChange}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Confirm Action</DialogTitle>
@@ -440,13 +451,53 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
                 Are you sure you want to {actionToConfirm} this application for {applicationToConfirm?.first_name}?
               </DialogDescription>
             </DialogHeader>
+
+            {actionToConfirm === 'reject' && (
+              <div className="space-y-4 py-4">
+                <Label htmlFor="rejection-reason" className="font-semibold">Reason for Rejection</Label>
+                <RadioGroup
+                  id="rejection-reason"
+                  value={rejectionReason}
+                  onValueChange={(value) => setRejectionReason(value as ReasonKey)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="default" id="r-default" />
+                    <Label htmlFor="r-default">Default (Does not meet requirements)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="lackOfEffort" id="r-effort" />
+                    <Label htmlFor="r-effort">Lack of Effort in Application</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="age" id="r-age" />
+                    <Label htmlFor="r-age">Age Requirement Not Met</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="custom" id="r-custom" />
+                    <Label htmlFor="r-custom">Custom Reason</Label>
+                  </div>
+                </RadioGroup>
+
+                {rejectionReason === 'custom' && (
+                  <Input
+                    placeholder="Please specify the reason"
+                    value={customRejectionReason}
+                    onChange={(e) => setCustomRejectionReason(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+            )}
+
             <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
+              <Button variant="outline" onClick={() => handleConfirmDialogOpenChange(false)}>Cancel</Button>
               <Button
                 variant={actionToConfirm === 'reject' ? 'destructive' : 'default'}
                 onClick={handleConfirmAction}
+                disabled={
+                  actionToConfirm === 'reject' &&
+                  (!rejectionReason || (rejectionReason === 'custom' && !customRejectionReason.trim()))
+                }
               >
                 Confirm {actionToConfirm === 'accept' ? 'Approval' : 'Rejection'}
               </Button>
