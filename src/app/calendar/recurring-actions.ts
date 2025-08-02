@@ -15,12 +15,7 @@ import type {
   RecurringTrainingWithStats,
   ProcessingResult,
 } from "@/types/recurring-training"
-
-const dbClient = DatabaseClient.getInstance()
-const dbGet = new DatabaseGet(dbClient)
-const dbPost = new DatabasePost(dbClient)
-const dbPut = new DatabasePut(dbClient)
-const dbDelete = new DatabaseDelete(dbClient)
+import { database } from "@/database"
 
 export async function createRecurringTraining(data: CreateRecurringTrainingData): Promise<string> {
   const session = await getServerSession(authOptions)
@@ -30,7 +25,7 @@ export async function createRecurringTraining(data: CreateRecurringTrainingData)
 
   const id = `recurring-training-${Date.now()}`
 
-  await dbPost.recurringTraining({
+  await database.post.recurringTraining({
     ...data,
     id,
     createdBy: session.user.id!,
@@ -45,7 +40,7 @@ export async function getRecurringTrainings(): Promise<RecurringTrainingWithStat
     throw new Error("Unauthorized")
   }
 
-  return await dbGet.recurringTrainings()
+  return await database.get.recurringTrainings()
 }
 
 export async function updateRecurringTraining(id: string, data: UpdateRecurringTrainingData): Promise<void> {
@@ -54,7 +49,7 @@ export async function updateRecurringTraining(id: string, data: UpdateRecurringT
     throw new Error("Unauthorized")
   }
 
-  await dbPut.recurringTraining(id, data)
+  await database.put.recurringTraining(id, data)
 }
 
 export async function deleteRecurringTraining(id: string): Promise<void> {
@@ -64,8 +59,8 @@ export async function deleteRecurringTraining(id: string): Promise<void> {
   }
 
   // Delete all instances first, then the recurring training
-  await dbDelete.recurringTrainingInstances(id)
-  await dbDelete.recurringTraining(id)
+  await database.delete.recurringTrainingInstances(id)
+  await database.delete.recurringTraining(id)
 }
 
 export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
@@ -74,7 +69,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
     throw new Error("Unauthorized")
   }
 
-  const recurringTrainings = await dbGet.activeRecurringTrainings()
+  const recurringTrainings = await database.get.activeRecurringTrainings()
   const results: ProcessingResult[] = []
 
   for (const recurring of recurringTrainings) {
@@ -86,7 +81,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
         const trainingDate = addDays(startOfTargetWeek, recurring.day_of_week)
         const trainingDateStr = format(trainingDate, "yyyy-MM-dd")
 
-        const instanceExists = await dbGet.recurringTrainingInstanceExists(recurring.id, trainingDateStr)
+        const instanceExists = await database.get.recurringTrainingInstanceExists(recurring.id, trainingDateStr)
         if (instanceExists) {
           results.push({
             recurringId: recurring.id,
@@ -97,7 +92,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
           continue
         }
 
-        const missionConflicts = await dbGet.missionConflictsOnDate(trainingDateStr)
+        const missionConflicts = await database.get.missionConflictsOnDate(trainingDateStr)
 
         let finalDate = trainingDateStr
         let conflictResolved = false
@@ -106,7 +101,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
           const nextWeekDate = addWeeks(trainingDate, 1)
           const nextWeekDateStr = format(nextWeekDate, "yyyy-MM-dd")
 
-          const nextWeekConflicts = await dbGet.missionConflictsOnDate(nextWeekDateStr)
+          const nextWeekConflicts = await database.get.missionConflictsOnDate(nextWeekDateStr)
 
           if (nextWeekConflicts.length === 0) {
             finalDate = nextWeekDateStr
@@ -137,12 +132,12 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
 
         await createTrainingRecord(trainingData)
 
-        const createdTraining = await dbGet.trainingRecordByDetails(recurring.name, finalDate, recurring.time)
+        const createdTraining = await database.get.trainingRecordByDetails(recurring.name, finalDate, recurring.time)
 
         if (createdTraining) {
           const instanceId = `instance-${Date.now()}-${weekOffset}-${Math.random().toString(36).substr(2, 9)}`
 
-          await dbPost.recurringTrainingInstance({
+          await database.post.recurringTrainingInstance({
             id: instanceId,
             recurringTrainingId: recurring.id,
             trainingId: createdTraining.id,
@@ -161,7 +156,7 @@ export async function processRecurringTrainings(): Promise<ProcessingResult[]> {
         }
       }
 
-      await dbPut.recurringTrainingInstanceCount(recurring.id)
+      // await database.put.recurringTrainingInstanceCount(recurring.id)
     } catch (error) {
       console.error(`Failed to process recurring training ${recurring.id}:`, error)
       results.push({
@@ -182,5 +177,5 @@ export async function getRecurringTrainingInstances(recurringTrainingId: string)
     throw new Error("Unauthorized")
   }
 
-  return await dbGet.recurringTrainingInstances(recurringTrainingId)
+  return await database.get.recurringTrainingInstances(recurringTrainingId)
 }

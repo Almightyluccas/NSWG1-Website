@@ -1,9 +1,14 @@
-import type { User } from "@/types/database"
-import type { DatabaseClient } from "./DatabaseClient"
-import type { RefreshTokenRow } from "@/types/database"
-import type { RecurringTraining, RecurringTrainingWithStats } from "@/types/recurring-training"
-import type { FormDefinition, FormQuestion, FormSubmission, FormSubmissionAnswer, RawSubmissionQueryResult } from "@/types/forms"
-import type { DocumentAccessLog } from "@/types/forms"
+import type {RefreshTokenRow, User} from "@/types/database"
+import type {DatabaseClient} from "./DatabaseClient"
+import type {RecurringTraining, RecurringTrainingWithStats} from "@/types/recurring-training"
+import type {
+  DocumentAccessLog,
+  FormDefinition,
+  FormQuestion,
+  FormSubmission,
+  FormSubmissionAnswer,
+  RawSubmissionQueryResult
+} from "@/types/forms"
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -79,6 +84,19 @@ export class DatabaseGet {
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
       imageUrl: row.image_url || null,
     }))
+  }
+
+  async discordIdByPerscomId(perscomId: number): Promise<string | null> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT id FROM users WHERE perscom_id = ?
+      `,
+      [perscomId],
+    )
+
+    if (rows.length === 0) return null
+
+    return rows[0].id || null
   }
 
   async userInfo(userId: string): Promise<{ roles: string[]; perscomId: string | null; name: string | null }> {
@@ -167,7 +185,7 @@ export class DatabaseGet {
   // Campaign methods
   async campaigns(userId?: string, isAdmin = false): Promise<any[]> {
     if (isAdmin) {
-      const rows = await this.client.query<any[]>(`
+      return await this.client.query<any[]>(`
           SELECT c.*, DATE_FORMAT(c.start_date, '%Y-%m-%d') as start_date, DATE_FORMAT(c.end_date, '%Y-%m-%d') as end_date,
                  COUNT(DISTINCT m.id) as mission_count
           FROM campaigns c
@@ -175,11 +193,10 @@ export class DatabaseGet {
           GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
           ORDER BY c.created_at DESC
       `)
-      return rows
     }
 
     // For regular users, return all campaigns (they can see all but only RSVP to missions)
-    const rows = await this.client.query<any[]>(`
+    return await this.client.query<any[]>(`
         SELECT c.*, DATE_FORMAT(c.start_date, '%Y-%m-%d') as start_date, DATE_FORMAT(c.end_date, '%Y-%m-%d') as end_date,
                COUNT(DISTINCT m.id) as mission_count
         FROM campaigns c
@@ -187,7 +204,6 @@ export class DatabaseGet {
         GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
         ORDER BY c.created_at DESC
     `)
-    return rows
   }
 
   async campaignById(campaignId: string): Promise<any | null> {
@@ -201,7 +217,7 @@ export class DatabaseGet {
   }
 
   async missionsByCampaign(campaignId: string): Promise<any[]> {
-    const rows = await this.client.query<any[]>(
+    return await this.client.query<any[]>(
       `
           SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date FROM missions
           WHERE campaign_id = ?
@@ -209,11 +225,10 @@ export class DatabaseGet {
       `,
       [campaignId],
     )
-    return rows
   }
 
   async missionsByDateRange(startDate: string, endDate: string): Promise<any[]> {
-    const rows = await this.client.query<any[]>(
+    return await this.client.query<any[]>(
       `
           SELECT m.*, c.name as campaign_name, DATE_FORMAT(m.date, '%Y-%m-%d') as date
           FROM missions m
@@ -223,11 +238,10 @@ export class DatabaseGet {
       `,
       [startDate, endDate],
     )
-    return rows
   }
 
   async missionRSVPs(missionId: string): Promise<any[]> {
-    const rows = await this.client.query<any[]>(
+    return await this.client.query<any[]>(
       `
           SELECT mr.*, u.name as user_name
           FROM mission_rsvps mr
@@ -237,11 +251,10 @@ export class DatabaseGet {
       `,
       [missionId],
     )
-    return rows
   }
 
   async missionAttendance(missionId: string): Promise<any[]> {
-    const rows = await this.client.query<any[]>(
+    return await this.client.query<any[]>(
       `
           SELECT ma.*, u.name as user_name, marker.name as marked_by_name
           FROM mission_attendance ma
@@ -252,7 +265,6 @@ export class DatabaseGet {
       `,
       [missionId],
     )
-    return rows
   }
 
   // Training methods

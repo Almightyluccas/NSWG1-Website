@@ -163,7 +163,6 @@ export default function Home() {
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/*<div className="grid grid-cols-1 md:grid-cols-3 gap-8">*/}
             <UnitCard
               image="/images/160th/160th-emblem.png"
               title="Task Force 160th"
@@ -182,15 +181,6 @@ export default function Home() {
               href="/tacdevron2"
               delay={200}
             />
-
-            {/*<UnitCard*/}
-            {/*  image="/images/24thsts-logo.png"*/}
-            {/*  title="24th Special Tactics Squadron"*/}
-            {/*  description="Air Force special tactics operators providing global special operations capabilities."*/}
-            {/*  backgroundImage="/images/afsoc-header-background.png"*/}
-            {/*  href="/24thsts"*/}
-            {/*  delay={400}*/}
-            {/*/>*/}
           </div>
         </div>
       </section>

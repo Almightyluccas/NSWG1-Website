@@ -11,19 +11,13 @@ export class CandidateWebhook extends DiscordWebhook {
   private formatMessage(data: CandidateMessageType): DiscordWebhookPayload {
     switch (data.name) {
       case 'accepted':
-        if (data.applyingPosition === '160th') {
-          return {
-            embeds: [{
-              title: "Application Accepted",
-              description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact either <@667833642248175673>, <@492142030831616010> or <@1015660008534454282> for an interview`,
-              color: 65280
-            }]
-          };
-        }
+        const instructorsMention = (data.applyingPosition === '160th')
+          ? '<@249242679211196417>'
+          : '<@667833642248175673> or <@492142030831616010>';
         return {
           embeds: [{
             title: "Application Accepted",
-            description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact <@249242679211196417> for an interview`,
+            description: `Congratulations <@${data.candidateDiscordId}>, your application was accepted! Please contact ${instructorsMention} for an interview`,
             color: 65280
           }]
         };
@@ -31,8 +25,8 @@ export class CandidateWebhook extends DiscordWebhook {
       case 'rejected': {
         const defaultReasons: Record<string, string> = {
           age: "The applicant's age does not meet the requirement.",
-          lackOfEffort: "The application lacked sufficient effort.",
-          default: "No specific reason was provided."
+          lackOfEffort: "The application lacked sufficient effort. You are welcome to re-apply after putting more thought into your answers.",
+          default: "The applicant does not meet our requirements."
         };
 
         const reason = data.customReason || defaultReasons[data.reasonKey] || defaultReasons.default;
@@ -41,11 +35,13 @@ export class CandidateWebhook extends DiscordWebhook {
           ? `<@${data.candidateDiscordId}>, your application has been denied.`
           : 'The application has been denied.';
 
+        const embedColor = data.reasonKey === 'lackOfEffort' ? 16776960 : 16711680;
+
         return {
           embeds: [{
             title: "Application Rejected",
             description: description,
-            color: 16711680,
+            color: embedColor,
             fields: [
               {
                 name: 'Reason',

@@ -10,6 +10,7 @@ import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { perscom } from "@/lib/perscom/api";
 import { database } from "@/database";
+import { InstructorWebhook } from "@/lib/discord/InstructorWebhook";
 
 
 export async function submitApplication(formData: FormData, user_id: string, discordName: string) {
@@ -94,6 +95,20 @@ export async function submitApplication(formData: FormData, user_id: string, dis
   } catch(error) {
     console.error("PERSCOM Application Submission Error:", error);
     throw new Error("An error occurred with the PERSCOM service during application submission.");
+  }
+
+  const discord = new InstructorWebhook
+
+  try {
+    await discord.sendMessage({
+      name: 'submission',
+      candidateDiscordId: user_id,
+      candidateName: data.name,
+      applyingPosition: data.preferredPosition,
+      unit: data.preferredPosition.includes('Special Warfare') ? 'tacdevron' : '160th',
+    });
+  } catch (error) {
+    console.error("Discord Message Error:", error);
   }
 
 

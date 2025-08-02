@@ -1,8 +1,8 @@
 export interface BaseMessage {
-  title: string;
-  description: string;
-  color: number;
-  unit: '160th' | 'tacdevron';
+  title?: string;
+  description?: string;
+  color?: number;
+  unit: Units;
   candidateName: string;
   candidateDiscordId: string;
   applyingPosition: string;
@@ -14,9 +14,12 @@ export interface AcceptedMessage extends BaseMessage {
 
 export interface RejectedMessage extends BaseMessage {
   name: 'rejected';
-  reasonKey: 'age' | 'lackOfEffort' | 'default';
+  reasonKey: ReasonKey;
   customReason?: string;
 }
+
+export type ReasonKey = 'age' | 'lackOfEffort' | 'default' | 'custom';
+export type Units = '160th' | 'tacdevron';
 
 export interface SubmissionMessage extends BaseMessage {
   name: 'submission';
