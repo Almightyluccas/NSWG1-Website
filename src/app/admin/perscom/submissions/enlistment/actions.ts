@@ -52,7 +52,7 @@ export async function rejectApplication(
   await perscom.post.clearPerscomCache()
   revalidatePath('/admin/perscom/submissions/enlistment');
 
-  const discordId = await database.get.discordIdByPerscomId(38);
+  const discordId = await database.get.discordIdByPerscomId(perscomId);
   console.log(`Discord ID for perscom ID ${1}: ${discordId}`);
   const discord = new CandidateWebhook;
   await discord.sendMessage({
