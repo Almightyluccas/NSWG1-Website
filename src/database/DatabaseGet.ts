@@ -1,4 +1,4 @@
-import type {RefreshTokenRow, User} from "@/types/database"
+import type {RefreshTokenRow, User, UserFullInfo} from "@/types/database"
 import type {DatabaseClient} from "./DatabaseClient"
 import type {RecurringTraining, RecurringTrainingWithStats} from "@/types/recurring-training"
 import type {
@@ -99,26 +99,63 @@ export class DatabaseGet {
     return rows[0].id || null
   }
 
-  async userInfo(userId: string): Promise<{ roles: string[]; perscomId: string | null; name: string | null }> {
+  async userInfo(userId: string): Promise<UserFullInfo> {
     const rows = await this.client.query<any[]>(
       `
-          SELECT role, perscom_id, name
-          FROM users
-          WHERE id = ?
+          SELECT
+              u.role,
+              u.perscom_id,
+              u.name,
+              up.active_theme_name,
+              up.homepage_image_url,
+              uct.name AS custom_theme_name,
+              uct.accent_rgb,
+              uct.accent_darker_rgb
+          FROM
+              users u
+                  LEFT JOIN
+              user_preferences up ON u.id = up.user_id
+                  LEFT JOIN
+              user_custom_themes uct ON u.id = uct.user_id
+          WHERE
+              u.id = ?
       `,
       [userId],
-    )
+    );
 
     if (rows.length === 0) {
-      return { roles: [], perscomId: null, name: null }
+      return {
+        roles: [],
+        perscomId: null,
+        name: null,
+        preferences: { activeThemeName: null, homepageImageUrl: null },
+        customThemes: [],
+      };
     }
 
-    const { role, perscom_id, name } = rows[0]
-    return {
-      roles: role ? role.split(",").map((r: string) => r.trim()) : [],
-      perscomId: perscom_id,
-      name,
+    const firstRow = rows[0];
+    const result: UserFullInfo = {
+      roles: firstRow.role ? firstRow.role.split(",").map((r: string) => r.trim()) : [],
+      perscomId: firstRow.perscom_id,
+      name: firstRow.name,
+      preferences: {
+        activeThemeName: firstRow.active_theme_name,
+        homepageImageUrl: firstRow.homepage_image_url,
+      },
+      customThemes: [],
+    };
+
+    for (const row of rows) {
+      if (row.custom_theme_name) {
+        result.customThemes.push({
+          name: row.custom_theme_name,
+          accent: row.accent_rgb,
+          accentDarker: row.accent_darker_rgb,
+        });
+      }
     }
+
+    return result;
   }
 
   async userCount(): Promise<{ currentCount: number; percentChange: number; isPositive: boolean }> {

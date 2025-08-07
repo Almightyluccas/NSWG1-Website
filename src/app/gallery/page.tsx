@@ -38,7 +38,7 @@ const galleryItems: GalleryItem[] = [
         category: "training",
         unit: ["tacdevron2"],
         type: "image",
-        src: "/images/tacdev/hero-background.png",
+        src: "/images/tacdev/default.png",
         description: "Tactical training exercise",
     },
     {

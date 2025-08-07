@@ -1,6 +1,7 @@
 import type { DatabaseClient } from "./DatabaseClient"
 import type { CreateRecurringTrainingData } from "@/types/recurring-training"
 import type { FormQuestion } from "@/types/forms"
+import {CustomTheme} from "@/types/database";
 
 export class DatabasePost {
   constructor(private client: DatabaseClient) {}
@@ -321,6 +322,22 @@ export class DatabasePost {
       `INSERT INTO document_access_logs (document_path, document_name, user_id, user_name, access_type, ip_address, user_agent)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [documentPath, documentName, userId, userName, accessType, ipAddress, userAgent],
+    )
+  }
+
+  async userCustomTheme(userId: string, theme: CustomTheme): Promise<void> {
+    await this.client.query(
+      `INSERT INTO user_custom_themes (user_id, name, accent_rgb, accent_darker_rgb)
+       VALUES (?, ?, ?, ?)`,
+      [userId, theme.name, theme.accent, theme.accentDarker],
+    )
+  }
+
+  async defaultUserPreferences(userId: string): Promise<void> {
+    await this.client.query(
+      `INSERT IGNORE INTO user_preferences (user_id, active_theme_name, homepage_image_url)
+       VALUES (?, ?, ?)`,
+      [userId, "Red", "/images/tacdev/default.png"],
     )
   }
 }
