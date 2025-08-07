@@ -1,15 +1,6 @@
 <h2>Urgent</h2>
 
-* allow users to make a new application fi given the opportunity.
-
-
 * Learn More doesn't do anything
-
-
-* Operation Center = loa form/ other form...... Also on navbar have calendar under operation Center as a drop down along side loa form
-
-
-* investiage databse limits issue
 
 
 * add option to upload image in forms.
@@ -18,20 +9,13 @@
 * improve how my submitted forms looks and when you view your submission.
 
 
-* imporove forms ui and add toast for when submitting form..
+* fix error handling for perscom api to display a message on the website. EXample: dispaly api si currently down if i get 504.
+
 
 - - -
 <h2>CALENDAR</h2>
 
-
 * edit deleting missions or training so it doesn't delete attenendce.
-
-
-* modify how showing who has rsvp'd looks like to better fit 40+ people.
-
-
-* ability to sort displayed campaigsn or training by date or name or have a  specific range
-
 
 ----
 
@@ -42,9 +26,6 @@
 
 
 * make applicaiton look like real life military application
-
-
-* discord bot/notifications
 
 
 ---
