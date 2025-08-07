@@ -99,3 +99,22 @@ export interface AttendanceRecord {
   markedBy: string
   markedAt: string
 }
+
+export interface CustomTheme {
+  name: string;
+  accent: string;
+  accentDarker: string;
+}
+
+export interface Preferences {
+  activeThemeName: string | null;
+  homepageImageUrl: string | null;
+}
+
+export interface UserFullInfo {
+  roles: string[];
+  perscomId: string | null;
+  name: string | null;
+  preferences: Preferences
+  customThemes: CustomTheme[];
+}

@@ -1,5 +1,6 @@
 import type { DatabaseClient } from "./DatabaseClient"
 import type { UpdateRecurringTrainingData } from "@/types/recurring-training"
+import {Preferences} from "@/types/database";
 
 export class DatabasePut {
   constructor(private client: DatabaseClient) {}
@@ -19,6 +20,32 @@ export class DatabasePut {
       `,
       [perscom_id, name, date_of_birth, steam_id, id],
     )
+  }
+
+  async userPreferences(preferences: Preferences, userId: string): Promise<void> {
+    const setClauses: string[] = [];
+    const queryParams: any[] = [];
+
+    if (preferences.activeThemeName) {
+      setClauses.push("active_theme_name = ?");
+      queryParams.push(preferences.activeThemeName);
+    }
+    if (preferences.homepageImageUrl) {
+      setClauses.push("homepage_image_url = ?");
+      queryParams.push(preferences.homepageImageUrl);
+    }
+    if (setClauses.length === 0) {
+      return;
+    }
+    queryParams.push(userId);
+
+    const sqlQuery = `
+    UPDATE user_preferences
+    SET ${setClauses.join(", ")}
+    WHERE user_id = ?;
+  `;
+
+    await this.client.query(sqlQuery, queryParams);
   }
 
   async userRoleByPerscomId(roles: string | string[], perscomId: number): Promise<void> {
@@ -42,6 +69,17 @@ export class DatabasePut {
           WHERE id = ?
       `,
       [roleString, userId],
+    )
+  }
+
+  async userName(id: string, name: string): Promise<void> {
+    await this.client.query(
+      `
+          UPDATE users
+          SET name = ?
+          WHERE id = ?
+      `,
+      [name, id],
     )
   }
 

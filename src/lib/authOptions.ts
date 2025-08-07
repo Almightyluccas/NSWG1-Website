@@ -12,9 +12,10 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account, user }) {
+    async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
-        const { roles } = await database.get.userInfo(user.id);
+        const { roles, perscomId, name, preferences, customThemes } = await database.get.userInfo(user.id);
+
         return {
           ...token,
           access_token: account.access_token,
@@ -22,7 +23,28 @@ export const authOptions: NextAuthOptions = {
           refresh_token: account.refresh_token,
           user_id: user.id,
           roles: roles,
+          perscomId: perscomId,
+          name: name,
+          preferences: preferences,
+          customThemes: customThemes,
         };
+      }
+
+      if (trigger === "update" && session) {
+        if (session.preferences) {
+          await database.put.userPreferences(session.preferences, token.user_id);
+          token.preferences = { ...token.preferences, ...session.preferences };
+        }
+
+        if (session.customTheme) {
+          await database.post.userCustomTheme(token.user_id, session.customTheme);
+          token.customThemes.push(session.customTheme);
+        }
+        if (session.name) {
+          console.log("Updating user name:", session.name);
+          await database.put.userName(token.user_id, session.name);
+          token.name = session.name;
+        }
       }
 
       if (Date.now() < (token.expires_at as number) * 1000) {
@@ -31,6 +53,7 @@ export const authOptions: NextAuthOptions = {
 
       return refreshAccessToken(token);
     },
+
     async signIn({ user, account }) {
       if (account?.provider === "discord" && account.refresh_token) {
         try {
@@ -40,6 +63,8 @@ export const authOptions: NextAuthOptions = {
 
           await database.post.user(account.providerAccountId, user.name!, user.email!);
           await database.post.userProfileImage(account.providerAccountId, user.image!);
+
+          await database.post.defaultUserPreferences(account.providerAccountId);
 
           const hashedRefreshToken = hashToken(account.refresh_token);
           const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
@@ -54,21 +79,19 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async session({ session, token }) {
-      try {
-        const {roles, perscomId, name} = await database.get.userInfo(token.sub!);
         session.user =  {
           ...session.user,
           discordName: session.user.name,
-          name: name ? name : session.user.name,
-          perscomId: perscomId ? perscomId : undefined,
+          name: token.name ? token.name : session.user.name,
+          perscomId: token.perscomId ? token.perscomId : undefined,
           id: token.sub,
-          roles: roles
+          email: session.user.email,
+          image: session.user.image,
+          preferences: token.preferences,
+          customThemes: token.customThemes,
+          roles: token.roles
         };
         return session;
-      } catch (error) {
-        console.error("Database error getting session info:", error);
-        return session;
-      }
     },
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;

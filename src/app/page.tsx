@@ -9,8 +9,18 @@ import { YouTubePlayer } from "@/components/youtube-player"
 import { Footer } from "@/components/footer"
 import { ReadyToJoinSection } from "@/components/ready-to-join-section"
 import Link from "next/link"
+import {authOptions} from "@/lib/authOptions";
+import {getServerSession} from "next-auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  const defaultImage = "/images/heroBackgrounds/default.png";
+  let heroImageSrc = session?.user?.preferences?.homepageImageUrl || defaultImage;
+
+  if (heroImageSrc && !heroImageSrc.startsWith('/') && !heroImageSrc.startsWith('http')) {
+    heroImageSrc = `/${heroImageSrc}`;
+  }
+
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -20,7 +30,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-100 dark:to-zinc-900">
             <Image
-              src="/images/tacdev/hero-background.png"
+              src={heroImageSrc}
               alt="Hero background"
               fill
               className="object-cover brightness-50"

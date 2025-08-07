@@ -58,10 +58,12 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                   </DropdownMenuItem>
                 </Link>
               )}
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
+              <Link href="/settings" className="w-full">
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+              </Link>
               {session.user.roles.includes('guest') && (
                 <DropdownMenuItem onClick={onJoinClickAction}>
                   <UserPlus className="mr-2 h-4 w-4" />
