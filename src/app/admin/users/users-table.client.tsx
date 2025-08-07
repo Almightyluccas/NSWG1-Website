@@ -14,6 +14,7 @@ import { UserRole } from "@/types/database";
 import { PaginationBar } from "@/components/ui/pagination";
 import RoleGuard from "@/components/auth/role-guard";
 import { RoleManager } from "@/app/admin/users/role-manager";
+import {NameManager} from "@/app/admin/users/name-manager";
 
 interface UserTableProps {
   users: User[]
@@ -27,6 +28,9 @@ export const UsersTable = ({ users } : UserTableProps ) => {
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
+  const [isNameManagerOpen, setIsNameManagerOpen] = useState(false);
+
+
 
   const { data: session } = useSession();
 
@@ -180,6 +184,10 @@ export const UsersTable = ({ users } : UserTableProps ) => {
                         setSelectedUser(user);
                         setIsRoleManagerOpen(true);
                       }}>Edit Roles</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedUser(user);
+                        setIsNameManagerOpen(true);
+                      }}>Edit Name</DropdownMenuItem>
                       {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -287,7 +295,7 @@ export const UsersTable = ({ users } : UserTableProps ) => {
           </DialogContent>
         </Dialog>
       )}
-      {selectedUser && (
+      {(selectedUser && isNameManagerOpen) && (
         <RoleManager
           open={isRoleManagerOpen}
           onOpenChangeAction={setIsRoleManagerOpen}
@@ -295,7 +303,17 @@ export const UsersTable = ({ users } : UserTableProps ) => {
           userId={selectedUser.id}
           currentUserRoles={session?.user.roles || []}
         />
+
       )}
+      {(selectedUser && isNameManagerOpen) && (
+        <NameManager
+          open={isNameManagerOpen}
+          onOpenChangeAction={setIsNameManagerOpen}
+          userId={selectedUser.id}
+          userName={selectedUser.name || ''}
+        />
+      )}
+
     </>
   )
 }

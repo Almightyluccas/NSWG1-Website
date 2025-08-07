@@ -12,3 +12,13 @@ export async function updateUserRoles(roles: string[], userId: string) {
     return { success: false, error: 'Failed to update roles' }
   }
 }
+
+export async function updateUserName(name: string, userId: string) {
+  try {
+    await database.put.userName(userId, name)
+    revalidatePath('/admin/users')
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: 'Failed to update roles' }
+  }
+}
