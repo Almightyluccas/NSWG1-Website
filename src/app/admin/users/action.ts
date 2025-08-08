@@ -16,6 +16,7 @@ export async function updateUserRoles(roles: string[], userId: string) {
 export async function updateUserName(name: string, userId: string) {
   try {
     await database.put.userName(userId, name)
+    // TODO: UPDATE PERSCOM
     revalidatePath('/admin/users')
     return { success: true }
   } catch (error) {

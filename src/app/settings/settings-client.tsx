@@ -15,6 +15,8 @@ import { SessionUser } from "@/types/next-auth"
 import { CustomTheme } from "@/types/database"
 import {useSession} from "next-auth/react";
 import {redirect} from "next/navigation";
+import {toast} from "sonner";
+import { useRouter } from "next/navigation"
 
 interface SettingsClientProps {
   user: SessionUser
@@ -39,6 +41,7 @@ const menuItems = [
 export function SettingsClient({ user }: SettingsClientProps) {
   const { themes: originalThemes, currentAccent, setCurrentAccent, addCustomTheme } = useTheme()
   const { data: session, status, update: updateSession } = useSession()
+  const router = useRouter()
 
 
   const [activeSection, setActiveSection] = useState("profile")
@@ -131,36 +134,52 @@ export function SettingsClient({ user }: SettingsClientProps) {
   }
 
   const handleSave = async () => {
-    setCurrentAccent(pendingAccent)
+    const updatedFields = [];
 
-    const isNewCustomTheme = !originalThemes.some(t => t.name === pendingAccent.name)
+    setCurrentAccent(pendingAccent);
+    const isNewCustomTheme = !originalThemes.some(t => t.name === pendingAccent.name);
     if (isNewCustomTheme) {
-      addCustomTheme(pendingAccent)
-    }
-    if (selectedBackground != session?.user.preferences.homepageImageUrl) {
-      console.log("Saving background:", selectedBackground)
-      await updateSession({ preferences: { homepageImageUrl: selectedBackground} })
-    }
-    if (displayName != session?.user.name) {
-      console.log("Saving display name:", displayName)
-      await updateSession({ name: displayName })
-    }
-    if (profileImage != session?.user.image) {
-      console.log("Saving profile image:", profileImage)
-      await updateSession({ image: profileImage })
+      addCustomTheme(pendingAccent);
+      updatedFields.push("Theme");
     }
 
-    console.log("Saving settings:", {
-      displayName,
-      profileImage,
-      selectedBackground,
-      customBackground,
-      accent: pendingAccent
-    })
+    if (selectedBackground !== session?.user.preferences.homepageImageUrl) {
+      try {
+        await updateSession({ preferences: { homepageImageUrl: selectedBackground } });
+        updatedFields.push("Homepage Background");
+      } catch (e) {
+        toast.error("Failed to update homepage background");
+      }
+    }
 
-    setHasChanges(false)
-    redirect("/settings");
-  }
+    if (displayName !== session?.user.name) {
+      //TODO: UPDATE PERSCOM
+      try {
+        await updateSession({ name: displayName });
+        updatedFields.push("Name");
+      } catch (e) {
+        toast.error("Failed to update name");
+      }
+    }
+
+    if (profileImage !== session?.user.image) {
+      try {
+        await updateSession({ image: profileImage });
+        updatedFields.push("Profile Image");
+      } catch (e) {
+        toast.error("Failed to update profile image");
+      }
+    }
+
+    if (updatedFields.length === 1) {
+      toast.success(`Successfully updated ${updatedFields[0]}`);
+    } else if (updatedFields.length > 1) {
+      toast.success("All settings updated successfully");
+    }
+    setHasChanges(false);
+    router.refresh();
+  };
+
 
   const handleCancel = () => {
     setDisplayName(user.name || "")
