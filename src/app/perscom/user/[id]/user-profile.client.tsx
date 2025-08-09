@@ -1,7 +1,7 @@
 "use client"
 
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {Avatar} from "@/components/ui/avatar";
+import {Avatar, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Button} from "@/components/ui/button";
@@ -126,13 +126,14 @@ export const UserProfile = ({
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-4">
                   <Avatar className="h-32 w-32 border-2 border-accent">
-                    <Image
-                      src={user.profile_photo_url }
-                      alt={user.name}
-                      className="h-32 w-32 rounded-full object-cover"
-                      width={48}
-                      height={48}
-                    />
+                    <AvatarImage src={user.profile_photo_url } alt={user.name} />
+                    {/*<Image*/}
+                    {/*  src={user.profile_photo_url }*/}
+                    {/*  alt={user.name}*/}
+                    {/*  className="h-32 w-32 rounded-full object-cover"*/}
+                    {/*  width={48}*/}
+                    {/*  height={48}*/}
+                    {/*/>*/}
                   </Avatar>
                   <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-1 border-2 border-accent">
                     <Image
