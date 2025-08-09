@@ -1,3 +1,5 @@
+"use server"
+
 import Image from "next/image"
 import { FadeIn } from "@/components/fade-in"
 import { Button } from "@/components/ui/button"
@@ -17,8 +19,12 @@ export default async function Home() {
   const defaultImage = "/images/heroBackgrounds/default.png";
   let heroImageSrc = session?.user?.preferences?.homepageImageUrl || defaultImage;
 
-  if (heroImageSrc && !heroImageSrc.startsWith('/') && !heroImageSrc.startsWith('http')) {
+  if (heroImageSrc && !heroImageSrc.startsWith('/') && heroImageSrc.includes('image')) {
     heroImageSrc = `/${heroImageSrc}`;
+  } else if (heroImageSrc && heroImageSrc.startsWith('backgrounds')) {
+    if (process.env.OCI_BACKGROUND_PAR_URL) {
+      heroImageSrc = process.env.OCI_BACKGROUND_PAR_URL + heroImageSrc;
+    }
   }
 
   return (

@@ -1,4 +1,4 @@
-import type {RefreshTokenRow, User, UserFullInfo} from "@/types/database"
+import type {CustomHeroImages, RefreshTokenRow, User, UserFullInfo} from "@/types/database"
 import type {DatabaseClient} from "./DatabaseClient"
 import type {RecurringTraining, RecurringTrainingWithStats} from "@/types/recurring-training"
 import type {
@@ -110,13 +110,15 @@ export class DatabaseGet {
               up.homepage_image_url,
               uct.name AS custom_theme_name,
               uct.accent_rgb,
-              uct.accent_darker_rgb
+              uct.accent_darker_rgb,
+              i.image_url
           FROM
               users u
                   LEFT JOIN
               user_preferences up ON u.id = up.user_id
                   LEFT JOIN
               user_custom_themes uct ON u.id = uct.user_id
+                  LEFT JOIN images i ON u.profile_image_id = i.id
           WHERE
               u.id = ?
       `,
@@ -130,6 +132,7 @@ export class DatabaseGet {
         name: null,
         preferences: { activeThemeName: null, homepageImageUrl: null },
         customThemes: [],
+        imageUrl: null
       };
     }
 
@@ -143,6 +146,7 @@ export class DatabaseGet {
         homepageImageUrl: firstRow.homepage_image_url,
       },
       customThemes: [],
+      imageUrl: firstRow.image_url || null
     };
 
     for (const row of rows) {
@@ -198,6 +202,30 @@ export class DatabaseGet {
       percentChange: Math.abs(Math.round(percentChange)),
       isPositive: percentChange >= 0,
     }
+  }
+
+  async userProfilePictureByPerscomId(perscomId: number): Promise<string | null> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT i.image_url FROM users u LEFT JOIN images i ON i.id = u.profile_image_id WHERE u.perscom_id = ?
+      `,
+      [perscomId],
+    )
+
+    return rows.length > 0 ? rows[0].image_url : null
+  }
+
+  async userCustomHeroImages(id: string): Promise<CustomHeroImages[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT image_url, id FROM images WHERE author_id = ? AND image_type = 'hero'
+      `,
+      [id],
+    )
+    return rows.map(row => ({
+      id: row.id,
+      url: row.image_url
+    }));
   }
 
   async userRefreshToken(userId: string): Promise<string> {

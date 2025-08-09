@@ -28,7 +28,6 @@ export default function FormViewer({ form }: FormViewerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleAnswerChange = (questionId: number, value: string | string[]) => {
-    console.log("Answer changed:", questionId, value)
     setAnswers((prev) => ({
       ...prev,
       [questionId]: value,
@@ -64,8 +63,6 @@ export default function FormViewer({ form }: FormViewerProps) {
           answer: Array.isArray(answer) ? answer.join(", ") : answer.toString(),
         }))
 
-      console.log("Prepared answers:", submissionAnswers)
-
       const submissionData = {
         formId: form.id,
         userId: session?.user?.id,
@@ -73,8 +70,6 @@ export default function FormViewer({ form }: FormViewerProps) {
         userEmail: session?.user?.email || "",
         answers: submissionAnswers,
       }
-
-      console.log("Submitting:", submissionData)
 
       const result = await submitForm(submissionData)
 

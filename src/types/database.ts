@@ -117,4 +117,10 @@ export interface UserFullInfo {
   name: string | null;
   preferences: Preferences
   customThemes: CustomTheme[];
+  imageUrl: string | null;
+}
+
+export interface CustomHeroImages {
+  id: number,
+  url: string;
 }

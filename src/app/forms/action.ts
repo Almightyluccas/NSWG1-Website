@@ -71,7 +71,6 @@ export async function submitForm(submissionData: {
   }>
 }) {
   try {
-    console.log("Submitting form with data:", submissionData)
 
     const submissionId = await database.post.createFormSubmission(
       submissionData.formId,
@@ -79,11 +78,9 @@ export async function submitForm(submissionData: {
       submissionData.userName,
       submissionData.userEmail,
     )
-    console.log("Created submission with ID:", submissionId)
 
     for (const answer of submissionData.answers) {
       if (answer.answer && answer.answer.trim()) {
-        console.log("Saving answer:", answer)
         await database.post.createFormSubmissionAnswer(submissionId, answer.questionId, answer.answer.trim())
       }
     }

@@ -1,3 +1,4 @@
+"use client"
 
 export const sanitizeHtmlClient = (html: string | null): string => {
   if (!html) return "";

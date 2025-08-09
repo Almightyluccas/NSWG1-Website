@@ -36,26 +36,32 @@ export class DatabasePost {
   }
 
   async userProfileImage(userId: string, imageUrl: string): Promise<number | null> {
+    const [existingUser] = await this.client.query<any>(
+      `
+      SELECT profile_image_id FROM users WHERE id = ?
+    `,
+      [userId],
+    );
+    if (existingUser && existingUser.profile_image_id) {
+      return null;
+    }
     const result = await this.client.query<any>(
       `
-          INSERT INTO images (author_id, image_url, image_type)
-          VALUES (?, ?, 'profile')
-      `,
-      [userId, imageUrl, userId],
-    )
-
-    const imageId = result.insertId
+      INSERT INTO images (author_id, image_url, image_type)
+      VALUES (?, ?, 'profile')
+    `,
+      [userId, imageUrl],
+    );
+    const imageId = result.insertId;
     await this.client.query(
       `
           UPDATE users SET profile_image_id = ? WHERE id = ?
       `,
       [imageId, userId],
-    )
-
-    return imageId
+    );
+    return imageId;
   }
 
-  // Campaign methods
   async campaign(data: {
     id: string
     name: string

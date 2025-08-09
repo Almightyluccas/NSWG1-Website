@@ -82,6 +82,49 @@ export class DatabasePut {
       [name, id],
     )
   }
+  async userProfilePicture(s3Key: string, userId: string): Promise<void> {
+    const existingUserRows = await this.client.query<any[]>(
+      `SELECT profile_image_id FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    const oldImageId = existingUserRows?.[0]?.profile_image_id || null;
+
+    const insertResult = await this.client.query<any>(
+      `
+          INSERT INTO images (image_url, image_type, author_id)
+          VALUES (?, 'profile', ?)
+      `,
+      [s3Key, userId]
+    );
+
+    const newImageId = insertResult.insertId;
+
+    if (!newImageId) {
+      throw new Error("Failed to insert new image record into the database.");
+    }
+
+    await this.client.query(
+      `
+          UPDATE users SET profile_image_id = ? WHERE id = ?
+      `,
+      [newImageId, userId]
+    );
+
+    if (oldImageId) {
+      await this.client.query(
+        `DELETE FROM images WHERE id = ? AND image_type = 'profile'`,
+        [oldImageId]
+      );
+    }
+  }
+
+  async userCustomHeroImage(s3Key: string, userId: string): Promise<void> {
+    await this.client.query<any[]>(
+      `INSERT INTO images (image_url, image_type, category, author_id) VALUES (?, ?, ?, ?)`,
+      [s3Key, 'hero', 'Misc', userId]
+    );
+  }
 
   async updateRefreshToken(oldTokenHash: string, newTokenHash: string, newExpiresAt: Date): Promise<void> {
     await this.client.query(

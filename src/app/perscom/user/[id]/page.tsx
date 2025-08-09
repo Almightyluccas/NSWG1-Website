@@ -4,12 +4,13 @@ import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 import { AssignmentRecord, Award, PerscomUserResponse, Qualification, Rank } from "@/types/perscomApi";
 import { perscom } from "@/lib/perscom/api";
+import {database} from "@/database";
+import {createUrlProfilePicture} from "@/app/perscom/user/[id]/action";
 
 interface UserProfilePageProps {
   params: Promise<{ id: string }>
 
 }
-//TODO: Load only what is first seen first so it opens faster then load rest in background.
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const { id } = await params;
@@ -19,7 +20,16 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const allQualifications: Qualification[] = await perscom.get.qualifications();
   const allAssignments: AssignmentRecord[] = await perscom.get.assignments();
   // const allCombatRecords: BaseRecord[] = await getCombatRecords();
+
   const user = allUsers.find(user => user.id.toString() === id);
+  if (user) {
+    const userProfilePicture = await database.get.userProfilePictureByPerscomId(user.id);
+    if (!userProfilePicture?.includes('https')) {
+      user.profile_photo_url = await createUrlProfilePicture(userProfilePicture!);
+    } else {
+      user.profile_photo_url = userProfilePicture!
+    }
+  }
 
   const awardImages = user?.award_records
     ? allAwards
