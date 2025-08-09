@@ -20,6 +20,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const allQualifications: Qualification[] = await perscom.get.qualifications();
   const allAssignments: AssignmentRecord[] = await perscom.get.assignments();
   // const allCombatRecords: BaseRecord[] = await getCombatRecords();
+  console.log(allUsers)
 
   const user = allUsers.find(user => user.id.toString() === id);
   if (user) {
