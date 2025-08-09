@@ -1,6 +1,6 @@
 "use client"
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Filter, MoreHorizontal, Search} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
@@ -29,8 +29,6 @@ export const UsersTable = ({ users } : UserTableProps ) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
   const [isNameManagerOpen, setIsNameManagerOpen] = useState(false);
-
-
 
   const { data: session } = useSession();
 
@@ -295,7 +293,7 @@ export const UsersTable = ({ users } : UserTableProps ) => {
           </DialogContent>
         </Dialog>
       )}
-      {(selectedUser && isNameManagerOpen) && (
+      {(selectedUser && isRoleManagerOpen) && (
         <RoleManager
           open={isRoleManagerOpen}
           onOpenChangeAction={setIsRoleManagerOpen}
@@ -303,7 +301,6 @@ export const UsersTable = ({ users } : UserTableProps ) => {
           userId={selectedUser.id}
           currentUserRoles={session?.user.roles || []}
         />
-
       )}
       {(selectedUser && isNameManagerOpen) && (
         <NameManager
