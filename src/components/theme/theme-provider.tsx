@@ -70,7 +70,6 @@ export function ThemeProvider({
 
   const addCustomTheme = async (theme: CustomTheme) => {
     await updateSession({ customTheme: theme })
-    console.log(theme)
   }
 
   const handleSetMode = async (newMode: string) => {

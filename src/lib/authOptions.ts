@@ -47,7 +47,6 @@ export const authOptions: NextAuthOptions = {
           token.customThemes.push(session.customTheme);
         }
         if (session.name) {
-          console.log("Updating user name:", session.name);
           await database.put.userName(token.user_id, session.name);
           token.name = session.name;
         }
@@ -116,7 +115,6 @@ export const authOptions: NextAuthOptions = {
         try {
           const hashedRefreshToken = hashToken(token.refresh_token as string);
           await database.put.revokeRefreshToken(hashedRefreshToken);
-          console.log("Successfully revoked token on sign out.");
         } catch (error) {
           console.error("Error revoking token on sign out:", error);
         }

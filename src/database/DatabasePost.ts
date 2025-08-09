@@ -43,7 +43,6 @@ export class DatabasePost {
       [userId],
     );
     if (existingUser && existingUser.profile_image_id) {
-      console.log(`User ${userId} already has a profile image set. Skipping.`);
       return null;
     }
     const result = await this.client.query<any>(

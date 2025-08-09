@@ -24,13 +24,11 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const user = allUsers.find(user => user.id.toString() === id);
   if (user) {
     const userProfilePicture = await database.get.userProfilePictureByPerscomId(user.id);
-    console.log(userProfilePicture)
     if (!userProfilePicture?.includes('https')) {
       user.profile_photo_url = await createUrlProfilePicture(userProfilePicture!);
     } else {
       user.profile_photo_url = userProfilePicture!
     }
-    console.log(user.profile_photo_url)
   }
 
   const awardImages = user?.award_records

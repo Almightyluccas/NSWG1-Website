@@ -76,7 +76,6 @@ class ImageStorageService {
 
     try {
       await this.#s3Client.send(command);
-      console.log(`Successfully deleted object from S3: ${key}`);
     } catch (error) {
       console.error(`Failed to delete object from S3: ${key}`, error);
       throw error;
