@@ -81,11 +81,11 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
     }
     try {
       const options = {
-        maxSizeMB: uploadType === 'profile' ? 1 : 2,
-        maxWidthOrHeight: uploadType === 'profile' ? 400 : 1920,
+        maxSizeMB: 2,
+        maxWidthOrHeight: 1920,
         useWebWorker: true,
         fileType: 'image/webp',
-        initialQuality: uploadType === 'profile' ? 0.8 : 0.95,
+        initialQuality: 1,
       };
       const optimizedFile = await imageCompression(file, options);
 
