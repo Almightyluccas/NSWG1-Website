@@ -135,7 +135,7 @@ export function FileUploadDialog({
 
     const acceptedTypesArray = acceptedTypes.split(',')
     const isValidType = acceptedTypesArray.some(type =>
-      type.trim() === '*/*' || file.type.match(type.trim().replace('*', '.*'))
+      type.trim() === '*/*' || file.type.match(type.trim().replace(/\*/g, '.*'))
     )
 
     if (!isValidType) {
