@@ -1,15 +1,27 @@
+"use server"
+
 import { Navbar } from "@/components/navbar"
 import { SettingsClient } from "./settings-client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
+import {database} from "@/database";
+import {CustomHeroImages} from "@/types/database";
+
+
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
+  if (!session) redirect("/login")
 
-  if (!session) {
-    redirect("/login")
-  }
+
+  const customHeroImages: CustomHeroImages[] = await database.get.userCustomHeroImages(session.user.id!)
+  customHeroImages.forEach(image => {
+    if (image.url && !image.url.startsWith("http") && process.env.OCI_BACKGROUND_PAR_URL) {
+      image.url = process.env.OCI_BACKGROUND_PAR_URL + image.url;
+    }
+    return image;
+  })
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900">
@@ -23,7 +35,7 @@ export default async function SettingsPage() {
                 Manage your account settings and website preferences
               </p>
             </div>
-            <SettingsClient user={session.user} />
+            <SettingsClient user={session.user} customHeroImages={customHeroImages}/>
           </div>
         </div>
       </main>

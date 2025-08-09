@@ -3,6 +3,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import { database } from "@/database";
 import { hashToken } from "@/lib/cryptoUtils";
 import { headers } from "next/headers";
+import {prepend} from "next/dist/build/webpack/loaders/resolve-url-loader/lib/file-protocol";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,7 +15,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
-        const { roles, perscomId, name, preferences, customThemes } = await database.get.userInfo(user.id);
+        const { roles, perscomId, name, preferences, customThemes, imageUrl } = await database.get.userInfo(user.id);
+        let fixedImageUrl = imageUrl;
+        if (!imageUrl?.includes('https') && process.env.OCI_PROFILE_PAR_URL) {
+          fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
+        }
 
         return {
           ...token,
@@ -24,6 +29,7 @@ export const authOptions: NextAuthOptions = {
           user_id: user.id,
           roles: roles,
           perscomId: perscomId,
+          image: fixedImageUrl,
           name: name,
           preferences: preferences,
           customThemes: customThemes,
@@ -45,6 +51,11 @@ export const authOptions: NextAuthOptions = {
           await database.put.userName(token.user_id, session.name);
           token.name = session.name;
         }
+        if (session.image) {
+          if (process.env.OCI_PROFILE_PAR_URL) {
+            token.image = process.env.OCI_PROFILE_PAR_URL + session.image;
+          }
+        }
       }
 
       if (Date.now() < (token.expires_at as number) * 1000) {
@@ -63,7 +74,6 @@ export const authOptions: NextAuthOptions = {
 
           await database.post.user(account.providerAccountId, user.name!, user.email!);
           await database.post.userProfileImage(account.providerAccountId, user.image!);
-
           await database.post.defaultUserPreferences(account.providerAccountId);
 
           const hashedRefreshToken = hashToken(account.refresh_token);
@@ -86,7 +96,7 @@ export const authOptions: NextAuthOptions = {
           perscomId: token.perscomId ? token.perscomId : undefined,
           id: token.sub,
           email: session.user.email,
-          image: session.user.image,
+          image: token.image,
           preferences: token.preferences,
           customThemes: token.customThemes,
           roles: token.roles

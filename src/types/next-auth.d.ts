@@ -30,5 +30,8 @@ declare module "next-auth/jwt" {
     access_token?: string;
     expires_at?: number;
     refresh_token?: string;
+    image?: string | null;
+    email?: string | null;
+    discordName?: string | null;
   }
 }

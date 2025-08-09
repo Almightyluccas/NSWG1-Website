@@ -12,24 +12,25 @@ import { Camera, Check, Plus, User, Palette, Settings } from 'lucide-react'
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { SessionUser } from "@/types/next-auth"
-import { CustomTheme } from "@/types/database"
+import {CustomHeroImages, CustomTheme} from "@/types/database"
 import {useSession} from "next-auth/react";
-import {redirect} from "next/navigation";
 import {toast} from "sonner";
 import { useRouter } from "next/navigation"
+import {FileUploadDialog, UploadType} from "@/components/ui/image-upload-dialog";
+import imageCompression from "browser-image-compression";
 
 interface SettingsClientProps {
-  user: SessionUser
+  user: SessionUser,
+  customHeroImages: CustomHeroImages[]
 }
 
 const predefinedBackgrounds = [
-  { id: "Default", name: "Default", url: "images/heroBackgrounds/default.png", thumbnail: "/images/heroBackgrounds/default.png?height=200&width=300&text=Default" },
-  { id: "tactical-2", name: "Tacdevron", url: "images/heroBackgrounds/tacdevron-1.png", thumbnail: "/images/heroBackgrounds/tacdevron-1.png?height=200&width=300&text=Tactical" },
-  { id: "naval-3", name: "160th", url: "images/heroBackgrounds/160th-1.png", thumbnail: "/images/heroBackgrounds/160th-1.png?height=200&width=300&text=Naval" },
-  { id: "helicopter-1", name: "160th", url: "images/heroBackgrounds/160th-2.png", thumbnail: "/images/heroBackgrounds/160th-2.png?height=200&width=300&text=Aviation" },
-  { id: "helicopter-5", name: "Entire Group", url: "images/heroBackgrounds/group-1.png", thumbnail: "/images/heroBackgrounds/group-1.png?height=200&width=300&text=Aviation" },
-  { id: "helicopter-76", name: "Casual", url: "images/heroBackgrounds/chill-1.png", thumbnail: "/images/heroBackgrounds/chill-1.png?height=200&width=300&text=Aviation" }
-
+  { id: 1, url: "/images/heroBackgrounds/default.png" },
+  { id: 2, url: "/images/heroBackgrounds/tacdevron-1.png" },
+  { id: 3, url: "/images/heroBackgrounds/160th-1.png" },
+  { id: 4, url: "/images/heroBackgrounds/160th-2.png" },
+  { id: 5, url: "/images/heroBackgrounds/group-1.png" },
+  { id: 6, url: "/images/heroBackgrounds/chill-1.png" }
 ]
 
 const menuItems = [
@@ -38,11 +39,12 @@ const menuItems = [
   { id: "preferences", name: "Preferences", icon: Settings, description: "General application settings" }
 ]
 
-export function SettingsClient({ user }: SettingsClientProps) {
+export function SettingsClient({ user, customHeroImages }: SettingsClientProps) {
   const { themes: originalThemes, currentAccent, setCurrentAccent, addCustomTheme } = useTheme()
   const { data: session, status, update: updateSession } = useSession()
   const router = useRouter()
 
+  const allBackgrounds = [...predefinedBackgrounds, ...customHeroImages];
 
   const [activeSection, setActiveSection] = useState("profile")
   const [displayName, setDisplayName] = useState(user.name || "")
@@ -56,9 +58,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const [isAddingTheme, setIsAddingTheme] = useState(false)
   const [newThemeName, setNewThemeName] = useState("")
   const [newThemeColor, setNewThemeColor] = useState("#DFC069")
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const backgroundInputRef = useRef<HTMLInputElement>(null)
+  const [isProfilePictureUploadOpen, setIsProfilePictureUploadOpen] = useState(false);
+  const [isBackgroundPictureUploadOpen, setIsBackgroundPictureUploadOpen] = useState(false);
 
   useEffect(() => {
     setPendingAccent(currentAccent)
@@ -67,36 +68,63 @@ export function SettingsClient({ user }: SettingsClientProps) {
     setProfileImage(user.image || "")
   }, [currentAccent, originalThemes, user])
 
-
   const handleDisplayNameChange = (value: string) => {
     setDisplayName(value)
     setHasChanges(true)
   }
 
-  const handleProfileImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string)
-        setHasChanges(true)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  const handleImageUpload = async (formData: FormData, uploadType: UploadType) => {
+    const file = formData.get('file') as File;
 
-  const handleBackgroundUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setCustomBackground(e.target?.result as string)
-        setSelectedBackground("custom")
-        setHasChanges(true)
-      }
-      reader.readAsDataURL(file)
+    if (!file || !session?.user?.id) {
+      throw new Error("No file provided or user not logged in.");
     }
-  }
+    try {
+      const options = {
+        maxSizeMB: uploadType === 'profile' ? 1 : 2,
+        maxWidthOrHeight: uploadType === 'profile' ? 400 : 1920,
+        useWebWorker: true,
+        fileType: 'image/webp',
+        initialQuality: uploadType === 'profile' ? 0.8 : 0.95,
+      };
+      const optimizedFile = await imageCompression(file, options);
+
+      const presignedUrlResponse = await fetch('/api/object-storage/generate-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uploadType: uploadType,
+          contentType: optimizedFile.type,
+        }),
+      });
+
+      if (!presignedUrlResponse.ok) throw new Error('Failed to get a secure upload URL.');
+
+      const { url, key } = await presignedUrlResponse.json();
+
+      const directUploadResponse = await fetch(url, {
+        method: 'PUT',
+        body: optimizedFile,
+        headers: { 'Content-Type': optimizedFile.type },
+      });
+
+      if (!directUploadResponse.ok) throw new Error('File upload to storage failed.');
+
+      const saveKeyResponse = await fetch('/api/object-storage/save-upload-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, uploadType }),
+      });
+
+      if (!saveKeyResponse.ok) throw new Error('Failed to save upload details to database.');
+
+      if (uploadType === "profile") await updateSession({ image: key });
+
+      router.refresh();
+    } catch (error) {
+      throw new Error(`Failed to upload image: ${error}`);
+    }
+  };
 
   const handleAccentChange = (theme: CustomTheme) => {
     setPendingAccent(theme)
@@ -180,7 +208,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
     router.refresh();
   };
 
-
   const handleCancel = () => {
     setDisplayName(user.name || "")
     setProfileImage(user.image || "")
@@ -203,24 +230,17 @@ export function SettingsClient({ user }: SettingsClientProps) {
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={profileImage || "/placeholder.svg"} alt={displayName} />
+              <AvatarImage src={session?.user.image || "/placeholder.svg"} alt={displayName} />
               <AvatarFallback className="text-lg">
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setIsProfilePictureUploadOpen(true)}
               className="absolute -bottom-1 -right-1 bg-accent hover:bg-accent-darker text-black rounded-full p-2 shadow-lg transition-colors"
             >
               <Camera className="h-4 w-4" />
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleProfileImageUpload}
-              className="hidden"
-            />
           </div>
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white">Profile Picture</h3>
@@ -340,7 +360,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
         <div className="space-y-3">
           <Label>Homepage Background Image</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {predefinedBackgrounds.map((bg) => (
+            {allBackgrounds.map((bg) => (
               <button
                 key={bg.id}
                 onClick={() => handleBackgroundSelect(bg.url)}
@@ -351,8 +371,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 }`}
               >
                 <Image
-                  src={bg.thumbnail || "/placeholder.svg"}
-                  alt={bg.name}
+                  src={bg.url || "/placeholder.svg"}
+                  alt={'background image'}
                   fill
                   className="object-cover"
                 />
@@ -361,50 +381,41 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     <Check className="h-8 w-8 text-white drop-shadow-lg" />
                   </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
-                  {bg.name}
-                </div>
+
               </button>
             ))}
 
-            {/*<button*/}
-            {/*  onClick={() => backgroundInputRef.current?.click()}*/}
-            {/*  className={`relative aspect-video rounded-lg border-2 border-dashed transition-all hover:scale-105 flex flex-col items-center justify-center ${*/}
-            {/*    selectedBackground === "custom"*/}
-            {/*      ? "border-accent bg-accent/10"*/}
-            {/*      : "border-gray-300 dark:border-zinc-600 hover:border-accent"*/}
-            {/*  }`}*/}
-            {/*>*/}
-            {/*  {customBackground ? (*/}
-            {/*    <>*/}
-            {/*      <Image*/}
-            {/*        src={customBackground || "/placeholder.svg"}*/}
-            {/*        alt="Custom background"*/}
-            {/*        fill*/}
-            {/*        className="object-cover rounded-lg"*/}
-            {/*      />*/}
-            {/*      {selectedBackground === "custom" && (*/}
-            {/*        <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">*/}
-            {/*          <Check className="h-8 w-8 text-white drop-shadow-lg" />*/}
-            {/*        </div>*/}
-            {/*      )}*/}
-            {/*    </>*/}
-            {/*  ) : (*/}
-            {/*    <>*/}
-            {/*      <Plus className="h-8 w-8 text-gray-400 dark:text-zinc-500 mb-2" />*/}
-            {/*      <span className="text-xs text-gray-500 dark:text-zinc-400 text-center px-2">*/}
-            {/*        Upload Custom*/}
-            {/*      </span>*/}
-            {/*    </>*/}
-            {/*  )}*/}
-            {/*  <input*/}
-            {/*    ref={backgroundInputRef}*/}
-            {/*    type="file"*/}
-            {/*    accept="image/*"*/}
-            {/*    onChange={handleBackgroundUpload}*/}
-            {/*    className="hidden"*/}
-            {/*  />*/}
-            {/*</button>*/}
+            <button
+              onClick={() => setIsBackgroundPictureUploadOpen(true)}
+              className={`relative aspect-video rounded-lg border-2 border-dashed transition-all hover:scale-105 flex flex-col items-center justify-center ${
+                selectedBackground === "custom"
+                  ? "border-accent bg-accent/10"
+                  : "border-gray-300 dark:border-zinc-600 hover:border-accent"
+              }`}
+            >
+              {customBackground ? (
+                <>
+                  <Image
+                    src={customBackground || "/placeholder.svg"}
+                    alt="Custom background"
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                  {selectedBackground === "custom" && (
+                    <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
+                      <Check className="h-8 w-8 text-white drop-shadow-lg" />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Plus className="h-8 w-8 text-gray-400 dark:text-zinc-500 mb-2" />
+                  <span className="text-xs text-gray-500 dark:text-zinc-400 text-center px-2">
+                    Upload Custom
+                  </span>
+                </>
+              )}
+            </button>
           </div>
           <p className="text-xs text-gray-500 dark:text-zinc-400">
             Choose a background image for your homepage
@@ -500,6 +511,39 @@ export function SettingsClient({ user }: SettingsClientProps) {
           </div>
         )}
       </div>
+
+      {isProfilePictureUploadOpen && (
+        <FileUploadDialog
+          open={isProfilePictureUploadOpen}
+          onOpenChange={() => setIsProfilePictureUploadOpen(false)}
+          uploadType="profile"
+          title="Upload Profile Picture"
+          description="Choose a new profile picture"
+          handleUpload={handleImageUpload}
+          onUploadSuccess={(result) => {
+            toast.success("Upload successful:", result)
+          }}
+          onUploadError={(error: string) => {
+            toast.error(`Upload failed: ${error}`)
+          }}
+        />
+      )}
+      {isBackgroundPictureUploadOpen && (
+        <FileUploadDialog
+          open={isBackgroundPictureUploadOpen}
+          onOpenChange={() => setIsBackgroundPictureUploadOpen(false)}
+          uploadType="background"
+          title="Upload Background Image"
+          description="Choose a new background image"
+          handleUpload={handleImageUpload}
+          onUploadSuccess={(result) => {
+            toast.success("Upload successful:", result)
+          }}
+          onUploadError={(error: string) => {
+            toast.error(`Upload failed: ${error}`)
+          }}
+        />
+      )}
     </div>
   )
 }

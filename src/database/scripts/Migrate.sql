@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS users
     name             VARCHAR(255),
     date_of_birth    DATE,
     email            VARCHAR(255) NOT NULL,
-    profile_image_id VARCHAR(255),
+    profile_image_id INT,
     role             set ('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'instructor', 'admin', 'superAdmin', 'developer'),
     created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_perscom_id (perscom_id),

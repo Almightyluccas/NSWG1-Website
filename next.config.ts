@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
         hostname: "ui-avatars.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: 'objectstorage.us-ashburn-1.oraclecloud.com',
+        pathname: "/**",
+      }
 
     ]
   },

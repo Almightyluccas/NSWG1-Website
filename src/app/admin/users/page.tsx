@@ -1,3 +1,5 @@
+"use server"
+
 import { UsersTable } from "@/app/admin/users/users-table.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
@@ -5,6 +7,18 @@ import { database } from "@/database";
 
 
 export default async function UsersPage() {
+
+  const rawUsers = await database.get.users();
+
+  const processedUsers = await Promise.all(
+    rawUsers.map(async (user) => {
+      if (user.imageUrl && !user.imageUrl.startsWith("http") && process.env.OCI_PROFILE_PAR_URL) {
+        const signedUrl = process.env.OCI_PROFILE_PAR_URL + user.imageUrl;
+        return { ...user, imageUrl: signedUrl };
+      }
+      return user;
+    })
+  );
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.developer, UserRole.admin, UserRole.superAdmin]}>
@@ -16,7 +30,7 @@ export default async function UsersPage() {
           </div>
         </div>
 
-        <UsersTable users={await database.get.users()}/>
+        <UsersTable users={processedUsers}/>
 
       </div>
     </ServerRoleGuard>
