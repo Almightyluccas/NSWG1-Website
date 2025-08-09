@@ -39,12 +39,11 @@ export default async function Home() {
               src={heroImageSrc}
               alt="Hero background"
               fill
-              className="object-cover brightness-50"
+              className="object-cover brightness-55"
               priority
+              quality={95}
+              sizes={"100vw"}
             />
-            {/*<video autoPlay muted loop playsInline className="w-full h-full object-cover">*/}
-            {/*  <source src="/videos/hero-background.mp4" type="video/mp4" />*/}
-            {/*</video>*/}
           </div>
         </div>
 

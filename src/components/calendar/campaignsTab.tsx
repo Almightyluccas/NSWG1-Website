@@ -734,12 +734,23 @@ export function CampaignsTab() {
     filters.dateFrom || filters.dateTo || filters.sortOrder !== "upcoming" || filters.eventType !== "upcoming"
 
   const openModal = (type: keyof typeof modals, item?: Campaign | Mission) => {
-    if (type.includes("Campaign") && item) setSelectedCampaign(item as Campaign)
-    if (type.includes("Mission") && item) setSelectedMission(item as Mission)
-    if (type === "createMission" && item) setSelectedCampaign(item as Campaign)
-    if (type === "attendance" && item) setSelectedMission(item as Mission)
+    switch (type) {
+      case "editCampaign":
+      case "deleteCampaign":
+        setSelectedCampaign(item as Campaign)
+        break
+      case "createMission":
+        setSelectedCampaign(item as Campaign)
+        break
+      case "editMission":
+      case "deleteMission":
+      case "attendance":
+        setSelectedMission(item as Mission)
+        break
+    }
     setModals((prev) => ({ ...prev, [type]: true }))
   }
+
 
   const closeModal = (type: keyof typeof modals) => {
     setModals((prev) => ({ ...prev, [type]: false }))
@@ -1693,6 +1704,7 @@ export function CampaignsTab() {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((user) => {
+
                       const rsvp = selectedMission.rsvps.find((r) => r.userId === user.id)
                       const attendance = localAttendance.find((a) => a.userId === user.id)
                       const attendanceLoading = attendanceLoadingStates[user.id]
