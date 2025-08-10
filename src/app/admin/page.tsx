@@ -1,3 +1,5 @@
+"use server"
+
 import { Users, UserPlus, FileText, Calendar } from "lucide-react"
 import { AdminStatCard } from "@/components/admin/stat-card"
 import { RecentUsersTable } from "@/components/admin/recent-users-table"
@@ -17,6 +19,12 @@ export default async function AdminDashboard() {
     }).length;
   });
   const totalUsers = await perscom.get.users().then(users => { return users.length})
+
+  recentUsers.forEach(user => {
+    if (user.imageUrl && !user.imageUrl.startsWith("http") && process.env.OCI_PROFILE_PAR_URL) {
+      user.imageUrl = process.env.OCI_PROFILE_PAR_URL + user.imageUrl;
+    }
+  })
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.admin, UserRole.developer, UserRole.superAdmin, UserRole.instructor]}>
