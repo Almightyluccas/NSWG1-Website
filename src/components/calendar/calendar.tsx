@@ -114,7 +114,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
   const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
   const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
 
-  // Load missions and training for the current month
   useEffect(() => {
     const loadData = async () => {
       if (!session?.user) return
@@ -124,7 +123,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
         const startDate = format(monthStart, "yyyy-MM-dd")
         const endDate = format(monthEnd, "yyyy-MM-dd")
 
-        // Load missions and training
         const [missionData, trainingData] = await Promise.all([
           getMissionsByDateRange(startDate, endDate),
           getTrainingByDateRange(startDate, endDate),
@@ -144,13 +142,11 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     loadData()
   }, [currentMonth, session])
 
-  // Get calendar status for a specific date from the attendanceData prop
   const getAttendanceForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     return attendanceData.filter((record) => record.date === dateString)
   }
 
-  // Get missions for a specific date - FIXED: properly handle date comparison
   const getMissionsForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     const dayMissions = missions.filter((mission) => {
@@ -159,11 +155,9 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return dayMissions
   }
 
-  // Get training records for a specific date - FIXED: properly handle date comparison
   const getTrainingForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd")
     const dayTraining = trainingRecords.filter((training) => {
-      // Training date is already a string in yyyy-mm-dd format from database
       return training.date === dateString
     })
     return dayTraining
@@ -185,7 +179,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     }
   }
 
-  // Get RSVP status for a mission
   const getUserRSVPStatus = (mission: Mission) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -193,7 +186,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return rsvp?.status || null
   }
 
-  // Get calendar status for a mission
   const getUserAttendanceStatus = (mission: Mission) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -201,7 +193,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return attendance?.status || null
   }
 
-  // Get RSVP status for training
   const getUserTrainingRSVPStatus = (training: Training) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -209,7 +200,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return rsvp?.status || null
   }
 
-  // Get calendar status for training
   const getUserTrainingAttendanceStatus = (training: Training) => {
     const targetUserId = userId || session?.user?.id
     if (!targetUserId) return null
@@ -217,7 +207,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     return attendance?.status || null
   }
 
-  // Handle RSVP for missions
   const handleMissionRSVP = async (mission: Mission, status: "attending" | "not-attending" | "maybe") => {
     if (!session?.user) return
 
@@ -227,7 +216,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
         status,
       })
 
-      // Reload missions to get updated data
       const startDate = format(monthStart, "yyyy-MM-dd")
       const endDate = format(monthEnd, "yyyy-MM-dd")
       const missionData = await getMissionsByDateRange(startDate, endDate)
@@ -238,7 +226,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     }
   }
 
-  // Handle RSVP for training
   const handleTrainingRSVP = async (training: Training, status: "attending" | "not-attending" | "maybe") => {
     if (!session?.user) return
 
@@ -248,7 +235,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
         status,
       })
 
-      // Reload training to get updated data
       const startDate = format(monthStart, "yyyy-MM-dd")
       const endDate = format(monthEnd, "yyyy-MM-dd")
       const trainingData = await getTrainingByDateRange(startDate, endDate)
@@ -300,7 +286,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
     }
   }
 
-  // Check if date is in the past
   const isPastDate = (date: Date) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -365,23 +350,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
         </div>
       </div>
 
-      {/* Debug info */}
-      {/*<div className="text-xs text-gray-500 p-2 bg-gray-50 dark:bg-zinc-800 rounded">*/}
-      {/*  Debug: Loaded {missions.length} missions and {trainingRecords.length} training records for{" "}*/}
-      {/*  {format(currentMonth, "MMMM yyyy")}. Attendance data: {attendanceData.length} records.*/}
-      {/*  {missions.length > 0 && (*/}
-      {/*    <div className="mt-1">*/}
-      {/*      Mission dates:{" "}*/}
-      {/*      {missions*/}
-      {/*        .map((m) => {*/}
-      {/*          const dateStr = typeof m.date === "string" ? m.date : format(new Date(m.date), "yyyy-MM-dd")*/}
-      {/*          return `${m.name}: ${dateStr}`*/}
-      {/*        })*/}
-      {/*        .join(", ")}*/}
-      {/*    </div>*/}
-      {/*  )}*/}
-      {/*</div>*/}
-
       <div className="rounded-md border border-gray-200 dark:border-zinc-700 overflow-hidden">
         <div className="grid grid-cols-7 bg-gray-50 dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -427,7 +395,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                   </span>
                   {hasEvents && (
                     <div className="flex items-center gap-1">
-                      {dayMissions.length > 0 && <CalendarIcon className="h-3 w-3 text-accent" />}
+                      {dayMissions.length > 0 && <CalendarIcon className="h-3 w-3 text-purple-500" />}
                       {dayTraining.length > 0 && <GraduationCap className="h-3 w-3 text-blue-500" />}
                       {attendanceRecords.length > 0 && <div className="w-2 h-2 rounded-full bg-green-500" />}
                     </div>
@@ -450,10 +418,10 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                     return (
                       <Popover key={`mission-${idx}`}>
                         <PopoverTrigger asChild>
-                          <div className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 p-1 rounded border border-accent/20 bg-accent/5">
+                          <div className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 p-1 rounded border border-purple-500/20 bg-purple-500/5">
                             <div className="flex items-center gap-1 mb-1">
-                              <CalendarIcon className="w-3 h-3 text-accent" />
-                              <span className="text-xs font-medium truncate text-accent">{mission.name}</span>
+                              <CalendarIcon className="w-3 h-3 text-purple-500" />
+                              <span className="text-xs font-medium truncate text-purple-500">{mission.name}</span>
                             </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Clock className="w-2 h-2" />
@@ -474,7 +442,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                           <div className="space-y-4">
                             <div>
                               <h4 className="font-medium flex items-center gap-2">
-                                <CalendarIcon className="h-4 w-4 text-accent" />
+                                <CalendarIcon className="h-4 w-4 text-purple-500" />
                                 {mission.name}
                               </h4>
                               <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{mission.description}</p>
@@ -588,6 +556,62 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                               </div>
                             )}
 
+                            {/* START: ADDED RSVP/ATTENDANCE DETAILS FOR MISSIONS */}
+                            {mission.rsvps.length > 0 && (
+                              <div className="space-y-2">
+                                <h5 className="font-medium text-sm">RSVPs</h5>
+                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                  {mission.rsvps.map((rsvp) => {
+                                    const attendanceRecord = mission.attendance.find((a) => a.userId === rsvp.userId)
+                                    return (
+                                      <div key={rsvp.id} className="flex items-center justify-between text-sm">
+                                        <span>{rsvp.userName}</span>
+                                        <div className="flex items-center gap-2">
+                                          <Badge
+                                            variant="outline"
+                                            className={cn("text-xs", getRSVPBadgeColor(rsvp.status))}
+                                          >
+                                            {rsvp.status.replace("-", " ")}
+                                          </Badge>
+                                          {attendanceRecord && (
+                                            <Badge
+                                              variant="outline"
+                                              className={cn(
+                                                "text-xs",
+                                                getAttendanceBadgeColor(attendanceRecord.status),
+                                              )}
+                                            >
+                                              {attendanceRecord.status}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {isPast && mission.attendance.length > 0 && (
+                              <div className="space-y-2">
+                                <h5 className="font-medium text-sm">Attendance Records</h5>
+                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                  {mission.attendance.map((attendance) => (
+                                    <div key={attendance.id} className="flex items-center justify-between text-sm">
+                                      <span>{attendance.userName}</span>
+                                      <Badge
+                                        variant="outline"
+                                        className={cn("text-xs", getAttendanceBadgeColor(attendance.status))}
+                                      >
+                                        {attendance.status}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {/* END: ADDED RSVP/ATTENDANCE DETAILS FOR MISSIONS */}
+
                             {userRSVP && (
                               <div className="text-sm">
                                 <span className="font-medium">Your RSVP:</span>{" "}
@@ -683,13 +707,6 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                                 </div>
                               )}
                             </div>
-
-                            {/*/!* Debug info *!/*/}
-                            {/*<div className="text-xs text-gray-500 bg-gray-50 dark:bg-zinc-800 p-2 rounded">*/}
-                            {/*  Debug: userId={userId}, userAttendance={userAttendance}, isPast={isPast.toString()}*/}
-                            {/*  <br />*/}
-                            {/*  Should show RSVP: {(!userId && !userAttendance && !isPast).toString()}*/}
-                            {/*</div>*/}
 
                             {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
                             {!userAttendance && !isPast && (
@@ -850,13 +867,10 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
                     )
                   })}
 
-                  {/* Regular calendar records - only show if there's actual calendar marked and no corresponding mission/training */}
                   {attendanceRecords.map((record, idx) => {
-                    // Check if this calendar record corresponds to a mission or training already shown
                     const correspondingMission = dayMissions.find((m) => m.name === record.event)
                     const correspondingTraining = dayTraining.find((t) => t.name === record.event)
 
-                    // Only show standalone calendar records (not linked to missions/training shown above)
                     if (correspondingMission || correspondingTraining) return null
 
                     return (
@@ -904,7 +918,7 @@ export function AttendanceCalendar({ attendanceData, isAdmin = false, userId }: 
           <span className="text-sm">Excused</span>
         </div>
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-3 h-3 text-accent" />
+          <CalendarIcon className="w-3 h-3 text-purple-500" />
           <span className="text-sm">Campaign Mission</span>
         </div>
         <div className="flex items-center gap-2">
