@@ -4,7 +4,7 @@ import { UserRole } from "@/types/database"
 import { Qualification } from "@/types/perscomApi"
 import Image from "next/image"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { sanitizeHtmlServer } from "@/lib/sanitizeHtmlClient"
+import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer"
 import { perscom } from "@/lib/perscom/api";
 
 const QUALIFICATIONS_PER_PAGE = 18
