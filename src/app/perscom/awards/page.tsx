@@ -4,7 +4,7 @@ import { UserRole } from "@/types/database"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import Image from "next/image"
-import { sanitizeHtmlServer } from "@/lib/sanitizeHtmlClient";
+import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer";
 import { perscom } from "@/lib/perscom/api";
 
 const AWARDS_PER_PAGE = 9

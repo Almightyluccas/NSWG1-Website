@@ -17,7 +17,7 @@ import {AwardDetailModal} from "@/components/perscom/award-detail-modal";
 import {PerscomUserResponse} from "@/types/perscomApi";
 import {useState} from "react";
 import Image from "next/image";
-import { sanitizeHtmlClient } from "@/lib/sanitizeHtmlClient";
+import { sanitizeHtmlClient } from "@/lib/sanitize/sanitizeHtmlClient";
 
 function calculateTimeDifference(startDate: string, endDate: string | null = null) {
   const start = new Date(startDate)
