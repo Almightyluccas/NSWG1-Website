@@ -5,8 +5,6 @@ import "./globals.css"
 import {ThemeProvider} from "@/components/theme/theme-provider"
 import {ThemeSwitcher} from "@/components/theme/theme-switcher"
 import SessionWrapper from "@/components/auth/sessionWrapper";
-import {getServerSession} from "next-auth";
-import {authOptions} from "@/lib/authOptions";
 import {Analytics} from "@vercel/analytics/next"
 import {SpeedInsights} from "@vercel/speed-insights/next"
 import Script from "next/script";
@@ -17,6 +15,7 @@ import {CustomTheme} from "@/types/database";
 import {siteMetadata} from "@/config/metadata";
 import {Toaster} from "sonner";
 import SessionErrorHandler from "@/components/auth/sessionErrorHandler";
+import {getAuthSession} from "@/lib/authOptions";
 
 
 const inter = Inter({
@@ -31,7 +30,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   const activeThemeName = session?.user?.preferences?.activeThemeName || 'Red'
   const allThemes = [...defaultThemes, ...(session?.user?.customThemes || [])]

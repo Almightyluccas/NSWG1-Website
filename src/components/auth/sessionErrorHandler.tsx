@@ -7,7 +7,6 @@ export default function SessionErrorHandler() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    console.log(session?.error)
     if (session?.error === "RefreshAccessTokenError") {
       signOut({ callbackUrl: '/' });
     }
