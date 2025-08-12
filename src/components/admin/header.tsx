@@ -21,7 +21,6 @@ export function AdminHeader() {
   const [notifications] = useState(3)
 
   const handleSignOut = async () => {
-    localStorage.clear();
     sessionStorage.clear();
 
     await signOut({ callbackUrl: '/' });
