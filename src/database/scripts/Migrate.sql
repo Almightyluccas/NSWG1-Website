@@ -1,3 +1,101 @@
+CREATE TABLE IF NOT EXISTS users
+(
+    id               VARCHAR(255) PRIMARY KEY,
+    perscom_id       INT UNIQUE,
+    steam_id         VARCHAR(255),
+    discord_username VARCHAR(255) NOT NULL,
+    name             VARCHAR(255),
+    date_of_birth    DATE,
+    email            VARCHAR(255) NOT NULL,
+    profile_image_id INT,
+    role             set ('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'instructor', 'admin', 'superAdmin', 'developer'),
+    created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_perscom_id (perscom_id),
+    INDEX idx_discord_username (discord_username),
+    INDEX idx_email (email)
+);
+
+CREATE TABLE user_preferences
+(
+    id                 INT AUTO_INCREMENT PRIMARY KEY,
+    user_id            VARCHAR(255) NOT NULL UNIQUE,
+    active_theme_name  VARCHAR(100)  DEFAULT 'Red',
+    homepage_image_url VARCHAR(2048) DEFAULT '/images/tacdev/default.png',
+    created_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_custom_themes
+(
+    id                INT PRIMARY KEY AUTO_INCREMENT,
+    user_id           VARCHAR(255)          NOT NULL,
+    name              VARCHAR(100) NOT NULL,
+    accent_rgb        VARCHAR(50)  NOT NULL,
+    accent_darker_rgb VARCHAR(50)  NOT NULL,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, name),
+
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE refresh_tokens
+(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(255),
+    user_agent TEXT,
+    INDEX idx_user_id (user_id),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS images
+(
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    public_id   TEXT,
+    image_url   TEXT     NOT NULL,
+    alt_text    VARCHAR(255),
+    title       TEXT,
+    description TEXT,
+    unit        ENUM ('Task Force 160th', 'TACDEVRON2'),
+    image_type  VARCHAR(255)      DEFAULT 'Gallery',
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    author_id   VARCHAR(255),
+    CONSTRAINT images_ibfk_1 FOREIGN KEY (author_id) REFERENCES users (id),
+    INDEX idx_author_id (author_id)
+);
+
+CREATE TABLE IF NOT EXISTS gallery_items
+(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    image_id INT NOT NULL,
+    display_order INT NOT NULL,
+
+    INDEX idx_image_id (image_id),
+    INDEX idx_display_order (display_order),
+    FOREIGN KEY (image_id) REFERENCES images (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS categories
+(
+    id   INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS image_categories
+(
+    image_id    INT NOT NULL,
+    category_id INT NOT NULL,
+    PRIMARY KEY (image_id, category_id),
+    FOREIGN KEY (image_id) REFERENCES images (id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS campaigns
 (
     id          VARCHAR(255) PRIMARY KEY,
@@ -169,42 +267,6 @@ CREATE TABLE IF NOT EXISTS recurring_training_instances
     INDEX idx_scheduled_date (scheduled_date)
 );
 
-CREATE TABLE IF NOT EXISTS images
-(
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    public_id   TEXT,
-    image_url   TEXT     NOT NULL,
-    alt_text    VARCHAR(255),
-    title       TEXT,
-    description TEXT,
-    category    ENUM ('Operations', 'Training', 'Misc'),
-    unit        ENUM ('Task Force 160th', 'TACDEVRON2'),
-    image_type  VARCHAR(255)      DEFAULT 'Gallery',
-    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    author_id   VARCHAR(255),
-    CONSTRAINT images_ibfk_1 FOREIGN KEY (author_id) REFERENCES users (id),
-    INDEX idx_author_id (author_id)
-);
-
-CREATE TABLE IF NOT EXISTS users
-(
-    id               VARCHAR(255) PRIMARY KEY,
-    perscom_id       INT UNIQUE,
-    steam_id         VARCHAR(255),
-    discord_username VARCHAR(255) NOT NULL,
-    name             VARCHAR(255),
-    date_of_birth    DATE,
-    email            VARCHAR(255) NOT NULL,
-    profile_image_id INT,
-    role             set ('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'instructor', 'admin', 'superAdmin', 'developer'),
-    created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_perscom_id (perscom_id),
-    INDEX idx_discord_username (discord_username),
-    INDEX idx_email (email)
-);
-
-
-
 CREATE TABLE IF NOT EXISTS form_definitions
 (
     id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -285,29 +347,4 @@ CREATE TABLE IF NOT EXISTS document_access_logs
     INDEX idx_access_type (access_type),
     INDEX idx_accessed_at (accessed_at),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
-);
-
-CREATE TABLE user_preferences
-(
-    id                 INT AUTO_INCREMENT PRIMARY KEY,
-    user_id            VARCHAR(255) NOT NULL UNIQUE,
-    active_theme_name  VARCHAR(100)  DEFAULT 'Red',
-    homepage_image_url VARCHAR(2048) DEFAULT '/images/tacdev/default.png',
-    created_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-    updated_at         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-);
-
-CREATE TABLE user_custom_themes
-(
-    id                INT PRIMARY KEY AUTO_INCREMENT,
-    user_id           VARCHAR(255)          NOT NULL,
-    name              VARCHAR(100) NOT NULL,
-    accent_rgb        VARCHAR(50)  NOT NULL,
-    accent_darker_rgb VARCHAR(50)  NOT NULL,
-    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, name),
-
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );

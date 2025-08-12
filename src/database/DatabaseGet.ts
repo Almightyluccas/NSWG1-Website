@@ -9,6 +9,7 @@ import type {
   FormSubmissionAnswer,
   RawSubmissionQueryResult
 } from "@/types/forms"
+import {GalleryItem} from "@/types/objectStorage";
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -231,18 +232,24 @@ export class DatabaseGet {
     }));
   }
 
-  async userRefreshToken(userId: string): Promise<string> {
-    const rows = await this.client.query("SELECT token_hash FROM refresh_tokens WHERE id = ?", [userId])
-
-    if (!rows || (rows as any[]).length === 0) throw new Error("No refresh token found")
-
-    return (rows as any[])[0].refresh_token
-  }
-
-  async getRefreshTokenByHash(tokenHash: string): Promise<{ user_id: string, expires_at: Date } | null> {
+  async refreshTokenByDetails(tokenHash: string, ipAddress: string, userAgent: string) {
     const rows = await this.client.query<RefreshTokenRow[]>(
       `
-      SELECT user_id, expires_at FROM refresh_tokens
+      SELECT token_hash FROM refresh_tokens
+      WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW() AND ip_address = ? AND user_agent = ?
+    `,
+      [tokenHash, ipAddress, userAgent],
+    );
+    if (!Array.isArray(rows)) {
+      return null;
+    }
+    return rows[0] || null;
+  }
+
+  async getRefreshTokenByHash(tokenHash: string): Promise<RefreshTokenRow | null> {
+    const rows = await this.client.query<RefreshTokenRow[]>(
+      `
+      SELECT user_id, expires_at, user_agent FROM refresh_tokens
       WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW()
     `,
       [tokenHash],
@@ -729,5 +736,11 @@ export class DatabaseGet {
     }
 
     return Array.from(submissionsMap.values());
+  }
+
+  async galleryItems(): Promise<GalleryItem[]> {
+    return await this.client.query<GalleryItem[]>(
+      `SELECT i.title, i.alt_text, i.description, i.category, i.unit, u.display_order FROM images AS i JOIN gallery_items AS u ON i.id = u.image_id`
+    );
   }
 }

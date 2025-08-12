@@ -2,6 +2,7 @@ import type { DatabaseClient } from "./DatabaseClient"
 import type { CreateRecurringTrainingData } from "@/types/recurring-training"
 import type { FormQuestion } from "@/types/forms"
 import {CustomTheme} from "@/types/database";
+import {GalleryItem} from "@/types/objectStorage";
 
 export class DatabasePost {
   constructor(private client: DatabaseClient) {}
@@ -32,6 +33,35 @@ export class DatabasePost {
           VALUES (?, ?, ?, ?, ?)
       `,
       [userId, tokenHash, expiresAt, ipAddress, userAgent],
+    );
+  }
+
+  async userCustomHeroImage(s3Key: string, userId: string): Promise<void> {
+    await this.client.query<any[]>(
+      `INSERT INTO images (image_url, image_type, category, author_id) VALUES (?, ?, ?, ?)`,
+      [s3Key, 'hero', 'Misc', userId]
+    );
+  }
+
+  async galleryImage(s3Key: string, userId: string, galleryItem: GalleryItem): Promise<void> {
+    // First query remains the same
+    const result = await this.client.query<any>(
+      `INSERT INTO images (image_url, image_type, category, title, alt_text, description, unit, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [s3Key, 'Gallery', galleryItem.category, galleryItem.title, galleryItem.altText, galleryItem.description, galleryItem.unit, userId]
+    );
+    const imageId = result.insertId;
+
+    if (!imageId) {
+      throw new Error("Failed to insert new image record into the database.");
+    }
+
+    // Second query is now wrapped in the derived table trick
+    await this.client.query(
+      `
+          INSERT INTO gallery_items (image_id, display_order)
+          VALUES (?, (SELECT next_order FROM (SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order FROM gallery_items) AS temp_table))
+      `,
+      [imageId],
     );
   }
 

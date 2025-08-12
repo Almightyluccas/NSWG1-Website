@@ -31,8 +31,13 @@ export const roleHierarchy: Record<string, number> = {
 
 
 export type RefreshTokenRow = {
-  user_id: string;
-  expires_at: Date;
+  user_id?: string;
+  expires_at?: Date;
+  ip_address?: string;
+  user_agent?: string;
+  token_hash?: string;
+  created_at?: Date;
+  updated_at?: Date;
 };
 
 

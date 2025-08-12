@@ -116,6 +116,11 @@ export const authOptions: NextAuthOptions = {
           await database.post.user(account.providerAccountId, user.name!, user.email!);
           await database.post.userProfileImage(account.providerAccountId, user.image!);
           await database.post.defaultUserPreferences(account.providerAccountId);
+          
+          const existingToken = await database.get.refreshTokenByDetails(hashToken(account.refresh_token,), ipAddress, userAgent);
+          if (existingToken?.token_hash) {
+            await database.put.revokeRefreshToken(existingToken.token_hash);
+          }
 
           const hashedRefreshToken = hashToken(account.refresh_token);
           const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -177,6 +182,13 @@ async function refreshAccessToken(token: any) {
 
     if (!existingToken) {
       console.error(`Refresh token not found in DB for hash starting with: ${oldTokenHash.slice(0, 7)}`);
+      throw new Error("Invalid refresh token.");
+    }
+    const heads = await headers();
+    const currentUserAgent = heads.get('user-agent') ?? 'unknown';
+    if (existingToken.user_agent !== currentUserAgent) {
+      console.error(`User agent mismatch for refresh token`);
+      await database.put.revokeRefreshToken(oldTokenHash);
       throw new Error("Invalid refresh token.");
     }
 
