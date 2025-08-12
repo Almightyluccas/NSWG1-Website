@@ -39,7 +39,8 @@ export async function submitApplication(formData: FormData, user_id: string, dis
     const perscomUser: CreatePerscomUser = { name: data.name, email: data.email };
     createPerscomUserResponse = await perscom.post.user(perscomUser);
   } catch (error: any) {
-    const isEmailTakenError = error?.errorBody?.error?.message === 'The email has already been taken.';
+    console.error("PERSCOM User Creation Error:", error);
+    const isEmailTakenError = error.message.includes('email has already been taken');
 
     if (isEmailTakenError) {
       try {
