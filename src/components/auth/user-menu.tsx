@@ -11,10 +11,16 @@ interface UserMenuProps {
   onJoinClickAction: () => void
 }
 
-//TODO: Add roleGuard
 
 export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   const {data: session} = useSession();
+
+  const handleSignOut = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <>
@@ -71,7 +77,7 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
+              <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
