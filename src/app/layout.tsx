@@ -16,6 +16,7 @@ import {defaultThemes} from "@/lib/defaultThemes";
 import {CustomTheme} from "@/types/database";
 import {siteMetadata} from "@/config/metadata";
 import {Toaster} from "sonner";
+import SessionErrorHandler from "@/components/auth/sessionErrorHandler";
 
 
 const inter = Inter({
@@ -55,6 +56,7 @@ export default async function RootLayout({
       }}
     />
     <SessionWrapper session={session}>
+      <SessionErrorHandler/>
       <ThemeProvider initialTheme={activeTheme}>
         {children}
         <Toaster theme="dark" richColors/>

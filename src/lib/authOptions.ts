@@ -3,7 +3,15 @@ import DiscordProvider from "next-auth/providers/discord";
 import { database } from "@/database";
 import { hashToken } from "@/lib/cryptoUtils";
 import { headers } from "next/headers";
-import {prepend} from "next/dist/build/webpack/loaders/resolve-url-loader/lib/file-protocol";
+
+let isRefreshing = false;
+let refreshSubscribers: ((token: any | null) => void)[] = [];
+
+const onRefresh = (token: any | null) => {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,9 +23,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
-        const { roles, perscomId, name, preferences, customThemes, imageUrl } = await database.get.userInfo(user.id);
+        const { roles, perscomId, name, preferences, customThemes, imageUrl, discordName } = await database.get.userInfo(user.id);
         let fixedImageUrl = imageUrl;
-        if (!imageUrl?.includes('https') && process.env.OCI_PROFILE_PAR_URL) {
+        if (imageUrl && !imageUrl.startsWith('http') && process.env.OCI_PROFILE_PAR_URL) {
           fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
         }
 
@@ -26,6 +34,7 @@ export const authOptions: NextAuthOptions = {
           access_token: account.access_token,
           expires_at: Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600)),
           refresh_token: account.refresh_token,
+          discordName: discordName,
           user_id: user.id,
           roles: roles,
           perscomId: perscomId,
@@ -41,27 +50,53 @@ export const authOptions: NextAuthOptions = {
           await database.put.userPreferences(session.preferences, token.user_id);
           token.preferences = { ...token.preferences, ...session.preferences };
         }
-
         if (session.customTheme) {
           await database.post.userCustomTheme(token.user_id, session.customTheme);
+          if (!token.customThemes) token.customThemes = [];
           token.customThemes.push(session.customTheme);
         }
         if (session.name) {
           await database.put.userName(token.user_id, session.name);
           token.name = session.name;
         }
-        if (session.image) {
-          if (process.env.OCI_PROFILE_PAR_URL) {
-            token.image = process.env.OCI_PROFILE_PAR_URL + session.image;
-          }
+        if (session.image && process.env.OCI_PROFILE_PAR_URL) {
+          token.image = process.env.OCI_PROFILE_PAR_URL + session.image;
         }
+        return token;
       }
 
       if (Date.now() < (token.expires_at as number) * 1000) {
         return token;
       }
 
-      return refreshAccessToken(token);
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          refreshSubscribers.push((refreshedToken) => {
+            resolve(refreshedToken || token);
+          });
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        const refreshedValues = await refreshAccessToken(token);
+
+        token.access_token = refreshedValues.access_token;
+        token.expires_at = refreshedValues.expires_at;
+        token.refresh_token = refreshedValues.refresh_token;
+        token.error = refreshedValues.error;
+
+        onRefresh(token);
+        return token;
+
+      } catch (error) {
+        console.error("JWT Callback: Refresh failed.", error);
+        onRefresh(null);
+        return { ...token, error: "RefreshAccessTokenError" };
+      } finally {
+        isRefreshing = false;
+      }
     },
 
     async signIn({ user, account }) {
@@ -76,10 +111,9 @@ export const authOptions: NextAuthOptions = {
           await database.post.defaultUserPreferences(account.providerAccountId);
 
           const hashedRefreshToken = hashToken(account.refresh_token);
-          const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
           await database.post.createRefreshToken(account.providerAccountId, hashedRefreshToken, expiresAt, ipAddress, userAgent);
-
         } catch (error) {
           console.error("Database error during sign-in:", error);
           return false;
@@ -87,25 +121,31 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
+
     async session({ session, token }) {
-        session.user =  {
-          ...session.user,
-          discordName: session.user.name,
-          name: token.name ? token.name : session.user.name,
-          perscomId: token.perscomId ? token.perscomId : undefined,
-          id: token.sub,
-          email: session.user.email,
-          image: token.image,
-          preferences: token.preferences,
-          customThemes: token.customThemes,
-          roles: token.roles
-        };
-        return session;
+      session.user =  {
+        ...session.user,
+        discordName: token.discordName,
+        name: token.name ? token.name : session.user.name,
+        perscomId: token.perscomId ? token.perscomId : undefined,
+        id: token.sub!,
+        email: session.user.email!,
+        image: token.image,
+        preferences: token.preferences,
+        customThemes: token.customThemes,
+        roles: token.roles
+      };
+
+      if (token.error) {
+        (session as any).error = token.error;
+      }
+
+      return session;
     },
+
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
-      else if (new URL(url).origin === baseUrl) return url;
-
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     }
   },
@@ -123,19 +163,17 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-
-export async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: any) {
   try {
-    const hashedRefreshToken = hashToken(token.refresh_token);
+    const oldTokenHash = hashToken(token.refresh_token);
+    const existingToken = await database.get.getRefreshTokenByHash(oldTokenHash);
 
-    const existingToken = await database.get.getRefreshTokenByHash(hashedRefreshToken);
     if (!existingToken) {
-      console.error("Refresh token not found, revoked, or expired in DB.");
+      console.error(`Refresh token not found in DB for hash starting with: ${oldTokenHash.slice(0, 7)}`);
       throw new Error("Invalid refresh token.");
     }
 
-    const url = "https://discord.com/api/oauth2/token";
-    const response = await fetch(url, {
+    const response = await fetch("https://discord.com/api/oauth2/token", {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         client_id: process.env.DISCORD_CLIENT_ID!,
@@ -147,25 +185,26 @@ export async function refreshAccessToken(token: any) {
     });
 
     const refreshedTokens = await response.json();
+
     if (!response.ok) {
       console.error("Failed to refresh token with Discord:", refreshedTokens);
+      await database.put.revokeRefreshToken(oldTokenHash);
       throw new Error("Failed to refresh token.");
     }
 
-    const newHashedToken = hashToken(refreshedTokens.refresh_token);
-    const newExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    await database.put.updateRefreshToken(hashedRefreshToken, newHashedToken, newExpiresAt);
+    const newTokenHash = hashToken(refreshedTokens.refresh_token);
+    const newExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    await database.put.updateRefreshToken(oldTokenHash, newTokenHash, newExpiresAt);
 
     return {
-      ...token,
       access_token: refreshedTokens.access_token,
-      expires_at: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in || 3600)),
+      expires_at: Math.floor(Date.now() / 1000 + (typeof refreshedTokens.expires_in === 'number' ? refreshedTokens.expires_in : 3600)),
       refresh_token: refreshedTokens.refresh_token,
+      error: undefined,
     };
   } catch (error) {
-    console.error("Error refreshing access token:", error);
-    await database.put.revokeRefreshToken(hashToken(token.refresh_token));
-
-    throw new Error("RefreshAccessTokenError");
+    console.error("Error in refreshAccessToken function:", error);
+    throw error;
   }
 }
