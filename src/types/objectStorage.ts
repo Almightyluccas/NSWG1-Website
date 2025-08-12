@@ -4,5 +4,6 @@ export interface GalleryItem {
   description: string;
   category: string;
   unit: string;
+  display_order?: number;
 }
 export type UploadType = "profile" | "background" | "document" | "gallery"
