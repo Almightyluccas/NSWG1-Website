@@ -22,6 +22,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, user, trigger, session }) {
+      const { roles, perscomId, name, preferences, customThemes, imageUrl, discordName } = await database.get.userInfo(token.user_id as string);
+
+      let fixedImageUrl = imageUrl;
+      if (imageUrl && !imageUrl.startsWith('http') && process.env.OCI_PROFILE_PAR_URL) {
+        fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
+      }
       if (account && user) {
         return {
           ...token,
@@ -29,6 +35,13 @@ export const authOptions: NextAuthOptions = {
           expires_at: Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600)),
           refresh_token: account.refresh_token,
           user_id: user.id,
+          roles: roles,
+          perscomId: perscomId,
+          name: name,
+          image: fixedImageUrl,
+          preferences: preferences,
+          customThemes: customThemes,
+          discordName: discordName,
         };
       }
 
