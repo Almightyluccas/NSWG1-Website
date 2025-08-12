@@ -16,7 +16,6 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   const {data: session} = useSession();
 
   const handleSignOut = async () => {
-    localStorage.clear();
     sessionStorage.clear();
 
     await signOut({ callbackUrl: '/' });
