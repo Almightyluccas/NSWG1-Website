@@ -2,6 +2,7 @@ import {DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client} from 
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
 import sharp from 'sharp';
 import {randomUUID} from "crypto";
+import {UploadType} from "@/types/objectStorage";
 
 class ImageStorageService {
   readonly #s3Client: S3Client;
@@ -98,7 +99,7 @@ class ImageStorageService {
     }
   }
 
-  async createPresignedUploadUrl(uploadType: 'profile' | 'background', contentType: string): Promise<{ url: string, key:string }> {
+  async createPresignedUploadUrl(uploadType: UploadType, contentType: string): Promise<{ url: string, key:string }> {
     const key = `${uploadType}s/${randomUUID()}.webp`;
 
     const command = new PutObjectCommand({
