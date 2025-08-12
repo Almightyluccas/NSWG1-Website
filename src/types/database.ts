@@ -115,6 +115,7 @@ export interface UserFullInfo {
   roles: string[];
   perscomId: string | null;
   name: string | null;
+  discordName: string | null;
   preferences: Preferences
   customThemes: CustomTheme[];
   imageUrl: string | null;

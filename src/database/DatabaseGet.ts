@@ -106,6 +106,7 @@ export class DatabaseGet {
               u.role,
               u.perscom_id,
               u.name,
+              u.discord_username,
               up.active_theme_name,
               up.homepage_image_url,
               uct.name AS custom_theme_name,
@@ -132,7 +133,8 @@ export class DatabaseGet {
         name: null,
         preferences: { activeThemeName: null, homepageImageUrl: null },
         customThemes: [],
-        imageUrl: null
+        imageUrl: null,
+        discordName: null
       };
     }
 
@@ -141,6 +143,7 @@ export class DatabaseGet {
       roles: firstRow.role ? firstRow.role.split(",").map((r: string) => r.trim()) : [],
       perscomId: firstRow.perscom_id,
       name: firstRow.name,
+      discordName: firstRow.discord_username,
       preferences: {
         activeThemeName: firstRow.active_theme_name,
         homepageImageUrl: firstRow.homepage_image_url,
@@ -237,13 +240,16 @@ export class DatabaseGet {
   }
 
   async getRefreshTokenByHash(tokenHash: string): Promise<{ user_id: string, expires_at: Date } | null> {
-    const [rows] = await this.client.query<[RefreshTokenRow[]]>(
+    const rows = await this.client.query<RefreshTokenRow[]>(
       `
       SELECT user_id, expires_at FROM refresh_tokens
       WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW()
     `,
       [tokenHash],
     );
+    if (!Array.isArray(rows)) {
+      return null;
+    }
     return rows[0] || null;
   }
 

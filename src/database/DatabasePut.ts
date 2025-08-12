@@ -1,6 +1,7 @@
 import type { DatabaseClient } from "./DatabaseClient"
 import type { UpdateRecurringTrainingData } from "@/types/recurring-training"
 import {Preferences} from "@/types/database";
+import {GalleryItem} from "@/types/objectStorage";
 
 export class DatabasePut {
   constructor(private client: DatabaseClient) {}
@@ -124,6 +125,13 @@ export class DatabasePut {
       `INSERT INTO images (image_url, image_type, category, author_id) VALUES (?, ?, ?, ?)`,
       [s3Key, 'hero', 'Misc', userId]
     );
+  }
+
+  async galleryImage(s3Key: string, userId: string, galleryItem: GalleryItem): Promise<void> {
+    await this.client.query(
+      `INSERT INTO images (image_url, image_type, category, title, alt_text, description, unit, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [s3Key, 'Gallery', galleryItem.category, galleryItem.title, galleryItem.altText, galleryItem.description, galleryItem.unit, userId]
+    )
   }
 
   async updateRefreshToken(oldTokenHash: string, newTokenHash: string, newExpiresAt: Date): Promise<void> {
