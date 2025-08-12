@@ -96,12 +96,14 @@ export default function JoinFormClient() {
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
+  console.log(session)
 
   useEffect(() => {
     if (session) {
       setFormData((prev) => ({
         ...prev,
-        discordName: `${session.user.name}`,
+        discordName: `${session.user.discordName}`,
+        email: `${session.user.email}`
       }))
     }
   }, [session])
@@ -297,7 +299,7 @@ export default function JoinFormClient() {
                   name="discordName"
                   value={formData.discordName}
                   onChange={handleChange}
-                  placeholder="Username#0000"
+                  placeholder={formData.discordName || "Your Discord username"}
                   disabled={!!session}
                   className={formErrors.discordName ? "border-red-500" : ""}
                 />
@@ -319,6 +321,7 @@ export default function JoinFormClient() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
+                  disabled={!!session}
                   placeholder="your.email@example.com"
                   className={formErrors.email ? "border-red-500" : ""}
                 />
