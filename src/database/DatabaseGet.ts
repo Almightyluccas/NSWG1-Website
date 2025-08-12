@@ -232,13 +232,13 @@ export class DatabaseGet {
     }));
   }
 
-  async refreshTokenByDetails(tokenHash: string, ipAddress: string, userAgent: string) {
+  async refreshTokenByDetails(userId: string, ipAddress: string, userAgent: string) {
     const rows = await this.client.query<RefreshTokenRow[]>(
       `
       SELECT token_hash FROM refresh_tokens
-      WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW() AND ip_address = ? AND user_agent = ?
+      WHERE user_id = ? AND revoked_at IS NULL AND expires_at > NOW() AND ip_address = ? AND user_agent = ?
     `,
-      [tokenHash, ipAddress, userAgent],
+      [userId, ipAddress, userAgent],
     );
     if (!Array.isArray(rows)) {
       return null;
