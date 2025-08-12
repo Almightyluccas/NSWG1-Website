@@ -15,7 +15,8 @@ export interface SessionUser {
 
 declare module "next-auth" {
   interface Session {
-    user: SessionUser & DefaultSession["user"];
+    user: SessionUser & DefaultSession["user"],
+    error?: string
   }
 }
 
@@ -33,5 +34,6 @@ declare module "next-auth/jwt" {
     image?: string | null;
     email?: string | null;
     discordName?: string | null;
+    error?: string;
   }
 }
