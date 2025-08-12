@@ -123,7 +123,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                 href="/admin/forms"
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  pathname === "/admin/gallery"
+                  pathname === "/admin/forms"
                     ? "bg-accent text-black"
                     : "text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700",
                 )}

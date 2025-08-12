@@ -20,6 +20,13 @@ export function AdminHeader() {
   const { data: session } = useSession()
   const [notifications] = useState(3)
 
+  const handleSignOut = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <header className="bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 h-16 flex items-center px-6 sticky top-0 z-10">
       <div className="flex-1 flex items-center">
@@ -84,7 +91,7 @@ export function AdminHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

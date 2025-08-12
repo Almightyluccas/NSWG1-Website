@@ -23,26 +23,36 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
-        const { roles, perscomId, name, preferences, customThemes, imageUrl, discordName } = await database.get.userInfo(user.id);
-        let fixedImageUrl = imageUrl;
-        if (imageUrl && !imageUrl.startsWith('http') && process.env.OCI_PROFILE_PAR_URL) {
-          fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
-        }
-
         return {
           ...token,
           access_token: account.access_token,
           expires_at: Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600)),
           refresh_token: account.refresh_token,
-          discordName: discordName,
           user_id: user.id,
-          roles: roles,
-          perscomId: perscomId,
-          image: fixedImageUrl,
-          name: name,
-          preferences: preferences,
-          customThemes: customThemes,
         };
+      }
+
+      if (token.user_id) {
+        try {
+          const { roles, perscomId, name, preferences, customThemes, imageUrl, discordName } = await database.get.userInfo(token.user_id as string);
+
+          let fixedImageUrl = imageUrl;
+          if (imageUrl && !imageUrl.startsWith('http') && process.env.OCI_PROFILE_PAR_URL) {
+            fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
+          }
+
+          token.roles = roles;
+          token.perscomId = perscomId;
+          token.name = name;
+          token.image = fixedImageUrl;
+          token.preferences = preferences;
+          token.customThemes = customThemes;
+          token.discordName = discordName;
+
+        } catch (dbError) {
+          console.error("Error fetching user info from DB in JWT callback:", dbError);
+          return { ...token, error: "DatabaseError" };
+        }
       }
 
       if (trigger === "update" && session) {
