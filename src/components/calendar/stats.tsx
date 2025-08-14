@@ -251,7 +251,7 @@ export function AttendanceStats({ isAdmin = false }: AttendanceStatsProps) {
   const lateCount = filteredAttendanceData.filter((record: any) => record.status === "late").length
   const excusedCount = filteredAttendanceData.filter((record: any) => record.status === "excused").length
 
-  const attendanceRate = totalEvents > 0 ? Math.round(((presentCount + excusedCount) / totalEvents) * 100) : 0
+  const attendanceRate = totalEvents > 0 ? Math.round(((presentCount + excusedCount + lateCount) / totalEvents) * 100) : 0
   const punctualityRate = totalEvents > 0 ? Math.round((presentCount / (presentCount + lateCount)) * 100) : 0
 
   const recentAttendance = filteredAttendanceData
