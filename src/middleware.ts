@@ -3,6 +3,7 @@ import type { NextRequest, NextMiddleware } from 'next/server';
 import { getToken, encode, JWT } from 'next-auth/jwt';
 import { routePermissions } from '@/config/roles';
 import { roleHierarchy } from '@/types/database';
+import {RefreshTokenResponse} from "@/types/nswg1Api";
 
 const SESSION_TIMEOUT = 60 * 60 * 24 * 30; // 30 days
 const TOKEN_REFRESH_BUFFER_SECONDS = 300; // 5 minutes
@@ -11,36 +12,33 @@ const SESSION_COOKIE = SESSION_SECURE ? "__Secure-next-auth.session-token" : "ne
 
 
 function shouldUpdateToken(token: JWT): boolean {
-  const timeInSeconds = Math.floor(Date.now() / 1000);
+  const timeInSeconds: number = Math.floor(Date.now() / 1000);
   const expiresAt = token.expires_at as number;
   return timeInSeconds >= expiresAt - TOKEN_REFRESH_BUFFER_SECONDS;
 }
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
+async function refreshAccessToken(token: JWT, request: NextRequest): Promise<JWT> {
   try {
-    const response = await fetch("https://discord.com/api/oauth2/token", {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID!,
-        client_secret: process.env.DISCORD_CLIENT_SECRET!,
-        grant_type: "refresh_token",
-        refresh_token: token.refresh_token as string,
-      }),
-      method: "POST"
+    const refreshApiUrl = new URL('/api/auth/refresh', request.url);
+
+    const response: Response = await fetch(refreshApiUrl, {
+      method: "POST",
+      headers: {
+        'cookie': request.headers.get('cookie') ?? '',
+      },
     });
 
-    const refreshedTokens = await response.json();
+    const refreshedTokens: RefreshTokenResponse = await response.json();
 
-    if (!response.ok) {
-      console.error("Failed to refresh token with Discord:", refreshedTokens);
+    if (!response.ok || 'error' in refreshedTokens) {
+      console.error("Failed to refresh token via internal API:", refreshedTokens);
       throw new Error("Failed to refresh token.");
     }
 
     return {
       ...token,
       access_token: refreshedTokens.access_token,
-      expires_at: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in ?? 3600)),
-      // expires_at: Math.floor(Date.now() / 1000 + 30), // FOR TESTING
+      expires_in: refreshedTokens.expires_in,
       refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
     };
   } catch (error) {
@@ -78,14 +76,14 @@ function updateCookie(
 }
 
 export const middleware: NextMiddleware = async (request: NextRequest) => {
-  const token = await getToken({ req: request });
+  const token: JWT | null = await getToken({ req: request });
 
   if (!token) {
     const isProtectedRoute = Object.keys(routePermissions).some(path => request.nextUrl.pathname.startsWith(path));
     if (isProtectedRoute) {
-      const signInUrl = new URL('/api/auth/signin', request.url);
-      signInUrl.searchParams.set('callbackUrl', request.url);
-      return NextResponse.redirect(signInUrl);
+      const loginUrl = new URL('/login', request.url);
+
+      return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
   }
@@ -93,16 +91,17 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
   let response = NextResponse.next();
 
   if (shouldUpdateToken(token)) {
-    const refreshedToken = await refreshAccessToken(token);
+    const refreshedToken: JWT = await refreshAccessToken(token, request);
 
     if (refreshedToken.error) {
-      const signOutUrl = new URL('/api/auth/signout', request.url);
-      const res = NextResponse.redirect(signOutUrl);
+      const loginUrl = new URL('/login', request.url);
+
+      const res = NextResponse.redirect(loginUrl);
       res.cookies.delete(SESSION_COOKIE);
       return res;
     }
 
-    const newSessionToken = await encode({
+    const newSessionToken: string = await encode({
       secret: process.env.NEXTAUTH_SECRET!,
       token: refreshedToken,
       maxAge: SESSION_TIMEOUT

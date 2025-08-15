@@ -1,7 +1,6 @@
 import {getServerSession, NextAuthOptions, Session} from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { database } from "@/database";
-import { hashToken } from "@/lib/cryptoUtils";
 
 
 export const authOptions: NextAuthOptions = {
@@ -17,7 +16,6 @@ export const authOptions: NextAuthOptions = {
         token.access_token = account.access_token;
         token.expires_at = Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600));
         // token.expires_at = Math.floor(Date.now() / 1000 + 30);
-
         token.refresh_token = account.refresh_token;
         token.user_id = user.id;
       }
