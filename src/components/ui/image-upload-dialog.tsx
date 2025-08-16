@@ -585,12 +585,12 @@ export function FileUploadDialog({
 
         {uploadState === "preview" && (
           <CardFooter className="flex justify-between p-6 pt-0">
-            <Button variant="outline" onClick={resetState} disabled={uploadState === "loading"}>
+            <Button variant="outline" onClick={resetState}>
               Clear
             </Button>
             <Button
               onClick={handleUploadClick}
-              disabled={!isGalleryFormValid() || uploadState === "loading"}
+              disabled={!isGalleryFormValid()}
               className="bg-accent hover:bg-accent-darker text-black"
             >
               Upload Image
