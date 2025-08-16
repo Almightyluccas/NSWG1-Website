@@ -2,7 +2,7 @@ import Link from "next/link"
 import { UserProfile } from "./user-profile.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
-import { AssignmentRecord, Award, PerscomUserResponse, Qualification, Rank } from "@/types/perscomApi";
+import { AssignmentRecord, Award, PerscomUserResponse, Qualification, Rank } from "@/types/api/perscomApi";
 import { perscom } from "@/lib/perscom/api";
 import {database} from "@/database";
 import {createUrlProfilePicture} from "@/app/perscom/user/[id]/action";

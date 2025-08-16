@@ -14,7 +14,7 @@ import {
   PaginationPrevious
 } from "@/components/ui/pagination";
 import {AwardDetailModal} from "@/components/perscom/award-detail-modal";
-import {PerscomUserResponse} from "@/types/perscomApi";
+import {PerscomUserResponse} from "@/types/api/perscomApi";
 import {useState} from "react";
 import Image from "next/image";
 import { sanitizeHtmlClient } from "@/lib/sanitize/sanitizeHtmlClient";

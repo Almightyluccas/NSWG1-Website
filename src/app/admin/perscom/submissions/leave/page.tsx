@@ -1,6 +1,6 @@
 "use server"
 
-import { LeaveApplication } from "@/types/perscomApi";
+import { LeaveApplication } from "@/types/api/perscomApi";
 import { UserRole } from "@/types/database";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { LeaveOfAbsenceTable } from "./leave.client";

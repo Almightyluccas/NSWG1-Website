@@ -1,6 +1,6 @@
 "use server"
 
-import { Navbar } from "@/components/navbar"
+import { Navbar } from "@/components/layout/navbar"
 import { SettingsClient } from "./settings-client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/authOptions"

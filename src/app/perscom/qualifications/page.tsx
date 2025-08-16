@@ -1,7 +1,7 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { UserRole } from "@/types/database"
-import { Qualification } from "@/types/perscomApi"
+import { Qualification } from "@/types/api/perscomApi"
 import Image from "next/image"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer"

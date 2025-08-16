@@ -1,8 +1,8 @@
 "use server";
 
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { FadeIn } from "@/components/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
+import { FadeIn } from "@/components/ui/fade-in"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ShieldAlert, Home } from "lucide-react"

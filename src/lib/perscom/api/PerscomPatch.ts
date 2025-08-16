@@ -1,4 +1,4 @@
-import type { PerscomUserResponse } from '@/types/perscomApi'
+import type { PerscomUserResponse } from '@/types/api/perscomApi'
 import type { PerscomClient } from './PerscomClient'
 
 export class PerscomPatch {

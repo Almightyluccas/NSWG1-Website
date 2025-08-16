@@ -6,7 +6,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Menu, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { UserMenu } from "@/components/auth/user-menu"
+import { UserMenu } from "@/components/layout/user-menu"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import RoleGuard from "@/components/auth/role-guard";
@@ -47,7 +47,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center">
+          <Link href="/public" className="flex items-center">
             <div className="mr-4">
               <Image
                 src={"/images/nswg1-emblem.png"}

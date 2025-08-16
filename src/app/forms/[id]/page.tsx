@@ -1,8 +1,8 @@
 import { getFormWithQuestions } from "@/app/forms/action";
 import FormViewer from "../[id]/form-viewer";
 import { notFound } from "next/navigation";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 
 interface FormPageProps {
   params: Promise<{

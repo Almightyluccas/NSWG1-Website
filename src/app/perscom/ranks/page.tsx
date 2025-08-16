@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
-import { Rank } from "@/types/perscomApi"
+import { Rank } from "@/types/api/perscomApi"
 import { UserRole } from "@/types/database"
 import Image from "next/image"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"

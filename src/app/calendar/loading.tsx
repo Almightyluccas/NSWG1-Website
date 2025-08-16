@@ -1,6 +1,6 @@
-import { Navbar } from "@/components/navbar";
-import { FadeIn } from "@/components/fade-in";
-import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/layout/navbar";
+import { FadeIn } from "@/components/ui/fade-in";
+import { Footer } from "@/components/layout/footer";
 
 
 export default function Loading() {

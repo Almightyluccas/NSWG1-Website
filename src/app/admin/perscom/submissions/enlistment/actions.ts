@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { perscom } from "@/lib/perscom/api";
 import { database } from "@/database";
 import {CandidateWebhook} from "@/lib/discord/CandidateWebhook";
-import {ReasonKey, Units} from "@/types/discord";
+import {ReasonKey, Units} from "@/types/api/discord";
 
 
 export async function acceptApplication(

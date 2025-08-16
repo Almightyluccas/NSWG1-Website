@@ -11,7 +11,7 @@ import {Button} from "@/components/ui/button";
 import React, {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useSession} from "next-auth/react";
-import {FadeIn} from "@/components/fade-in";
+import {FadeIn} from "@/components/ui/fade-in";
 import { submitApplication } from "./action";
 
 const unitOptions = [

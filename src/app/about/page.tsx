@@ -1,13 +1,15 @@
+"use server"
+
 import type React from "react"
 import Image from "next/image"
-import { Navbar } from "@/components/navbar"
-import { FadeIn } from "@/components/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { FadeIn } from "@/components/ui/fade-in"
 import { Shield, Target, Users, Award, Clock, Globe } from "lucide-react"
-import { Footer } from "@/components/footer"
-import {ReadyToJoinSection} from "@/components/ready-to-join-section";
+import { Footer } from "@/components/layout/footer"
+import {ReadyToJoinSection} from "@/components/ui/ready-to-join-section";
 import {RequirementItem} from "@/components/ui/requirment-list-items";
 
-export default function AboutPage() {
+export default async function AboutPage() {
     return (
         <main className="min-h-screen bg-gray-50 dark:bg-zinc-900">
             <Navbar />

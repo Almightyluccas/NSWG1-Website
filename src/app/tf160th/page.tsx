@@ -1,8 +1,8 @@
 import Image from "next/image"
-import { FadeIn } from "@/components/fade-in"
-import { Navbar } from "@/components/navbar"
-import { AccordionSection } from "@/components/accordion-section"
-import { InfoCard } from "@/components/info-card"
+import { FadeIn } from "@/components/ui/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { AccordionSection } from "@/components/ui/accordion-section"
+import { InfoCard } from "@/components/ui/info-card"
 import { Compass, GraduationCap } from "lucide-react"
 
 export default function TF160thPage() {

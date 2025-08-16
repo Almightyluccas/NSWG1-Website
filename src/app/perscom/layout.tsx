@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Footer } from "@/components/footer"
-import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/layout/footer"
+import { Navbar } from "@/components/layout/navbar"
 
 export const metadata: Metadata = {
   title: "PERSCOM - Naval Special Warfare Group One",

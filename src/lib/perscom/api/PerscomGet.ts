@@ -6,7 +6,7 @@ import {
   Position,
   ApplicationData,
   Award, CombatRecord, AssignmentRecord, Qualification
-} from '@/types/perscomApi'
+} from '@/types/api/perscomApi'
 import type { PerscomClient } from './PerscomClient'
 import { CACHE_DURATION_MS } from './PerscomClient'
 

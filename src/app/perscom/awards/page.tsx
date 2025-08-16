@@ -1,5 +1,5 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Award } from "@/types/perscomApi"
+import { Award } from "@/types/api/perscomApi"
 import { UserRole } from "@/types/database"
 import ServerRoleGuard from "@/components/auth/server-role-guard"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"

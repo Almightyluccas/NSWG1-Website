@@ -1,15 +1,15 @@
 "use server"
 
 import Image from "next/image"
-import { FadeIn } from "@/components/fade-in"
+import { FadeIn } from "@/components/ui/fade-in"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Shield, Target, Users } from "lucide-react"
-import { Navbar } from "@/components/navbar"
-import { UnitCard } from "@/components/unit-card"
-import { StatCard } from "@/components/stat-card"
-import { YouTubePlayer } from "@/components/youtube-player"
-import { Footer } from "@/components/footer"
-import { ReadyToJoinSection } from "@/components/ready-to-join-section"
+import { Navbar } from "@/components/layout/navbar"
+import { UnitCard } from "@/components/ui/unit-card"
+import { StatCard } from "@/components/ui/stat-card"
+import { YouTubePlayer } from "@/components/ui/youtube-player"
+import { Footer } from "@/components/layout/footer"
+import { ReadyToJoinSection } from "@/components/ui/ready-to-join-section"
 import Link from "next/link"
 import {authOptions} from "@/lib/authOptions";
 import {getServerSession} from "next-auth";

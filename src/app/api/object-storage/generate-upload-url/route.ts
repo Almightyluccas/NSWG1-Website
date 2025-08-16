@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
-    console.log("session is null")
     return NextResponse.json({ error: "Unauthorized: You must be logged in to upload files." }, { status: 401 });
   }
 
@@ -22,7 +21,6 @@ export async function POST(request: NextRequest) {
     const { uploadType, contentType }: RequestBody = await request.json();
 
     if (!uploadType) {
-      console.log("uploadType is null")
       return NextResponse.json({ error: "Invalid 'uploadType' specified." }, { status: 400 });
     }
 

@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 import { AttendanceCalendar } from "@/components/calendar/calendar"
 import { AttendanceStats } from "@/components/calendar/stats"
 import { CampaignsTab } from "@/components/calendar/campaignsTab"
 import { TrainingTab } from "@/components/calendar/trainingTab"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar, BarChart, Target, GraduationCap } from "lucide-react"
-import { FadeIn } from "@/components/fade-in"
+import { FadeIn } from "@/components/ui/fade-in"
 import { getAttendanceRecords } from "./action"
 
 interface AttendanceRecord {

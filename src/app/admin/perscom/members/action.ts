@@ -9,7 +9,7 @@ import {
   Qualification,
   Rank,
   Unit
-} from "@/types/perscomApi";
+} from "@/types/api/perscomApi";
 
 export interface UpdateMemberData {
   units: Unit[]

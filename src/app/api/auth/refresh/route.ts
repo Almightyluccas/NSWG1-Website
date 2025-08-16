@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import {getToken, JWT} from 'next-auth/jwt';
-import {RefreshTokenResponse} from "@/types/nswg1Api";
-import {DiscordRefreshTokenResponse} from "@/types/discord";
+import {RefreshTokenResponse} from "@/types/api/nswg1Api";
+import {DiscordRefreshTokenResponse} from "@/types/api/discord";
 
 export async function POST(request: NextRequest): Promise<NextResponse<RefreshTokenResponse>>
 {

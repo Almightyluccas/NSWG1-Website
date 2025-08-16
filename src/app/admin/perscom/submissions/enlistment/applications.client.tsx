@@ -7,7 +7,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import {useState} from "react";
-import { ApplicationData } from "@/types/perscomApi";
+import { ApplicationData } from "@/types/api/perscomApi";
 import RoleGuard from "@/components/auth/role-guard";
 import {useSession} from "next-auth/react";
 import { PaginationBar } from "@/components/ui/pagination";
@@ -22,7 +22,7 @@ import {
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation";
-import {ReasonKey, Units} from "@/types/discord";
+import {ReasonKey, Units} from "@/types/api/discord";
 
 const itemsPerPage = 10;
 

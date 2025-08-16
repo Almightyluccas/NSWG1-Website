@@ -1,6 +1,6 @@
 import type React from "react"
-import { AdminSidebar } from "@/components/admin/sidebar"
-import { AdminHeader } from "@/components/admin/header"
+import { AdminSidebar } from "@/components/admin/layout/sidebar"
+import { AdminHeader } from "@/components/admin/layout/header"
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { Toaster } from "sonner";
 

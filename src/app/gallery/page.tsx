@@ -3,15 +3,15 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Navbar } from "@/components/navbar"
-import { FadeIn } from "@/components/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { FadeIn } from "@/components/ui/fade-in"
 import { Button } from "@/components/ui/button"
 import { Search, Filter, ImageIcon, Film } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
-import { VideoPlayer } from "@/components/video-player"
+import { VideoPlayer } from "@/components/ui/video-player"
 // Import the YouTube player component
-import { YouTubePlayer } from "@/components/youtube-player"
+import { YouTubePlayer } from "@/components/ui/youtube-player"
 
 // Update the MediaType to include YouTube videos
 type MediaType = "image" | "video" | "youtube"
