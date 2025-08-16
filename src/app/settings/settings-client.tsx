@@ -16,8 +16,9 @@ import {CustomHeroImages, CustomTheme} from "@/types/database"
 import {useSession} from "next-auth/react";
 import {toast} from "sonner";
 import { useRouter } from "next/navigation"
-import {FileUploadDialog, UploadType} from "@/components/ui/image-upload-dialog";
-import imageCompression from "browser-image-compression";
+import {FileUploadDialog} from "@/components/ui/image-upload-dialog";
+import {imageUpload} from "@/lib/Object-Storage/imageActions";
+import {UploadType} from "@/types/objectStorage";
 
 interface SettingsClientProps {
   user: SessionUser,
@@ -73,58 +74,9 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
     setHasChanges(true)
   }
 
-  const handleImageUpload = async (formData: FormData, uploadType: UploadType) => {
-    const file = formData.get('file') as File;
-
-    if (!file || !session?.user?.id) {
-      throw new Error("No file provided or user not logged in.");
-    }
-    try {
-      const options = {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-        fileType: 'image/webp',
-        initialQuality: 1,
-      };
-      const optimizedFile = await imageCompression(file, options);
-
-      const presignedUrlResponse = await fetch('/api/object-storage/generate-upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uploadType: uploadType,
-          contentType: optimizedFile.type,
-        }),
-      });
-
-      if (!presignedUrlResponse.ok) throw new Error('Failed to get a secure upload URL.');
-
-      const { url, key } = await presignedUrlResponse.json();
-
-      const directUploadResponse = await fetch(url, {
-        method: 'PUT',
-        body: optimizedFile,
-        headers: { 'Content-Type': optimizedFile.type },
-      });
-
-      if (!directUploadResponse.ok) throw new Error('File upload to storage failed.');
-
-      const saveKeyResponse = await fetch('/api/object-storage/save-upload-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, uploadType }),
-      });
-
-      if (!saveKeyResponse.ok) throw new Error('Failed to save upload details to database.');
-
-      if (uploadType === "profile") await updateSession({ image: key });
-
-      router.refresh();
-    } catch (error) {
-      throw new Error(`Failed to upload image: ${error}`);
-    }
-  };
+  const handleImageUpload  = async (formData: FormData, uploadType: UploadType) => {
+    await imageUpload({formData, uploadType, router, updateSession})
+  }
 
   const handleAccentChange = (theme: CustomTheme) => {
     setPendingAccent(theme)

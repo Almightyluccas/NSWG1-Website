@@ -1,10 +1,10 @@
 import Image from "next/image"
-import { FadeIn } from "@/components/fade-in"
-import { Navbar } from "@/components/navbar"
-import { AccordionSection } from "@/components/accordion-section"
-import { InfoCard } from "@/components/info-card"
+import { FadeIn } from "@/components/ui/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { AccordionSection } from "@/components/ui/accordion-section"
+import { InfoCard } from "@/components/ui/info-card"
 import { GlobeIcon as GlobeHemisphereWest, GraduationCap } from "lucide-react"
-import {Footer} from "@/components/footer";
+import {Footer} from "@/components/layout/footer";
 
 export default function Tacdevron2Page() {
   return (

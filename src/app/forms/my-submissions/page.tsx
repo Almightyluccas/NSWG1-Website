@@ -1,6 +1,6 @@
 import { Suspense } from "react"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 import { MySubmissionsClient } from "./my-submissions-client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getServerSession } from "next-auth"

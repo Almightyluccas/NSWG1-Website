@@ -1,6 +1,6 @@
 import type React from "react"
 import Image from "next/image"
-import { FadeIn } from "@/components/fade-in"
+import { FadeIn } from "@/components/ui/fade-in"
 import { cn } from "@/lib/utils"
 
 interface InfoCardProps {

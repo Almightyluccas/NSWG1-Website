@@ -77,9 +77,7 @@ export function RoleManager({
       if (result.success) {
         toast.success("Roles updated successfully")
         onOpenChangeAction(false)
-        setTimeout(() => {
-          window.location.reload()
-        }, 100)
+
       } else {
         toast.error(result.error || "Failed to update roles")
       }
@@ -94,9 +92,6 @@ export function RoleManager({
   const handleClose = () => {
     setSelectedRoles(currentRoles)
     onOpenChangeAction(false)
-    setTimeout(() => {
-      window.location.reload()
-    }, 100)
   }
   const allowedRoles = getAllowedRoles()
 

@@ -1,5 +1,5 @@
 import { DiscordWebhook } from "@/lib/discord/Discord";
-import { DiscordWebhookPayload, InstructorMessageType } from "@/types/discord";
+import { DiscordWebhookPayload, InstructorMessageType } from "@/types/api/discord";
 
 export class InstructorWebhook extends DiscordWebhook {
 

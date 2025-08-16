@@ -1,7 +1,7 @@
 "use server"
 
 import { ApplicationsTable } from "@/app/admin/perscom/submissions/enlistment/applications.client";
-import { ApplicationData } from "@/types/perscomApi";
+import { ApplicationData } from "@/types/api/perscomApi";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 import { perscom } from "@/lib/perscom/api";

@@ -8,7 +8,7 @@ import SessionWrapper from "@/components/auth/sessionWrapper";
 import {Analytics} from "@vercel/analytics/next"
 import {SpeedInsights} from "@vercel/speed-insights/next"
 import Script from "next/script";
-import {CookieConsent} from "@/components/cookie-consent";
+import {CookieConsent} from "@/components/ui/cookie-consent";
 import {ThemeInitializer} from "@/components/theme/theme-initializer";
 import {defaultThemes} from "@/lib/defaultThemes";
 import {CustomTheme} from "@/types/database";

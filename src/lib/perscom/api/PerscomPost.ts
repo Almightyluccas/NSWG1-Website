@@ -2,7 +2,7 @@ import {
   ApplicationSubmission,
   ApplicationSubmissionResponse, CreateAssignmentRecord, CreateAwardRecord, CreateCombatRecord,
   CreatePerscomUser, CreateQualificationRecord, CreateRankRecord, PerscomUserCreationResponse,
-} from '@/types/perscomApi'
+} from '@/types/api/perscomApi'
 import type { PerscomClient } from './PerscomClient'
 
 export class PerscomPost {

@@ -1,4 +1,4 @@
-import { DiscordWebhookPayload } from "@/types/discord";
+import { DiscordWebhookPayload } from "@/types/api/discord";
 
 export class DiscordWebhook {
   url: string

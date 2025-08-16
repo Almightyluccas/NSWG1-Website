@@ -1,6 +1,6 @@
 import {MembersTable} from "@/app/admin/perscom/members/members-table.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
-import {PerscomUserResponse} from "@/types/perscomApi";
+import {PerscomUserResponse} from "@/types/api/perscomApi";
 import { perscom } from "@/lib/perscom/api";
 
 export default async function UsersPage() {

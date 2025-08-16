@@ -2,9 +2,9 @@
 
 import { useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Navbar } from "@/components/navbar"
+import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
-import { FadeIn } from "@/components/fade-in"
+import { FadeIn } from "@/components/ui/fade-in"
 import Image from "next/image"
 import { signIn, useSession } from "next-auth/react"
 

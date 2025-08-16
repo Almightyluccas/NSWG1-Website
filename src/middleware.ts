@@ -3,7 +3,7 @@ import type { NextRequest, NextMiddleware } from 'next/server';
 import { getToken, encode, JWT } from 'next-auth/jwt';
 import { routePermissions } from '@/config/roles';
 import { roleHierarchy } from '@/types/database';
-import {RefreshTokenResponse} from "@/types/nswg1Api";
+import {RefreshTokenResponse} from "@/types/api/nswg1Api";
 
 const SESSION_TIMEOUT = 60 * 60 * 24 * 30; // 30 days
 const TOKEN_REFRESH_BUFFER_SECONDS = 300; // 5 minutes

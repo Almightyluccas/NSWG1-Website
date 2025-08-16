@@ -2,7 +2,7 @@ import {RosterTable} from "@/app/perscom/roster/roster-table.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 import { perscom } from "@/lib/perscom/api";
-import { PerscomUserResponse, Rank } from "@/types/perscomApi";
+import { PerscomUserResponse, Rank } from "@/types/api/perscomApi";
 
 export default async function RosterPage() {
   const members: PerscomUserResponse[] = await perscom.get.users();

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { FadeIn } from "@/components/fade-in"
+import { FadeIn } from "@/components/ui/fade-in"
 import { ChevronRight } from "lucide-react"
 
 interface UnitCardProps {

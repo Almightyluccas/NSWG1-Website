@@ -1,9 +1,9 @@
 "use server";
 
 import type React from "react"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { FadeIn } from "@/components/fade-in"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
+import { FadeIn } from "@/components/ui/fade-in"
 import Image from "next/image"
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth/next"

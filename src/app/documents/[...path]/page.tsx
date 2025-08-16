@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import DocumentViewer from "./document-viewer"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 
 interface DocumentViewerPageProps {
   params: Promise<{

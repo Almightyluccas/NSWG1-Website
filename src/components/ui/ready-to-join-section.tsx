@@ -1,6 +1,6 @@
 "use client"
 
-import {FadeIn} from "@/components/fade-in";
+import {FadeIn} from "@/components/ui/fade-in";
 import {Button} from "@/components/ui/button";
 import React, {useState} from "react";
 import {Dialog, DialogContent} from "@/components/ui/dialog";

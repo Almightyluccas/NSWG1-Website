@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PerscomUserResponse } from "@/types/perscomApi";
+import { PerscomUserResponse } from "@/types/api/perscomApi";
 import { PaginationBar } from "@/components/ui/pagination";
 import { UpdateMemberDialog } from "@/app/admin/perscom/members/update-member-dialog";
 

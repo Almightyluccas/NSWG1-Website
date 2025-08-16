@@ -18,7 +18,7 @@ import {
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation";
-import { LeaveApplication } from "@/types/perscomApi";
+import { LeaveApplication } from "@/types/api/perscomApi";
 
 
 

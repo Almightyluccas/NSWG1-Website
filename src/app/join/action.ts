@@ -5,7 +5,7 @@ import {
   CreatePerscomUser,
   PerscomUserCreationResponse,
   PerscomUserResponse
-} from "@/types/perscomApi";
+} from "@/types/api/perscomApi";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { perscom } from "@/lib/perscom/api";

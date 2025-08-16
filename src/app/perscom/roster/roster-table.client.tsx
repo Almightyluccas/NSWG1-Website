@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import Link from "next/link";
-import {PerscomUserResponse, Rank} from "@/types/perscomApi";
+import {PerscomUserResponse, Rank} from "@/types/api/perscomApi";
 import Image from "next/image";
 
 interface Personnel {

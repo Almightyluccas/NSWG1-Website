@@ -348,7 +348,7 @@ export function AdminSidebar({ className }: SidebarProps) {
 
       <div className="p-4 border-t border-gray-200 dark:border-zinc-700">
         <Link
-          href="/"
+          href="/public"
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700"
         >
           <Home className="h-4 w-4" />
