@@ -207,7 +207,7 @@ export function FileUploadDialog({
       // Validate file type
       const acceptedTypesArray = acceptedTypes.split(",")
       const isValidType = acceptedTypesArray.some(
-        (type) => type.trim() === "*/*" || file.type.match(type.trim().replace("*", ".*")),
+        (type) => type.trim() === "*/*" || file.type.match(type.trim().replace(/\*/g, ".*")),
       )
 
       if (!isValidType) {
