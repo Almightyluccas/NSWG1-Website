@@ -13,7 +13,7 @@ const SESSION_COOKIE = SESSION_SECURE ? "__Secure-next-auth.session-token" : "ne
 
 function shouldUpdateToken(token: JWT): boolean {
   const timeInSeconds: number = Math.floor(Date.now() / 1000);
-  const expiresAt = token.expires_at as number;
+  const expiresAt = token.expires_in as number;
   return timeInSeconds >= expiresAt - TOKEN_REFRESH_BUFFER_SECONDS;
 }
 
