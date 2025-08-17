@@ -47,7 +47,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link href="/public" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <div className="mr-4">
               <Image
                 src={"/images/nswg1-emblem.png"}
