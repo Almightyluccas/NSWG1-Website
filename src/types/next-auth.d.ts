@@ -29,7 +29,7 @@ declare module "next-auth/jwt" {
     customThemes: CustomTheme[];
     name: string | null;
     access_token?: string;
-    expires_at?: number;
+    expires_in?: number;
     refresh_token?: string;
     image?: string | null;
     email?: string | null;

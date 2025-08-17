@@ -14,8 +14,8 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
         token.access_token = account.access_token;
-        token.expires_at = Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600));
-        // token.expires_at = Math.floor(Date.now() / 1000 + 30);
+        token.expires_in = Math.floor(Date.now() / 1000 + (typeof account.expires_in === 'number' ? account.expires_in : 3600));
+        // token.expires_in = Math.floor(Date.now() / 1000 + 30);
         token.refresh_token = account.refresh_token;
         token.user_id = user.id;
       }

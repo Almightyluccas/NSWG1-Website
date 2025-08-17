@@ -34,7 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<RefreshTo
     return NextResponse.json({
       access_token: refreshedTokens.access_token,
       expires_in: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in ?? 3600)),
-      // expires_at: Math.floor(Date.now() / 1000 + 30), // FOR TESTING
+      // expires_in: Math.floor(Date.now() / 1000 + 30), // FOR TESTING
       refresh_token: refreshedTokens.refresh_token,
     });
 
