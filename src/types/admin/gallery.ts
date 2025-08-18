@@ -12,7 +12,7 @@ export interface GalleryItem {
   dateAdded: string
 }
 
-export interface FormData {
+export interface FormDataGallery {
   id: string
   title: string
   description: string

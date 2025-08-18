@@ -16,15 +16,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { FormData } from "@/types/admin/gallery"
+import type { FormDataGallery } from "@/types/admin/gallery"
 import React from "react";
 
 interface AddEditItemDialogProps {
   isOpen: boolean
   onCloseAction: (open: boolean) => void
   editMode: boolean
-  formData: FormData
-  setFormDataAction: React.Dispatch<React.SetStateAction<FormData>>
+  formData: FormDataGallery
+  setFormDataAction: React.Dispatch<React.SetStateAction<FormDataGallery>>
   categories: string[]
   onSaveAction: () => void
 }
@@ -39,7 +39,7 @@ export function AddEditItemDialog({
   onSaveAction,
 }: AddEditItemDialogProps) {
   const handleCategoryToggle = (category: string) => {
-    setFormDataAction((prev: FormData): FormData => {
+    setFormDataAction((prev: FormDataGallery): FormDataGallery => {
       if (prev.categories.includes(category)) {
         return {
           ...prev,
