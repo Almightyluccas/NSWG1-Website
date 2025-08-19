@@ -10,9 +10,13 @@ import { CategoryManagementDialog } from "@/components/admin/gallery/category-ma
 import { ItemDetailsDialog } from "@/components/admin/gallery/item-details-dialog"
 import { AddEditItemDialog } from "@/components/admin/gallery/add-edit-item-dialog"
 import { DeleteConfirmationDialog } from "@/components/admin/gallery/delete-confirmation-dialog"
-import type { GalleryItem, FormData } from "@/types/admin/gallery"
+import type { GalleryItem, FormDataGallery } from "@/types/admin/gallery"
+import {FileUploadDialog} from "@/components/ui/image-upload-dialog";
+import {imageUpload} from "@/lib/Object-Storage/imageActions";
+import {UploadType} from "@/types/objectStorage";
+import {useRouter} from "next/navigation";
+import {useSession} from "next-auth/react";
 
-// Mock gallery data
 const mockGalleryItems: GalleryItem[] = [
   {
     id: "gallery_1",
@@ -71,7 +75,6 @@ const mockGalleryItems: GalleryItem[] = [
   },
 ]
 
-// Available categories for gallery items
 const availableCategories = [
   "training",
   "maritime",
@@ -92,6 +95,7 @@ export function GalleryManagementClient() {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null)
   const [isItemDetailsOpen, setIsItemDetailsOpen] = useState(false)
   const [isAddEditOpen, setIsAddEditOpen] = useState(false)
+  const [isUploadImageOpen, setIsUploadImageOpen] = useState(false)
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false)
   const [categories, setCategories] = useState(availableCategories)
@@ -100,8 +104,11 @@ export function GalleryManagementClient() {
   const [galleryItems, setGalleryItems] = useState(mockGalleryItems)
   const [hasOrderChanges, setHasOrderChanges] = useState(false)
 
-  // Form state
-  const [formData, setFormData] = useState<FormData>({
+  const router = useRouter()
+  const { update: updateSession } = useSession()
+
+
+  const [formData, setFormData] = useState<FormDataGallery>({
     id: "",
     title: "",
     description: "",
@@ -113,7 +120,6 @@ export function GalleryManagementClient() {
     videoId: undefined,
   })
 
-  // Filter gallery items based on search query
   const filteredItems = galleryItems.filter((item) => {
     const searchLower = searchQuery.toLowerCase()
     return (
@@ -126,6 +132,10 @@ export function GalleryManagementClient() {
   const handleViewDetails = (item: GalleryItem) => {
     setSelectedItem(item)
     setIsItemDetailsOpen(true)
+  }
+
+  const handleImageUpload  = async (formData: FormData, uploadType: UploadType) => {
+    await imageUpload({formData, uploadType, router, updateSession})
   }
 
   const handleAddNew = (mediaType: "image" | "video" | "youtube" = "image") => {
@@ -226,7 +236,7 @@ export function GalleryManagementClient() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => handleAddNew("image")}>
+                  <DropdownMenuItem onClick={() => setIsUploadImageOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Image
                   </DropdownMenuItem>
@@ -308,6 +318,14 @@ export function GalleryManagementClient() {
             </Button>
           </div>
         </div>
+      )}
+
+      {isUploadImageOpen && (
+        <FileUploadDialog
+          open={isUploadImageOpen}
+          onOpenChange={() => setIsUploadImageOpen(false)}
+          uploadType={'gallery'}
+          handleUpload={handleImageUpload}/>
       )}
 
       <ItemDetailsDialog
