@@ -13,7 +13,7 @@ export class CandidateWebhook extends DiscordWebhook {
       case 'accepted':
         const instructorsMention = (data.applyingPosition === '160th')
           ? '<@249242679211196417>'
-          : '<@667833642248175673> or <@492142030831616010>';
+          : '<@492142030831616010>';
         return {
           embeds: [{
             title: "Application Accepted",
