@@ -94,23 +94,6 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
     return application.statuses && application.statuses.length > 0 && application.statuses[0].name === 'Accepted';
   };
 
-  const handleAccept = async (application: ApplicationData) => {
-    if (application.id && application.user_id && application.first_name) {
-      const unit: Units = application.preferred_position.includes('160th') ? '160th' : 'tacdevron';
-      await acceptApplication(application.id, application.user_id, application.first_name, application.email_address, application.preferred_position, unit);
-      setIsApplicationDetailsOpen(false);
-    }
-  };
-
-  const handleReject = async (application: ApplicationData, reason: ReasonKey, customReason?: string) => {
-    if (application.id && application.user_id) {
-      const unit: Units = application.preferred_position.includes('160th') ? '160th' : 'tacdevron';
-
-      await rejectApplication(application.id, application.user_id, reason, application.first_name, application.preferred_position, unit, customReason);
-      setIsApplicationDetailsOpen(false);
-    }
-  };
-
   const requestConfirmation = (action: 'accept' | 'reject', application: ApplicationData) => {
     setActionToConfirm(action);
     setApplicationToConfirm(application);
@@ -121,15 +104,30 @@ export const ApplicationsTable = ({ applications }: { applications: ApplicationD
     if (!applicationToConfirm || !actionToConfirm) return;
 
     try {
+      const unit: Units = applicationToConfirm.preferred_position.includes('160th') ? '160th' : 'tacdevron';
+
       if (actionToConfirm === 'accept') {
-        await handleAccept(applicationToConfirm);
+        await acceptApplication(
+          applicationToConfirm.id,
+          applicationToConfirm.user_id,
+          applicationToConfirm.first_name,
+          applicationToConfirm.email_address,
+          applicationToConfirm.preferred_position,
+          unit
+        );
       } else if (actionToConfirm === 'reject') {
-        await handleReject(
-          applicationToConfirm,
+        await rejectApplication(
+          applicationToConfirm.id,
+          applicationToConfirm.user_id,
           rejectionReason,
+          applicationToConfirm.first_name,
+          applicationToConfirm.preferred_position,
+          unit,
           customRejectionReason
         );
       }
+      // Re-route and close dialogs after the server action completes successfully
+      setIsApplicationDetailsOpen(false);
       router.refresh();
     } catch (error) {
       console.error('Error at handleConfirmationAction', error);
