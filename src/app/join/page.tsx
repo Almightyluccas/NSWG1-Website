@@ -24,7 +24,6 @@ export default async function JoinPage() {
 
 
   return (
-    <ServerRoleGuard allowedRoles={[UserRole.guest]} >
       <main className="min-h-screen bg-gray-50 dark:bg-zinc-900">
         <Navbar />
 
@@ -56,7 +55,5 @@ export default async function JoinPage() {
 
         <Footer />
       </main>
-    </ServerRoleGuard>
-
   )
 }
