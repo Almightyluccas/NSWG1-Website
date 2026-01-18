@@ -9,7 +9,7 @@ import { perscom } from "@/lib/perscom/api";
 
 
 export default async function LeaveOfAbsencePage() {
-  const applications = await perscom.get.applications(true)
+  const applications = await perscom.get.applications()
     .then(applications => applications.filter(app => app.form_id === 4))
     .then(filtered => filtered.sort((a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

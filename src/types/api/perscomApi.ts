@@ -1,4 +1,4 @@
-export interface BaseEntity {
+wexport interface BaseEntity {
   id: number;
   created_at: string;
   updated_at: string;

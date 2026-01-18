@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
   const recentUsersLimit = 10;
   const recentUsers: User[] = await database.get.recentUsers(recentUsersLimit)
   const newUsersThisMonth  = await database.get.userCount();
-  const pendingApplications = await perscom.get.applications(true).then(applications => {
+  const pendingApplications = await perscom.get.applications().then(applications => {
     return applications.filter(application => {
       return Array.isArray(application.statuses) && application.statuses.length === 0;
     }).length;

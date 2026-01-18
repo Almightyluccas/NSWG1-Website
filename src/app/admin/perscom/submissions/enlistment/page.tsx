@@ -9,7 +9,7 @@ import { perscom } from "@/lib/perscom/api";
 
 
 export default async function EnlistmentApplicationsPage() {
-  const applications: ApplicationData[] = await perscom.get.applications(true)
+  const applications: ApplicationData[] = await perscom.get.applications()
     .then(applications => applications.filter(app => app.form_id === 1))
     .then(filtered => filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
