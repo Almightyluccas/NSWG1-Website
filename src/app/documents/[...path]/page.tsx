@@ -1,20 +1,22 @@
-import { notFound } from "next/navigation"
-import DocumentViewer from "./document-viewer"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
+import { notFound } from "next/navigation";
+import DocumentViewer from "./document-viewer";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 
 interface DocumentViewerPageProps {
   params: Promise<{
-    path: string[]
-  }>
+    path: string[];
+  }>;
 }
 
-export default async function DocumentViewerPage({ params }: DocumentViewerPageProps) {
-  const resolvedParams = await params
-  const documentPath = resolvedParams.path.join("/")
+export default async function DocumentViewerPage({
+  params,
+}: DocumentViewerPageProps) {
+  const resolvedParams = await params;
+  const documentPath = resolvedParams.path.join("/");
 
   if (!documentPath) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -25,5 +27,5 @@ export default async function DocumentViewerPage({ params }: DocumentViewerPageP
       </main>
       <Footer />
     </div>
-  )
+  );
 }

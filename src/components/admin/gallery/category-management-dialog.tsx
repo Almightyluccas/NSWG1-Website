@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Search, Plus, Edit, Trash2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { Search, Plus, Edit, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -13,16 +13,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import type { GalleryItem } from "@/types/admin/gallery"
+} from "@/components/ui/dialog";
+import type { GalleryItem } from "@/types/admin/gallery";
 
 interface CategoryManagementDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  categories: string[]
-  setCategories: (categories: string[]) => void
-  galleryItems: GalleryItem[]
-  setGalleryItems: (items: GalleryItem[]) => void
+  isOpen: boolean;
+  onClose: () => void;
+  categories: string[];
+  setCategories: (categories: string[]) => void;
+  galleryItems: GalleryItem[];
+  setGalleryItems: (items: GalleryItem[]) => void;
 }
 
 export function CategoryManagementDialog({
@@ -33,23 +33,29 @@ export function CategoryManagementDialog({
   galleryItems,
   setGalleryItems,
 }: CategoryManagementDialogProps) {
-  const [newCategoryName, setNewCategoryName] = useState("")
-  const [editingCategory, setEditingCategory] = useState<string | null>(null)
-  const [editCategoryName, setEditCategoryName] = useState("")
-  const [categorySearchQuery, setCategorySearchQuery] = useState("")
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+  const [categorySearchQuery, setCategorySearchQuery] = useState("");
 
   const filteredCategories = categories.filter((category) =>
-    category.toLowerCase().includes(categorySearchQuery.toLowerCase()),
-  )
+    category.toLowerCase().includes(categorySearchQuery.toLowerCase())
+  );
 
   const handleCreateCategory = () => {
-    if (newCategoryName.trim() && !categories.includes(newCategoryName.toLowerCase().trim())) {
-      const categorySlug = newCategoryName.toLowerCase().trim().replace(/\s+/g, "-")
-      setCategories([...categories, categorySlug])
-      setNewCategoryName("")
-      console.log("[v0] Created new category:", categorySlug)
+    if (
+      newCategoryName.trim() &&
+      !categories.includes(newCategoryName.toLowerCase().trim())
+    ) {
+      const categorySlug = newCategoryName
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-");
+      setCategories([...categories, categorySlug]);
+      setNewCategoryName("");
+      console.log("[v0] Created new category:", categorySlug);
     }
-  }
+  };
 
   const handleEditCategory = (oldCategory: string, newName: string) => {
     if (
@@ -57,63 +63,78 @@ export function CategoryManagementDialog({
       !categories.includes(newName.toLowerCase().trim()) &&
       newName.toLowerCase().trim() !== oldCategory
     ) {
-      const newCategorySlug = newName.toLowerCase().trim().replace(/\s+/g, "-")
-      const updatedCategories = categories.map((cat) => (cat === oldCategory ? newCategorySlug : cat))
-      setCategories(updatedCategories)
+      const newCategorySlug = newName.toLowerCase().trim().replace(/\s+/g, "-");
+      const updatedCategories = categories.map((cat) =>
+        cat === oldCategory ? newCategorySlug : cat
+      );
+      setCategories(updatedCategories);
 
       // Update gallery items that use this category
       const updatedGalleryItems = galleryItems.map((item) => ({
         ...item,
-        categories: item.categories.map((cat) => (cat === oldCategory ? newCategorySlug : cat)),
-      }))
-      setGalleryItems(updatedGalleryItems)
+        categories: item.categories.map((cat) =>
+          cat === oldCategory ? newCategorySlug : cat
+        ),
+      }));
+      setGalleryItems(updatedGalleryItems);
 
-      setEditingCategory(null)
-      setEditCategoryName("")
-      console.log("[v0] Updated category from", oldCategory, "to", newCategorySlug)
+      setEditingCategory(null);
+      setEditCategoryName("");
+      console.log(
+        "[v0] Updated category from",
+        oldCategory,
+        "to",
+        newCategorySlug
+      );
     }
-  }
+  };
 
   const handleDeleteCategory = (categoryToDelete: string) => {
-    const updatedCategories = categories.filter((cat) => cat !== categoryToDelete)
-    setCategories(updatedCategories)
+    const updatedCategories = categories.filter(
+      (cat) => cat !== categoryToDelete
+    );
+    setCategories(updatedCategories);
 
     // Remove category from all gallery items
     const updatedGalleryItems = galleryItems.map((item) => ({
       ...item,
       categories: item.categories.filter((cat) => cat !== categoryToDelete),
-    }))
-    setGalleryItems(updatedGalleryItems)
+    }));
+    setGalleryItems(updatedGalleryItems);
 
-    console.log("[v0] Deleted category:", categoryToDelete)
-  }
+    console.log("[v0] Deleted category:", categoryToDelete);
+  };
 
   const startEditingCategory = (category: string) => {
-    setEditingCategory(category)
-    setEditCategoryName(category.replace(/-/g, " "))
-  }
+    setEditingCategory(category);
+    setEditCategoryName(category.replace(/-/g, " "));
+  };
 
   const handleClose = () => {
-    onClose()
-    setNewCategoryName("")
-    setEditingCategory(null)
-    setEditCategoryName("")
-    setCategorySearchQuery("")
-  }
+    onClose();
+    setNewCategoryName("");
+    setEditingCategory(null);
+    setEditCategoryName("");
+    setCategorySearchQuery("");
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage Categories</DialogTitle>
-          <DialogDescription>Add, edit, or remove categories used to organize gallery items.</DialogDescription>
+          <DialogDescription>
+            Add, edit, or remove categories used to organize gallery items.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Existing Categories Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Existing Categories</Label>
+              <Label className="text-base font-medium">
+                Existing Categories
+              </Label>
               <Badge variant="outline">{categories.length} categories</Badge>
             </div>
 
@@ -141,20 +162,25 @@ export function CategoryManagementDialog({
                         className="flex-1"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            handleEditCategory(category, editCategoryName)
+                            handleEditCategory(category, editCategoryName);
                           } else if (e.key === "Escape") {
-                            setEditingCategory(null)
-                            setEditCategoryName("")
+                            setEditingCategory(null);
+                            setEditCategoryName("");
                           }
                         }}
                         autoFocus
                       />
                       <Button
                         size="sm"
-                        onClick={() => handleEditCategory(category, editCategoryName)}
+                        onClick={() =>
+                          handleEditCategory(category, editCategoryName)
+                        }
                         disabled={
                           !editCategoryName.trim() ||
-                          editCategoryName.toLowerCase().trim().replace(/\s+/g, "-") === category
+                          editCategoryName
+                            .toLowerCase()
+                            .trim()
+                            .replace(/\s+/g, "-") === category
                         }
                       >
                         Save
@@ -163,8 +189,8 @@ export function CategoryManagementDialog({
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setEditingCategory(null)
-                          setEditCategoryName("")
+                          setEditingCategory(null);
+                          setEditCategoryName("");
                         }}
                       >
                         Cancel
@@ -177,7 +203,13 @@ export function CategoryManagementDialog({
                           {category.replace(/-/g, " ")}
                         </Badge>
                         <span className="text-sm text-gray-500 dark:text-zinc-400">
-                          ({galleryItems.filter((item) => item.categories.includes(category)).length} items)
+                          (
+                          {
+                            galleryItems.filter((item) =>
+                              item.categories.includes(category)
+                            ).length
+                          }{" "}
+                          items)
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -209,7 +241,9 @@ export function CategoryManagementDialog({
                 </div>
               )}
               {categories.length === 0 && (
-                <div className="text-center py-8 text-gray-500 dark:text-zinc-400">No categories created yet</div>
+                <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
+                  No categories created yet
+                </div>
               )}
             </div>
           </div>
@@ -224,12 +258,13 @@ export function CategoryManagementDialog({
                 placeholder="Enter category name (e.g., Special Operations)"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    handleCreateCategory()
+                    handleCreateCategory();
                   }
                 }}
               />
               <p className="text-sm text-gray-500 dark:text-zinc-400">
-                Category names will be automatically formatted (spaces become dashes, lowercase)
+                Category names will be automatically formatted (spaces become
+                dashes, lowercase)
               </p>
             </div>
 
@@ -238,7 +273,11 @@ export function CategoryManagementDialog({
                 <Label>Preview</Label>
                 <div className="p-2 bg-gray-50 dark:bg-zinc-700/50 rounded-md">
                   <Badge variant="outline" className="capitalize">
-                    {newCategoryName.toLowerCase().trim().replace(/\s+/g, "-").replace(/-/g, " ")}
+                    {newCategoryName
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g, "-")
+                      .replace(/-/g, " ")}
                   </Badge>
                 </div>
               </div>
@@ -248,7 +287,9 @@ export function CategoryManagementDialog({
               onClick={handleCreateCategory}
               disabled={
                 !newCategoryName.trim() ||
-                categories.includes(newCategoryName.toLowerCase().trim().replace(/\s+/g, "-"))
+                categories.includes(
+                  newCategoryName.toLowerCase().trim().replace(/\s+/g, "-")
+                )
               }
               className="w-full"
             >
@@ -265,5 +306,5 @@ export function CategoryManagementDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

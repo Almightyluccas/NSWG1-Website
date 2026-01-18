@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface RoleGuardProps {
   roles: string[];
@@ -19,7 +19,7 @@ export default function RoleGuard({
 
   useEffect(() => {
     if (!isAllowed && !hide) {
-      router.push('/unauthorized');
+      router.push("/unauthorized");
     }
   }, [isAllowed, hide, router]);
 

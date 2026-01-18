@@ -1,6 +1,6 @@
-import type { DatabaseClient } from "./DatabaseClient"
-import type { UpdateRecurringTrainingData } from "@/types/recurring-training"
-import {Preferences} from "@/types/database";
+import type { DatabaseClient } from "./DatabaseClient";
+import type { UpdateRecurringTrainingData } from "@/types/recurring-training";
+import { Preferences } from "@/types/database";
 
 export class DatabasePut {
   constructor(private client: DatabaseClient) {}
@@ -10,7 +10,7 @@ export class DatabasePut {
     perscom_id: number,
     name: string,
     steam_id: string,
-    date_of_birth: Date,
+    date_of_birth: Date
   ): Promise<void> {
     await this.client.query(
       `
@@ -18,11 +18,14 @@ export class DatabasePut {
           SET perscom_id = ?, name = ?, date_of_birth = ?, steam_id = ?, role = 'applicant'
           WHERE id = ?
       `,
-      [perscom_id, name, date_of_birth, steam_id, id],
-    )
+      [perscom_id, name, date_of_birth, steam_id, id]
+    );
   }
 
-  async userPreferences(preferences: Preferences, userId: string): Promise<void> {
+  async userPreferences(
+    preferences: Preferences,
+    userId: string
+  ): Promise<void> {
     const setClauses: string[] = [];
     const queryParams: any[] = [];
 
@@ -48,28 +51,34 @@ export class DatabasePut {
     await this.client.query(sqlQuery, queryParams);
   }
 
-  async userRoleByPerscomId(roles: string | string[], perscomId: number): Promise<void> {
-    const roleString = Array.isArray(roles) ? roles.join(",") : roles
+  async userRoleByPerscomId(
+    roles: string | string[],
+    perscomId: number
+  ): Promise<void> {
+    const roleString = Array.isArray(roles) ? roles.join(",") : roles;
     await this.client.query(
       `
           UPDATE users
           SET role = ?
           WHERE perscom_id = ?
       `,
-      [roleString, perscomId],
-    )
+      [roleString, perscomId]
+    );
   }
 
-  async userRoleByUserId(roles: string | string[], userId: string): Promise<void> {
-    const roleString = Array.isArray(roles) ? roles.join(",") : roles
+  async userRoleByUserId(
+    roles: string | string[],
+    userId: string
+  ): Promise<void> {
+    const roleString = Array.isArray(roles) ? roles.join(",") : roles;
     await this.client.query(
       `
           UPDATE users
           SET role = ?
           WHERE id = ?
       `,
-      [roleString, userId],
-    )
+      [roleString, userId]
+    );
   }
 
   async userName(id: string, name: string): Promise<void> {
@@ -79,8 +88,8 @@ export class DatabasePut {
           SET name = ?
           WHERE id = ?
       `,
-      [name, id],
-    )
+      [name, id]
+    );
   }
   async userProfilePicture(s3Key: string, userId: string): Promise<void> {
     const existingUserRows = await this.client.query<any[]>(
@@ -119,14 +128,14 @@ export class DatabasePut {
     }
   }
 
-
-
-
-
-  async updateRefreshToken(oldTokenHash: string, newTokenHash: string, newExpiresAt: Date): Promise<void> {
+  async updateRefreshToken(
+    oldTokenHash: string,
+    newTokenHash: string,
+    newExpiresAt: Date
+  ): Promise<void> {
     await this.client.query(
       `UPDATE refresh_tokens SET token_hash = ?, expires_at = ? WHERE token_hash = ?`,
-      [newTokenHash, newExpiresAt, oldTokenHash],
+      [newTokenHash, newExpiresAt, oldTokenHash]
     );
   }
 
@@ -135,23 +144,23 @@ export class DatabasePut {
       `
       UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = ?
     `,
-      [tokenHash],
+      [tokenHash]
     );
   }
 
   async campaign(
     campaignId: string,
     data: {
-      name: string
-      description: string
-      startDate: string
-      endDate: string
-    },
+      name: string;
+      description: string;
+      startDate: string;
+      endDate: string;
+    }
   ): Promise<void> {
     await this.client.query(
       `UPDATE campaigns SET name = ?, description = ?, start_date = ?, end_date = ?, updated_at = NOW() WHERE id = ?`,
-      [data.name, data.description, data.startDate, data.endDate, campaignId],
-    )
+      [data.name, data.description, data.startDate, data.endDate, campaignId]
+    );
   }
 
   async campaignStatus(campaignId: string, status: string): Promise<void> {
@@ -161,8 +170,8 @@ export class DatabasePut {
           SET status = ?, updated_at = NOW()
           WHERE id = ?
       `,
-      [status, campaignId],
-    )
+      [status, campaignId]
+    );
   }
 
   async campaignEndDate(campaignId: string, endDate: string): Promise<void> {
@@ -172,25 +181,33 @@ export class DatabasePut {
           SET end_date = ?, updated_at = NOW()
           WHERE id = ?
       `,
-      [endDate, campaignId],
-    )
+      [endDate, campaignId]
+    );
   }
 
   async mission(
     missionId: string,
     data: {
-      name: string
-      description: string
-      date: string
-      time: string
-      location: string
-      maxPersonnel?: number
-    },
+      name: string;
+      description: string;
+      date: string;
+      time: string;
+      location: string;
+      maxPersonnel?: number;
+    }
   ): Promise<void> {
     await this.client.query(
       `UPDATE missions SET name = ?, description = ?, date = ?, time = ?, location = ?, max_personnel = ?, updated_at = NOW() WHERE id = ?`,
-      [data.name, data.description, data.date, data.time, data.location, data.maxPersonnel || null, missionId],
-    )
+      [
+        data.name,
+        data.description,
+        data.date,
+        data.time,
+        data.location,
+        data.maxPersonnel || null,
+        missionId,
+      ]
+    );
   }
 
   async missionStatus(missionId: string, status: string): Promise<void> {
@@ -200,8 +217,8 @@ export class DatabasePut {
           SET status = ?, updated_at = NOW()
           WHERE id = ?
       `,
-      [status, missionId],
-    )
+      [status, missionId]
+    );
   }
 
   async trainingStatus(trainingId: string, status: string): Promise<void> {
@@ -211,21 +228,21 @@ export class DatabasePut {
           SET status = ?, updated_at = NOW()
           WHERE id = ?
       `,
-      [status, trainingId],
-    )
+      [status, trainingId]
+    );
   }
 
   async trainingRecord(
     trainingId: string,
     data: {
-      name: string
-      description: string
-      date: string
-      time: string
-      location: string
-      instructor?: string
-      maxPersonnel?: number
-    },
+      name: string;
+      description: string;
+      date: string;
+      time: string;
+      location: string;
+      instructor?: string;
+      maxPersonnel?: number;
+    }
   ): Promise<void> {
     await this.client.query(
       `UPDATE training_records SET name = ?, description = ?, date = ?, time = ?, location = ?, instructor = ?, max_personnel = ?, updated_at = NOW() WHERE id = ?`,
@@ -238,89 +255,104 @@ export class DatabasePut {
         data.instructor || null,
         data.maxPersonnel || null,
         trainingId,
-      ],
-    )
+      ]
+    );
   }
 
-  async recurringTraining(id: string, data: UpdateRecurringTrainingData): Promise<void> {
-    const updates: string[] = []
-    const values: any[] = []
+  async recurringTraining(
+    id: string,
+    data: UpdateRecurringTrainingData
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
 
     if (data.name !== undefined) {
-      updates.push("name = ?")
-      values.push(data.name)
+      updates.push("name = ?");
+      values.push(data.name);
     }
     if (data.description !== undefined) {
-      updates.push("description = ?")
-      values.push(data.description)
+      updates.push("description = ?");
+      values.push(data.description);
     }
     if (data.dayOfWeek !== undefined) {
-      updates.push("day_of_week = ?")
-      values.push(data.dayOfWeek)
+      updates.push("day_of_week = ?");
+      values.push(data.dayOfWeek);
     }
     if (data.time !== undefined) {
-      updates.push("time = ?")
-      values.push(data.time)
+      updates.push("time = ?");
+      values.push(data.time);
     }
     if (data.location !== undefined) {
-      updates.push("location = ?")
-      values.push(data.location)
+      updates.push("location = ?");
+      values.push(data.location);
     }
     if (data.instructor !== undefined) {
-      updates.push("instructor = ?")
-      values.push(data.instructor || null)
+      updates.push("instructor = ?");
+      values.push(data.instructor || null);
     }
     if (data.maxPersonnel !== undefined) {
-      updates.push("max_personnel = ?")
-      values.push(data.maxPersonnel || null)
+      updates.push("max_personnel = ?");
+      values.push(data.maxPersonnel || null);
     }
     if (data.isActive !== undefined) {
-      updates.push("is_active = ?")
-      values.push(data.isActive)
+      updates.push("is_active = ?");
+      values.push(data.isActive);
     }
 
     if (updates.length === 0) {
-      return
+      return;
     }
 
-    updates.push("updated_at = NOW()")
-    values.push(id)
+    updates.push("updated_at = NOW()");
+    values.push(id);
 
-    await this.client.query(`UPDATE recurring_trainings SET ${updates.join(", ")} WHERE id = ?`, values)
+    await this.client.query(
+      `UPDATE recurring_trainings SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
   }
 
   async recurringTrainingInstanceCount(recurringId: string): Promise<void> {
     await this.client.query(
       `UPDATE recurring_trainings SET instances_created = instances_created + 1, updated_at = NOW() WHERE id = ?`,
-      [recurringId],
-    )
+      [recurringId]
+    );
   }
 
-  async updateFormDefinition(formId: number, title: string, description: string): Promise<void> {
+  async updateFormDefinition(
+    formId: number,
+    title: string,
+    description: string
+  ): Promise<void> {
     await this.client.query(
       `UPDATE form_definitions 
        SET title = ?, description = ?, updated_at = NOW()
        WHERE id = ?`,
-      [title, description, formId],
-    )
+      [title, description, formId]
+    );
   }
 
   async updateFormSubmissionStatus(
     submissionId: number,
     status: "pending" | "reviewed" | "approved" | "rejected",
     reviewedBy: string,
-    notes?: string,
+    notes?: string
   ): Promise<void> {
     await this.client.query(
       `UPDATE form_submissions
        SET status = ?, reviewed_by = ?, reviewed_at = NOW(), notes = ?
        WHERE id = ?`,
-      [status, reviewedBy, notes, submissionId],
-    )
+      [status, reviewedBy, notes, submissionId]
+    );
   }
 
-  async updateFormActiveStatus(formId: number, isActive: boolean): Promise<void> {
-    await this.client.query(`UPDATE form_definitions SET is_active = ? WHERE id = ?`, [isActive, formId])
+  async updateFormActiveStatus(
+    formId: number,
+    isActive: boolean
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE form_definitions SET is_active = ? WHERE id = ?`,
+      [isActive, formId]
+    );
   }
-
 }

@@ -1,10 +1,10 @@
-"use server"
+"use server";
 
 import {
   ApplicationSubmissionResponse,
   CreatePerscomUser,
   PerscomUserCreationResponse,
-  PerscomUserResponse
+  PerscomUserResponse,
 } from "@/types/api/perscomApi";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
@@ -12,9 +12,12 @@ import { perscom } from "@/lib/perscom/api";
 import { database } from "@/database";
 import { InstructorWebhook } from "@/lib/discord/InstructorWebhook";
 
-
-export async function submitApplication(formData: FormData, user_id: string, discordName: string) {
-  const session = await getServerSession(authOptions)
+export async function submitApplication(
+  formData: FormData,
+  user_id: string,
+  discordName: string
+) {
+  const session = await getServerSession(authOptions);
 
   if (!session) throw new Error("Not authenticated");
 
@@ -31,49 +34,60 @@ export async function submitApplication(formData: FormData, user_id: string, dis
     armaExperience: parseInt(formEntries.armaExperience?.toString()),
     capabilities: formEntries.capabilities?.toString() || "",
     discordName: discordName,
-    preferredPosition: formEntries.preferredPosition?.toString() || ""
-  }
+    preferredPosition: formEntries.preferredPosition?.toString() || "",
+  };
 
   let createPerscomUserResponse: PerscomUserCreationResponse;
   try {
-    const perscomUser: CreatePerscomUser = { name: data.name, email: data.email };
+    const perscomUser: CreatePerscomUser = {
+      name: data.name,
+      email: data.email,
+    };
     createPerscomUserResponse = await perscom.post.user(perscomUser);
   } catch (error: any) {
     console.error("PERSCOM User Creation Error:", error);
-    const isEmailTakenError = error.message.includes('email has already been taken');
+    const isEmailTakenError = error.message.includes(
+      "email has already been taken"
+    );
 
     if (isEmailTakenError) {
       try {
         const allUsers: PerscomUserResponse[] = await perscom.get.users();
-        const existingUser = allUsers.find(user => user.email === data.email);
+        const existingUser = allUsers.find((user) => user.email === data.email);
 
         if (!existingUser?.id) {
-          throw new Error('**PERSCOM_REPLACE_NOT_FOUND**');
+          throw new Error("**PERSCOM_REPLACE_NOT_FOUND**");
         }
 
         await perscom.delete.user(existingUser.id);
 
-        const perscomUser: CreatePerscomUser = { name: data.name, email: data.email };
+        const perscomUser: CreatePerscomUser = {
+          name: data.name,
+          email: data.email,
+        };
         createPerscomUserResponse = await perscom.post.user(perscomUser);
-
       } catch (retryError) {
-        console.error("Error during PERSCOM user replacement process:", retryError);
-        throw new Error('**PERSCOM_REPLACE_FAILED**');
+        console.error(
+          "Error during PERSCOM user replacement process:",
+          retryError
+        );
+        throw new Error("**PERSCOM_REPLACE_FAILED**");
       }
     } else {
       console.error("PERSCOM User Creation Error:", error);
-      throw new Error('**PERSCOM_CREATE_FAILED**');
+      throw new Error("**PERSCOM_CREATE_FAILED**");
     }
   }
 
   if (!createPerscomUserResponse?.data?.id) {
-    throw new Error("Invalid response from PERSCOM user creation after all attempts.");
+    throw new Error(
+      "Invalid response from PERSCOM user creation after all attempts."
+    );
   }
 
-
   try {
-    const applicationResponse: ApplicationSubmissionResponse = await perscom.post.applicationSubmission(
-      {
+    const applicationResponse: ApplicationSubmissionResponse =
+      await perscom.post.applicationSubmission({
         form_id: 1,
         user_id: createPerscomUserResponse.data.id,
         arma_3_id: data.steamId,
@@ -87,34 +101,43 @@ export async function submitApplication(formData: FormData, user_id: string, dis
         arma_experience_in_hours: data.armaExperience,
         why_do_you_want_to_join_red_squadron: data.reason,
         what_makes_you_more_capable_than_other_candidates: data.capabilities,
-        confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website: "yes",
-      }
-    );
+        confirm_you_have_read_and_understand_the_recruitment_requirements_on_our_website:
+          "yes",
+      });
     if (!applicationResponse) {
       throw new Error("Invalid response from PERSCOM application submission.");
     }
-  } catch(error) {
+  } catch (error) {
     console.error("PERSCOM Application Submission Error:", error);
-    throw new Error("An error occurred with the PERSCOM service during application submission.");
+    throw new Error(
+      "An error occurred with the PERSCOM service during application submission."
+    );
   }
 
-  const discord = new InstructorWebhook
+  const discord = new InstructorWebhook();
 
   try {
     await discord.sendMessage({
-      name: 'submission',
+      name: "submission",
       candidateDiscordId: user_id,
       candidateName: data.name,
       applyingPosition: data.preferredPosition,
-      unit: data.preferredPosition.includes('Special Warfare') ? 'tacdevron' : '160th',
+      unit: data.preferredPosition.includes("Special Warfare")
+        ? "tacdevron"
+        : "160th",
     });
   } catch (error) {
     console.error("Discord Message Error:", error);
   }
 
-
   try {
-    await database.put.userAfterApplication(user_id, createPerscomUserResponse.data.id, createPerscomUserResponse.data.name, data.steamId, data.dateOfBirth)
+    await database.put.userAfterApplication(
+      user_id,
+      createPerscomUserResponse.data.id,
+      createPerscomUserResponse.data.name,
+      data.steamId,
+      data.dateOfBirth
+    );
   } catch (error) {
     console.error("Database Update Error:", error);
     throw new Error("An error occurred while updating the user database.");

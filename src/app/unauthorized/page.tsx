@@ -1,12 +1,12 @@
 "use server";
 
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
-import { FadeIn } from "@/components/ui/fade-in"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ShieldAlert, Home } from "lucide-react"
-import BackButton from "./back-button"
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { FadeIn } from "@/components/ui/fade-in";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ShieldAlert, Home } from "lucide-react";
+import BackButton from "./back-button";
 
 export default async function UnauthorizedPage() {
   return (
@@ -26,7 +26,8 @@ export default async function UnauthorizedPage() {
               </h1>
 
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                You don&apos;t have permission to view this page. This area requires higher clearance level or specific role assignment.
+                You don&apos;t have permission to view this page. This area
+                requires higher clearance level or specific role assignment.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -49,5 +50,5 @@ export default async function UnauthorizedPage() {
 
       <Footer />
     </main>
-  )
+  );
 }

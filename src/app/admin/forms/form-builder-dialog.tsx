@@ -1,17 +1,29 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Plus,
   Trash2,
@@ -25,18 +37,18 @@ import {
   Clock,
   Mail,
   Hash,
-} from "lucide-react"
-import { createForm } from "@/app/admin/forms/actions"
-import { getFormWithQuestions } from "@/app/forms/action"
-import type { FormDefinition, FormQuestion } from "@/types/forms"
-import { toast } from "sonner"
+} from "lucide-react";
+import { createForm } from "@/app/admin/forms/actions";
+import { getFormWithQuestions } from "@/app/forms/action";
+import type { FormDefinition, FormQuestion } from "@/types/forms";
+import { toast } from "sonner";
 
 interface FormBuilderDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  editingForm?: FormDefinition | null
-  onFormCreated: (form: FormDefinition) => void
-  onFormUpdated: (form: FormDefinition) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingForm?: FormDefinition | null;
+  onFormCreated: (form: FormDefinition) => void;
+  onFormUpdated: (form: FormDefinition) => void;
 }
 
 type QuestionType =
@@ -48,12 +60,15 @@ type QuestionType =
   | "date"
   | "time"
   | "email"
-  | "number"
+  | "number";
 
-interface QuestionBuilder extends Omit<FormQuestion, "id" | "form_id" | "created_at"> {
-  tempId: string
-  isExisting?: boolean
-  originalId?: number
+interface QuestionBuilder extends Omit<
+  FormQuestion,
+  "id" | "form_id" | "created_at"
+> {
+  tempId: string;
+  isExisting?: boolean;
+  originalId?: number;
 }
 
 const questionTypeIcons = {
@@ -66,7 +81,7 @@ const questionTypeIcons = {
   time: Clock,
   email: Mail,
   number: Hash,
-}
+};
 
 const questionTypeLabels = {
   short_answer: "Short Answer",
@@ -78,7 +93,7 @@ const questionTypeLabels = {
   time: "Time",
   email: "Email",
   number: "Number",
-}
+};
 
 export function FormBuilderDialog({
   open,
@@ -87,23 +102,24 @@ export function FormBuilderDialog({
   onFormCreated,
   onFormUpdated,
 }: FormBuilderDialogProps) {
-  const { data: session } = useSession()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [formTitle, setFormTitle] = useState("")
-  const [formDescription, setFormDescription] = useState("")
-  const [questions, setQuestions] = useState<QuestionBuilder[]>([])
-  const [questionTypeSelectValue, setQuestionTypeSelectValue] = useState<string>("")
+  const { data: session } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [questions, setQuestions] = useState<QuestionBuilder[]>([]);
+  const [questionTypeSelectValue, setQuestionTypeSelectValue] =
+    useState<string>("");
 
   useEffect(() => {
     const loadFormData = async () => {
       if (editingForm && open) {
-        setIsLoading(true)
+        setIsLoading(true);
         try {
-          const fullForm = await getFormWithQuestions(editingForm.id)
+          const fullForm = await getFormWithQuestions(editingForm.id);
 
-          setFormTitle(fullForm!.title)
-          setFormDescription(fullForm!.description || "")
+          setFormTitle(fullForm!.title);
+          setFormDescription(fullForm!.description || "");
 
           const existingQuestions: QuestionBuilder[] =
             fullForm!.questions?.map((q) => ({
@@ -115,25 +131,25 @@ export function FormBuilderDialog({
               order_index: q.order_index,
               isExisting: true,
               originalId: q.id,
-            })) || []
+            })) || [];
 
-          setQuestions(existingQuestions)
+          setQuestions(existingQuestions);
         } catch (error) {
-          console.error("Error loading form data:", error)
-          toast.error("Failed to load form data")
+          console.error("Error loading form data:", error);
+          toast.error("Failed to load form data");
         } finally {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       } else if (!editingForm && open) {
-        setFormTitle("")
-        setFormDescription("")
-        setQuestions([])
+        setFormTitle("");
+        setFormDescription("");
+        setQuestions([]);
       }
-      setQuestionTypeSelectValue("")
-    }
+      setQuestionTypeSelectValue("");
+    };
 
-    loadFormData()
-  }, [editingForm, open])
+    loadFormData();
+  }, [editingForm, open]);
 
   const addQuestion = (type: QuestionType) => {
     const newQuestion: QuestionBuilder = {
@@ -141,17 +157,27 @@ export function FormBuilderDialog({
       question_text: "",
       question_type: type,
       is_required: false,
-      options: type === "multiple_choice" || type === "checkboxes" || type === "dropdown" ? ["Option 1"] : undefined,
+      options:
+        type === "multiple_choice" ||
+        type === "checkboxes" ||
+        type === "dropdown"
+          ? ["Option 1"]
+          : undefined,
       order_index: questions.length,
       isExisting: false,
-    }
-    setQuestions([...questions, newQuestion])
-    setQuestionTypeSelectValue("")
-  }
+    };
+    setQuestions([...questions, newQuestion]);
+    setQuestionTypeSelectValue("");
+  };
 
-  const updateQuestion = (tempId: string, updates: Partial<QuestionBuilder>) => {
-    setQuestions(questions.map((q) => (q.tempId === tempId ? { ...q, ...updates } : q)))
-  }
+  const updateQuestion = (
+    tempId: string,
+    updates: Partial<QuestionBuilder>
+  ) => {
+    setQuestions(
+      questions.map((q) => (q.tempId === tempId ? { ...q, ...updates } : q))
+    );
+  };
 
   const deleteQuestion = (tempId: string) => {
     setQuestions(
@@ -160,66 +186,72 @@ export function FormBuilderDialog({
         .map((q, index) => ({
           ...q,
           order_index: index,
-        })),
-    )
-  }
+        }))
+    );
+  };
 
   const addOption = (tempId: string) => {
-    const question = questions.find((q) => q.tempId === tempId)
+    const question = questions.find((q) => q.tempId === tempId);
     if (question && question.options) {
       updateQuestion(tempId, {
         options: [...question.options, `Option ${question.options.length + 1}`],
-      })
+      });
     }
-  }
+  };
 
   const updateOption = (tempId: string, optionIndex: number, value: string) => {
-    const question = questions.find((q) => q.tempId === tempId)
+    const question = questions.find((q) => q.tempId === tempId);
     if (question && question.options) {
-      const newOptions = [...question.options]
-      newOptions[optionIndex] = value
-      updateQuestion(tempId, { options: newOptions })
+      const newOptions = [...question.options];
+      newOptions[optionIndex] = value;
+      updateQuestion(tempId, { options: newOptions });
     }
-  }
+  };
 
   const deleteOption = (tempId: string, optionIndex: number) => {
-    const question = questions.find((q) => q.tempId === tempId)
+    const question = questions.find((q) => q.tempId === tempId);
     if (question && question.options && question.options.length > 1) {
-      const newOptions = question.options.filter((_, index) => index !== optionIndex)
-      updateQuestion(tempId, { options: newOptions })
+      const newOptions = question.options.filter(
+        (_, index) => index !== optionIndex
+      );
+      updateQuestion(tempId, { options: newOptions });
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formTitle.trim()) {
-      toast.error("Please enter a form title")
-      return
+      toast.error("Please enter a form title");
+      return;
     }
 
-    const validQuestions = questions.filter((q) => q.question_text && q.question_text.trim())
+    const validQuestions = questions.filter(
+      (q) => q.question_text && q.question_text.trim()
+    );
 
     if (validQuestions.length === 0) {
-      toast.error("Please add at least one question with text")
-      return
+      toast.error("Please add at least one question with text");
+      return;
     }
 
     if (!session?.user?.id) {
-      toast.error("You must be logged in to create forms")
-      return
+      toast.error("You must be logged in to create forms");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const result = await createForm({
         title: formTitle.trim(),
         description: formDescription.trim(),
-        questions: validQuestions.map(({ tempId, isExisting, originalId, ...q }) => q),
+        questions: validQuestions.map(
+          ({ tempId, isExisting, originalId, ...q }) => q
+        ),
         createdBy: session.user.id,
         formId: editingForm?.id,
-      })
+      });
 
       if (result.success) {
         const newForm: FormDefinition = {
@@ -230,41 +262,49 @@ export function FormBuilderDialog({
           created_by: session.user.id,
           created_at: editingForm?.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        }
+        };
 
         if (editingForm) {
-          onFormUpdated(newForm)
+          onFormUpdated(newForm);
         } else {
-          onFormCreated(newForm)
+          onFormCreated(newForm);
         }
 
-        toast.success(editingForm ? "Form updated successfully!" : "Form created successfully!")
-        onOpenChange(false)
+        toast.success(
+          editingForm
+            ? "Form updated successfully!"
+            : "Form created successfully!"
+        );
+        onOpenChange(false);
       } else {
-        toast.error(result.error || "Failed to save form")
+        toast.error(result.error || "Failed to save form");
       }
     } catch (error) {
-      console.error("Error saving form:", error)
-      toast.error("An error occurred while saving the form")
+      console.error("Error saving form:", error);
+      toast.error("An error occurred while saving the form");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setFormTitle("")
-    setFormDescription("")
-    setQuestions([])
-    setQuestionTypeSelectValue("")
-    onOpenChange(false)
-  }
+    setFormTitle("");
+    setFormDescription("");
+    setQuestions([]);
+    setQuestionTypeSelectValue("");
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editingForm ? "Edit Form" : "Create New Form"}</DialogTitle>
-          <DialogDescription>Build your form by adding questions and configuring their properties</DialogDescription>
+          <DialogTitle>
+            {editingForm ? "Edit Form" : "Create New Form"}
+          </DialogTitle>
+          <DialogDescription>
+            Build your form by adding questions and configuring their properties
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -307,8 +347,8 @@ export function FormBuilderDialog({
                 <Select
                   value={questionTypeSelectValue}
                   onValueChange={(value) => {
-                    setQuestionTypeSelectValue(value)
-                    addQuestion(value as QuestionType)
+                    setQuestionTypeSelectValue(value);
+                    addQuestion(value as QuestionType);
                   }}
                 >
                   <SelectTrigger className="w-48">
@@ -316,7 +356,7 @@ export function FormBuilderDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(questionTypeLabels).map(([type, label]) => {
-                      const Icon = questionTypeIcons[type as QuestionType]
+                      const Icon = questionTypeIcons[type as QuestionType];
                       return (
                         <SelectItem key={type} value={type}>
                           <div className="flex items-center gap-2">
@@ -324,7 +364,7 @@ export function FormBuilderDialog({
                             {label}
                           </div>
                         </SelectItem>
-                      )
+                      );
                     })}
                   </SelectContent>
                 </Select>
@@ -334,14 +374,18 @@ export function FormBuilderDialog({
                 <Card>
                   <CardContent className="p-8 text-center">
                     <Type className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No questions yet</h3>
-                    <p className="text-muted-foreground">Add your first question using the dropdown above</p>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No questions yet
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Add your first question using the dropdown above
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
                   {questions.map((question, index) => {
-                    const Icon = questionTypeIcons[question.question_type]
+                    const Icon = questionTypeIcons[question.question_type];
                     return (
                       <Card key={question.tempId}>
                         <CardHeader className="pb-3">
@@ -349,9 +393,13 @@ export function FormBuilderDialog({
                             <div className="flex items-center gap-2">
                               <GripVertical className="h-4 w-4 text-muted-foreground" />
                               <Icon className="h-4 w-4" />
-                              <span className="text-sm font-medium">{questionTypeLabels[question.question_type]}</span>
+                              <span className="text-sm font-medium">
+                                {questionTypeLabels[question.question_type]}
+                              </span>
                               {question.isExisting && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Existing</span>
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  Existing
+                                </span>
                               )}
                             </div>
                             <Button
@@ -368,11 +416,16 @@ export function FormBuilderDialog({
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label>
-                              Question Text <span className="text-red-500">*</span>
+                              Question Text{" "}
+                              <span className="text-red-500">*</span>
                             </Label>
                             <Input
                               value={question.question_text}
-                              onChange={(e) => updateQuestion(question.tempId, { question_text: e.target.value })}
+                              onChange={(e) =>
+                                updateQuestion(question.tempId, {
+                                  question_text: e.target.value,
+                                })
+                              }
                               placeholder="Enter your question..."
                             />
                           </div>
@@ -384,26 +437,42 @@ export function FormBuilderDialog({
                             <div className="space-y-2">
                               <Label>Options</Label>
                               <div className="space-y-2">
-                                {question.options?.map((option, optionIndex) => (
-                                  <div key={optionIndex} className="flex items-center gap-2">
-                                    <Input
-                                      value={option}
-                                      onChange={(e) => updateOption(question.tempId, optionIndex, e.target.value)}
-                                      placeholder={`Option ${optionIndex + 1}`}
-                                    />
-                                    {question.options!.length > 1 && (
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => deleteOption(question.tempId, optionIndex)}
-                                        className="text-red-600 hover:text-red-700"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
+                                {question.options?.map(
+                                  (option, optionIndex) => (
+                                    <div
+                                      key={optionIndex}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Input
+                                        value={option}
+                                        onChange={(e) =>
+                                          updateOption(
+                                            question.tempId,
+                                            optionIndex,
+                                            e.target.value
+                                          )
+                                        }
+                                        placeholder={`Option ${optionIndex + 1}`}
+                                      />
+                                      {question.options!.length > 1 && (
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() =>
+                                            deleteOption(
+                                              question.tempId,
+                                              optionIndex
+                                            )
+                                          }
+                                          className="text-red-600 hover:text-red-700"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  )
+                                )}
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -422,29 +491,47 @@ export function FormBuilderDialog({
                             <Switch
                               id={`required-${question.tempId}`}
                               checked={question.is_required}
-                              onCheckedChange={(checked) => updateQuestion(question.tempId, { is_required: checked })}
+                              onCheckedChange={(checked) =>
+                                updateQuestion(question.tempId, {
+                                  is_required: checked,
+                                })
+                              }
                             />
-                            <Label htmlFor={`required-${question.tempId}`}>Required</Label>
+                            <Label htmlFor={`required-${question.tempId}`}>
+                              Required
+                            </Label>
                           </div>
                         </CardContent>
                       </Card>
-                    )
+                    );
                   })}
                 </div>
               )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formTitle.trim()}>
-                {isSubmitting ? "Saving..." : editingForm ? "Update Form" : "Create Form"}
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formTitle.trim()}
+              >
+                {isSubmitting
+                  ? "Saving..."
+                  : editingForm
+                    ? "Update Form"
+                    : "Create Form"}
               </Button>
             </div>
           </form>
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

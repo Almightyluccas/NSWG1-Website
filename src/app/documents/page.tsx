@@ -1,8 +1,8 @@
-import { Suspense } from "react"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
-import { DocumentsClient } from "./documents-client"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Suspense } from "react";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { DocumentsClient } from "./documents-client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DocumentsPage() {
   return (
@@ -13,7 +13,9 @@ export default function DocumentsPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-4">Documents</h1>
-              <p className="text-muted-foreground text-lg">View and download important documents</p>
+              <p className="text-muted-foreground text-lg">
+                View and download important documents
+              </p>
             </div>
 
             <Suspense
@@ -37,5 +39,5 @@ export default function DocumentsPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

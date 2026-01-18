@@ -1,25 +1,32 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import ServerRoleGuard from "@/components/auth/server-role-guard"
-import { Rank } from "@/types/api/perscomApi"
-import { UserRole } from "@/types/database"
-import Image from "next/image"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ServerRoleGuard from "@/components/auth/server-role-guard";
+import { Rank } from "@/types/api/perscomApi";
+import { UserRole } from "@/types/database";
+import Image from "next/image";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { perscom } from "@/lib/perscom/api";
 
-const RANKS_PER_PAGE = 12
+const RANKS_PER_PAGE = 12;
 
 export default async function RanksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const ranks: Rank[] = await perscom.get.ranks()
-  const currentPage = Number((await searchParams).page) || 1
+  const ranks: Rank[] = await perscom.get.ranks();
+  const currentPage = Number((await searchParams).page) || 1;
 
-  const totalRanks = ranks.length
-  const totalPages = Math.ceil(totalRanks / RANKS_PER_PAGE)
-  const startIndex = (currentPage - 1) * RANKS_PER_PAGE
-  const paginatedRanks = ranks.slice(startIndex, startIndex + RANKS_PER_PAGE)
+  const totalRanks = ranks.length;
+  const totalPages = Math.ceil(totalRanks / RANKS_PER_PAGE);
+  const startIndex = (currentPage - 1) * RANKS_PER_PAGE;
+  const paginatedRanks = ranks.slice(startIndex, startIndex + RANKS_PER_PAGE);
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.member]}>
@@ -27,13 +34,17 @@ export default async function RanksPage({
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">PERSCOM Ranks</h1>
           <p className="text-gray-500 dark:text-zinc-400">
-            Military rank structure and insignia for Naval Special Warfare Group One
+            Military rank structure and insignia for Naval Special Warfare Group
+            One
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {paginatedRanks.map((rank) => (
-            <Card key={rank.id} className="flex flex-col md:flex-row overflow-hidden">
+            <Card
+              key={rank.id}
+              className="flex flex-col md:flex-row overflow-hidden"
+            >
               <div className="bg-accent/10 dark:bg-accent/5 p-6 flex justify-center items-center md:w-1/4">
                 <Image
                   src={rank.image?.image_url || "/placeholder.svg"}
@@ -71,24 +82,30 @@ export default async function RanksPage({
             <PaginationContent>
               {currentPage > 1 && (
                 <PaginationItem>
-                  <PaginationPrevious href={`/perscom/ranks?page=${currentPage - 1}`} />
+                  <PaginationPrevious
+                    href={`/perscom/ranks?page=${currentPage - 1}`}
+                  />
                 </PaginationItem>
               )}
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href={`/perscom/ranks?page=${page}`}
-                    isActive={page === currentPage}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href={`/perscom/ranks?page=${page}`}
+                      isActive={page === currentPage}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
               {currentPage < totalPages && (
                 <PaginationItem>
-                  <PaginationNext href={`/perscom/ranks?page=${currentPage + 1}`} />
+                  <PaginationNext
+                    href={`/perscom/ranks?page=${currentPage + 1}`}
+                  />
                 </PaginationItem>
               )}
             </PaginationContent>
@@ -96,5 +113,5 @@ export default async function RanksPage({
         )}
       </div>
     </ServerRoleGuard>
-  )
+  );
 }

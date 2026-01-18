@@ -60,14 +60,14 @@ export const authOptions: NextAuthOptions = {
         if (session.preferences) {
           await database.put.userPreferences(
             session.preferences,
-            token.user_id as string,
+            token.user_id as string
           );
           token.preferences = { ...token.preferences, ...session.preferences };
         }
         if (session.customTheme) {
           await database.post.userCustomTheme(
             token.user_id as string,
-            session.customTheme,
+            session.customTheme
           );
           if (!token.customThemes) token.customThemes = [];
           token.customThemes.push(session.customTheme);
@@ -90,11 +90,11 @@ export const authOptions: NextAuthOptions = {
           await database.post.user(
             account.providerAccountId,
             user.name!,
-            user.email!,
+            user.email!
           );
           await database.post.userProfileImage(
             account.providerAccountId,
-            user.image!,
+            user.image!
           );
           await database.post.defaultUserPreferences(account.providerAccountId);
         } catch (error) {
@@ -132,4 +132,3 @@ export const authOptions: NextAuthOptions = {
 };
 
 export const getAuthSession = async () => await getServerSession(authOptions);
-

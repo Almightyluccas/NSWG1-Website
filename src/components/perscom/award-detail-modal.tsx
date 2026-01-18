@@ -1,26 +1,35 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface AwardDetailModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   award: {
-    id?: number
-    award_id: number
-    text: string | null
-    created_at: string
-    imageUrl: string | null
-    name: string
-    sanitizedText?: string
-    formattedDate?: string
-    author_id?: number
-  } | null
+    id?: number;
+    award_id: number;
+    text: string | null;
+    created_at: string;
+    imageUrl: string | null;
+    name: string;
+    sanitizedText?: string;
+    formattedDate?: string;
+    author_id?: number;
+  } | null;
 }
 
-export function AwardDetailModal({ isOpen, onClose, award }: AwardDetailModalProps) {
-  if (!award) return null
+export function AwardDetailModal({
+  isOpen,
+  onClose,
+  award,
+}: AwardDetailModalProps) {
+  if (!award) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -28,7 +37,9 @@ export function AwardDetailModal({ isOpen, onClose, award }: AwardDetailModalPro
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{award.name}</DialogTitle>
           <DialogDescription>
-            Awarded on {award.formattedDate || new Date(award.created_at).toLocaleDateString()}
+            Awarded on{" "}
+            {award.formattedDate ||
+              new Date(award.created_at).toLocaleDateString()}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 mb-4">
@@ -47,5 +58,5 @@ export function AwardDetailModal({ isOpen, onClose, award }: AwardDetailModalPro
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

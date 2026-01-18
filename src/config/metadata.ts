@@ -1,4 +1,4 @@
-import type {Metadata} from "next";
+import type { Metadata } from "next";
 
 export const siteMetadata: Metadata = {
   verification: {
@@ -51,7 +51,7 @@ export const siteMetadata: Metadata = {
     "Arma 3 helicopter",
     "Helicopter",
   ],
-  authors: [{name: "Luccas Amorim"}],
+  authors: [{ name: "Luccas Amorim" }],
   creator: "Luccas Amorim",
   publisher: "Naval Special Warfare Group One",
   robots: "index, follow",

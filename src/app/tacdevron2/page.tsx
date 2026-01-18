@@ -1,10 +1,10 @@
-import Image from "next/image"
-import { FadeIn } from "@/components/ui/fade-in"
-import { Navbar } from "@/components/layout/navbar"
-import { AccordionSection } from "@/components/ui/accordion-section"
-import { InfoCard } from "@/components/ui/info-card"
-import { GlobeIcon as GlobeHemisphereWest, GraduationCap } from "lucide-react"
-import {Footer} from "@/components/layout/footer";
+import Image from "next/image";
+import { FadeIn } from "@/components/ui/fade-in";
+import { Navbar } from "@/components/layout/navbar";
+import { AccordionSection } from "@/components/ui/accordion-section";
+import { InfoCard } from "@/components/ui/info-card";
+import { GlobeIcon as GlobeHemisphereWest, GraduationCap } from "lucide-react";
+import { Footer } from "@/components/layout/footer";
 
 export default function Tacdevron2Page() {
   return (
@@ -15,7 +15,13 @@ export default function Tacdevron2Page() {
       <section className="relative min-h-[80vh] flex items-center">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-zinc-900"></div>
-          <Image src="/images/tacdev/tacdev-1.png" alt="TACDEVRON2 Header" fill className="object-cover opacity-70" priority />
+          <Image
+            src="/images/tacdev/tacdev-1.png"
+            alt="TACDEVRON2 Header"
+            fill
+            className="object-cover opacity-70"
+            priority
+          />
         </div>
 
         <div className="container mx-auto px-4 z-10 pt-20">
@@ -33,13 +39,19 @@ export default function Tacdevron2Page() {
             </FadeIn>
 
             <FadeIn delay={200}>
-              <h1 className="text-5xl md:text-7xl font-bold mb-2">TACDEVRON2</h1>
-              <p className="text-xl italic text-zinc-300 mb-8">The Only Easy Day Was Yesterday</p>
+              <h1 className="text-5xl md:text-7xl font-bold mb-2">
+                TACDEVRON2
+              </h1>
+              <p className="text-xl italic text-zinc-300 mb-8">
+                The Only Easy Day Was Yesterday
+              </p>
               <div className="h-1 w-24 bg-accent mx-auto my-6"></div>
               <p className="text-lg text-zinc-300 max-w-2xl mx-auto">
-                A key component of the Naval Special Warfare Development Group (DEVGRU), excels in specialized maritime
-                and counter-terrorism operations. Join us to engage in high-impact missions with advanced tactics and
-                cutting-edge technology, pushing the limits of special operations.
+                A key component of the Naval Special Warfare Development Group
+                (DEVGRU), excels in specialized maritime and counter-terrorism
+                operations. Join us to engage in high-impact missions with
+                advanced tactics and cutting-edge technology, pushing the limits
+                of special operations.
               </p>
             </FadeIn>
           </div>
@@ -96,10 +108,21 @@ export default function Tacdevron2Page() {
                   title="Requirements"
                   content={
                     <ul className="list-disc pl-5 space-y-2">
-                      <li>Must be at least 18 years of age (Waivers can apply up to 16).</li>
-                      <li>Must be willing to submit to a lengthy and detailed training process.</li>
-                      <li>Must be able to attend Eastern Time Operations / Events. 9pm EST Wednesday/ Saturdays</li>
-                      <li>Must have a working Microphone (No static, echo, etc).</li>
+                      <li>
+                        Must be at least 18 years of age (Waivers can apply up
+                        to 16).
+                      </li>
+                      <li>
+                        Must be willing to submit to a lengthy and detailed
+                        training process.
+                      </li>
+                      <li>
+                        Must be able to attend Eastern Time Operations / Events.
+                        9pm EST Wednesday/ Saturdays
+                      </li>
+                      <li>
+                        Must have a working Microphone (No static, echo, etc).
+                      </li>
                     </ul>
                   }
                   delay={0}
@@ -110,12 +133,19 @@ export default function Tacdevron2Page() {
                   content={
                     <>
                       <ul className="list-disc pl-5 space-y-2">
-                        <li>Capturing high-value enemy personnel and terrorists around the world.</li>
                         <li>
-                          Conducting insertions and extractions by sea, air or land to accomplish covert, Special
-                          Warfare/Special Operations missions.
+                          Capturing high-value enemy personnel and terrorists
+                          around the world.
                         </li>
-                        <li>Collecting information and intelligence through special reconnaissance missions.</li>
+                        <li>
+                          Conducting insertions and extractions by sea, air or
+                          land to accomplish covert, Special Warfare/Special
+                          Operations missions.
+                        </li>
+                        <li>
+                          Collecting information and intelligence through
+                          special reconnaissance missions.
+                        </li>
                       </ul>
                       <div className="mt-6">
                         <h3 className="text-xl font-bold mb-2">Career Paths</h3>
@@ -132,10 +162,13 @@ export default function Tacdevron2Page() {
                   title="What You Can Expect"
                   content={
                     <p>
-                      As a green team graduate you will be a operational member of the unit and will be constantly
-                      evaluated on your skills but are fully responsible for any operational missions that you get
-                      tasked for. Along with that, there is a lot of advancement in the operational side of TACDEV one
-                      of the first operational tasks will be to become an instructor along with being an operator.
+                      As a green team graduate you will be a operational member
+                      of the unit and will be constantly evaluated on your
+                      skills but are fully responsible for any operational
+                      missions that you get tasked for. Along with that, there
+                      is a lot of advancement in the operational side of TACDEV
+                      one of the first operational tasks will be to become an
+                      instructor along with being an operator.
                     </p>
                   }
                   delay={200}
@@ -162,5 +195,5 @@ export default function Tacdevron2Page() {
       {/* Footer */}
       <Footer />
     </main>
-  )
+  );
 }

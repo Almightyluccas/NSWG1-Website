@@ -1,338 +1,437 @@
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-<meta charset='utf-8'>
-<meta content='IE=edge,chrome=1' http-equiv='X-UA-Compatible'>
-<meta content='width=1050' name='viewport'>
-<title>DigitalOcean Control Panel</title>
-<link color='#0069ff' href='/mask_icon.svg' rel='mask-icon'>
-<link href='/favicon.png' rel='shortcut icon' type='image/png'>
-<link href='/apple-touch-icon.png' rel='apple-touch-icon'>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+    <meta content="width=1050" name="viewport" />
+    <title>DigitalOcean Control Panel</title>
+    <link color="#0069ff" href="/mask_icon.svg" rel="mask-icon" />
+    <link href="/favicon.png" rel="shortcut icon" type="image/png" />
+    <link href="/apple-touch-icon.png" rel="apple-touch-icon" />
 
-<meta name="aurora/config/environment" content="%7B%22modulePrefix%22%3A%22aurora%22%2C%22environment%22%3A%22production%22%2C%22rootURL%22%3A%22/%22%2C%22locationType%22%3A%22router-scroll%22%2C%22historySupportMiddleware%22%3Atrue%2C%22moment%22%3A%7B%22includeTimezone%22%3A%22all%22%7D%2C%22i18n%22%3A%7B%22defaultLocale%22%3A%22en%22%7D%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%7D%2C%22APP%22%3A%7B%22bucketLocation%22%3A%22%7B%24region%7D.digitaloceanspaces.com%22%2C%22cloudTabs%22%3A%7B%22/settings/api%23access-tokens%22%3A%22api.tokens%22%2C%22/settings/api%23dev-apps%22%3A%22api.applications%22%2C%22/settings/api%23security%22%3A%22api.access%22%2C%22/images%23actions-snapshots%22%3A%22images.snapshots%22%2C%22/images%23actions-backups%22%3A%22images.backups%22%2C%22/images%23actions-custom-images%22%3A%22images.customImages%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-power%22%3A%22droplet%5B%241%5D.power%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-access%22%3A%22droplet%5B%241%5D.access%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-resize%22%3A%22droplet%5B%241%5D.resize%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-snapshots%22%3A%22droplet%5B%241%5D.snapshots%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-settings%22%3A%22droplet%5B%241%5D.networking%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-backups%22%3A%22droplet%5B%241%5D.backups%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-graphs%22%3A%22droplet%5B%241%5D.graphs%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-history%22%3A%22droplet%5B%241%5D.history%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-destroy%22%3A%22droplet%5B%241%5D.destroy%22%2C%22/networking%23actions-floating-ip%22%3A%22networking.floatingIp%22%2C%22/domains%23tab-floating-IP%22%3A%22networking.floatingIp%22%2C%22/networking%23actions-domains%22%3A%22networking.domains%22%2C%22/networking%23tab-domains%22%3A%22networking.domains%22%2C%22/networking%23actions-ptr%22%3A%22networking.ptr%22%7D%2C%22featureFlippedCloudTabs%22%3A%7B%7D%2C%22contexts%22%3A%5B%7B%22cloudUrlRegex%22%3A%22/droplets/new%22%2C%22searchQuery%22%3A%22How%20do%20I%20create%20a%20Droplet%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/droplets%22%2C%22searchQuery%22%3A%22What%20is%20a%20Droplet%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/images%22%2C%22searchQuery%22%3A%22What%20is%20an%20Image%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/domains%22%2C%22searchQuery%22%3A%22How%20do%20I%20edit%20DNS%20records%20for%20my%20domain%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/applications%22%2C%22searchQuery%22%3A%22How%20can%20I%20use%20the%20API%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/account/billing%22%2C%22searchQuery%22%3A%22Where%20can%20I%20find%20my%20billing%20history%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/account/team%22%2C%22searchQuery%22%3A%22What%20are%20team%20accounts%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings/referrals%22%2C%22searchQuery%22%3A%22What%20is%20the%20referral%20program%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings/security%22%2C%22searchQuery%22%3A%22How%20can%20I%20improve%20Droplet%20security%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings%22%2C%22searchQuery%22%3A%22What%20settings%20can%20I%20change%3F%22%7D%5D%2C%22defaultSearchQuery%22%3A%22What%20is%20a%20Droplet%3F%22%2C%22theme%22%3A%22default%22%2C%22WEBSOCKET_HOST%22%3A%22wss%3A//push.digitalocean.com/ws-notifications%22%2C%22MONGODB_WEBSOCKET_HOST%22%3A%22wss%3A//database-logs.digitalocean.com%3A443%22%2C%22name%22%3A%22aurora%22%2C%22version%22%3A%220.0.0+69e8221e%22%7D%2C%22torii%22%3A%7B%22providers%22%3A%7B%22github-proxy%22%3A%7B%22requestTokenUri%22%3A%22/auth/github%22%7D%2C%22twitter%22%3A%7B%22requestTokenUri%22%3A%22/auth/twitter%22%7D%2C%22google-proxy%22%3A%7B%22requestTokenUri%22%3A%22/auth/google%22%2C%22scope%22%3A%22readonly%22%7D%7D%7D%2C%22sentry%22%3A%7B%22release%22%3A%2269e8221%22%2C%22dsn%22%3A%22https%3A//cf947f5955914cd392431ffeba297927@o45439.ingest.sentry.io/97837%22%2C%22debug%22%3Afalse%2C%22environment%22%3A%22production%22%2C%22exposedPropertyName%22%3A%22logger%22%2C%22serviceName%22%3A%22logger%22%2C%22allowUrls%22%3A%5B%7B%7D%5D%2C%22tracesSampleRate%22%3A0.0005%2C%22globalErrorCatching%22%3Atrue%2C%22ignoreErrors%22%3A%5B%22/%5Esentry-ignore/%22%2C%22list%5Bi%5D%20is%20not%20a%20function%22%2C%22Cannot%20create%20property%20%27oncontextmenu%27%20on%20boolean%20%27true%27%22%2C%22container.className.match%20is%20not%20a%20function%22%2C%22Cannot%20read%20property%20%27manipulate_settings%27%20of%20undefined%22%2C%22plugin.setSuspendState%20is%20not%20a%20function%22%2C%22Cannot%20read%20property%20%27Event%27%20of%20null%22%2C%22can%27t%20assign%20to%20properties%20of%20%28new%20Boolean%28true%29%29%3A%20not%20an%20object%22%2C%22Error%20calling%20method%20on%20NPObject.%22%2C%22androidInterface%20is%20not%20defined%22%2C%22fns%5Bi%5D%20is%20not%20a%20function%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22blockAdBlock%5C%22%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22fuckAdBlock%5C%22%22%2C%22kDetect%20is%20not%20defined%22%2C%22InvalidAccessError%22%2C%7B%7D%2C%22Unknown%20Error%22%2C%22Forbidden%22%2C%22Internal%20Server%20Error%22%2C%22Unauthorized%22%2C%22Unhandled%20Promise%20error%20detected%22%2C%22window._castle%20is%20not%20a%20function%22%2C%22No%20Reason%20Phrase%22%2C%22401%3A%20OK%22%2C%22403%3A%20OK%22%2C%22401%3A%20HTTP/2.0%20401%22%2C%22403%3A%20HTTP/2.0%20403%22%2C%22NotFoundError%22%2C%22csRestoreTitle%20is%20not%20defined%22%2C%22A%20requested%20file%20or%20directory%20could%20not%20be%20found%20at%20the%20time%20an%20operation%20was%20processed%22%2C%220x805e0006%22%2C%22ambn%22%2C%22keyboardinputReset%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22userAgent%5C%22%22%2C%22Permission%20denied%20to%20access%20property%20%5C%22dispatchEvent%5C%22%20on%20cross-origin%20object%22%2C%22ResizeObserver%20loop%20limit%20exceeded%22%2C%22ResizeObserver%20loop%20completed%20with%20undelivered%20notifications%22%2C%22Permission%20denied%20to%20access%20property%20%5C%22document%5C%22%22%2C%7B%7D%2C%22o%5Br%5D%20is%20not%20a%20function%22%2C%22Error%3A%20AbortError%3A%20The%20operation%20was%20aborted.%22%2C%22Error%3A%20AbortError%3A%20The%20user%20aborted%20a%20request.%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20twttr%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20instantSearchSDKJSBridgeClearHighlight%27%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20WeixinJSBridge%27%22%2C%22ReferenceError%3A%20playBackgroundMusic%20is%20not%20defined%22%2C%22ReferenceError%3A%20%24%20is%20not%20defined%22%2C%22ReferenceError%3A%20jQuery%20is%20not%20defined%22%2C%22ReferenceError%3A%20privateSpecialRepair%20is%20not%20defined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeExtract%27%20of%20undefined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeConfig%27%20of%20undefined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeRender%27%20of%20undefined%22%2C%22TypeError%3A%20null%20is%20not%20an%20object%20%28evaluating%20%27document.head.querySelector%28%5C%22meta%5Bname%3D%27supported-color-scheme...%22%2C%22TypeError%3A%20window.bannerNight%20is%20not%20a%20function%22%2C%22TypeError%3A%20Cannot%20read%20properties%20of%20null%20%28reading%20%27disconnect%27%29%22%2C%22TypeError%3A%20Cannot%20redefine%20property%3A%20BetterJsPop%22%2C%22TypeError%3A%20undefined%20is%20not%20an%20object%20%28evaluating%20%27ceCurrentVideo.currentTime%27%29%22%2C%22Non-Error%20exception%20captured%22%2C%22Non-Error%20promise%20rejection%20captured%20with%20keys%22%5D%7D%2C%22api-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22bucket-api-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22avatar-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22segment%22%3A%7B%22LOG_EVENT_TRACKING%22%3Afalse%2C%22WRITE_KEY%22%3A%22lisvh8pnfj%22%7D%2C%22slack-app%22%3A%7B%22CLIENT_ID%22%3A%222151811447.211231202706%22%7D%2C%22pager-duty%22%3A%7B%22VENDOR_ID%22%3A%22f8e7f080931bdb30f142%22%7D%2C%22form-keep%22%3A%7B%22FORM_KEEP_URL%22%3A%22https%3A//formkeep.com/f/e4a2b0d87086%22%7D%2C%22google-places-api-key%22%3A%22AIzaSyDApRvY87TybhP0Aca8hWnpWuBz7_wz1qg%22%2C%22taxamo-public-token%22%3A%22public_lZmxCS1HAuGcz2ec_ZfBi8rED8VDaEQ014-pS90RW4k%22%2C%22marketplace-host%22%3A%22https%3A//api.digitalocean.com%22%2C%22prismic-api%22%3A%22https%3A//do-marketplace-testing.cdn.prismic.io/api/v2%22%2C%22algolia-app-id%22%3A%226ZHEUVKJ88%22%2C%22algolia-public-key%22%3A%22c5470567eae7fa1177d43222e18ba086%22%2C%22algolia-marketplace-index%22%3A%22production_MARKETPLACE%22%2C%22dotty-console-install-script-url%22%3A%22https%3A//repos-droplet.digitalocean.com/install.sh%22%2C%22canny-app-id%22%3A%22602d75d41b8f79100ee34f59%22%2C%22amplitude-api-key%22%3A%22deb86ab4f1db664150dfadff7652c966%22%2C%22amplitude-experiment-key%22%3A%22client-OtEcDpyNiWopL470six2zJydPkuRSDOq%22%2C%22amplitude-amd-api-key%22%3A%22e18d5a65f2713a5894dca355fe2ceda2%22%2C%22api-namespace%22%3A%22api/v1%22%2C%22api-v2-namespace%22%3A%22api/v2%22%2C%22sentry-reporting-uri%22%3A%22https%3A//o45439.ingest.sentry.io%22%2C%22contentSecurityPolicy%22%3A%7B%22default-src%22%3A%22%27none%27%22%2C%22object-src%22%3A%22%27self%27%22%2C%22script-src%22%3A%22%27self%27%20%27unsafe-eval%27%20%27unsafe-inline%27%20https%3A//cdn.amplitude.com%20https%3A//cdn.pendo.io%20https%3A//data.pendo.io%20https%3A//assets.digitalocean.com%20https%3A//unpkg.com%20http%3A//d2wy8f7a9ursnm.cloudfront.net/%20http%3A//cdnjs.cloudflare.com%20https%3A//d2wy8f7a9ursnm.cloudfront.net/%20http%3A//stats.pusher.com%20http%3A//cdn.segment.com%20https%3A//assets.customer.io%20%20http%3A//www.google-analytics.com%20http%3A//use.typekit.net%20https%3A//use.typekit.net%20https%3A//websites.cdn.getfeedback.com%20https%3A//status.digitalocean.com%20https%3A//js.stripe.com%20https%3A//maps.googleapis.com%20https%3A//services.taxamo.com%20cdn.ravenjs.com%20https%3A//static.cdn.prismic.io%20https%3A//www.paypal.com%20https%3A//canny.io%20https%3A//cloud.digitalocean.com%22%2C%22frame-src%22%3A%22%27self%27%20https%3A//marketplace.digitalocean.com%20https%3A//marketplace-staging.digitalocean.com%20https%3A//js.stripe.com%20https%3A//hooks.stripe.com%20https%3A//cloud.digitalocean.com%20https%3A//do-marketplace-testing.prismic.io/%20https%3A//www.sandbox.paypal.com/%20https%3A//www.paypal.com/%20https%3A//changelog-widget.canny.io%22%2C%22font-src%22%3A%22%27self%27%20http%3A//fonts.gstatic.com%20data%3A%20https%3A//fonts.typekit.net%20https%3A//use.typekit.net%22%2C%22connect-src%22%3A%22%27self%27%20https%3A//api.amplitude.com%20https%3A//*.amplitude.com%20https%3A//segment.digitalocean.com%20http%3A//api.segment.io%20https%3A//formkeep.com%20https%3A//performance.typekit.net%20http%3A//freegeoip.net/json/%20status.digitalocean.com%20https%3A//maps.googleapis.com%20https%3A//services-ca.taxamo.com%20https%3A//do-marketplace-testing.prismic.io%20https%3A//www.sandbox.paypal.com%20https%3A//www.paypal.com%20https%3A//api.canny.io%20https%3A//cloud.digitalocean.com%20https%3A//cloud.digitalocean.com%20https%3A//cloud.digitalocean.com%20https%3A//api.digitalocean.com%20https%3A//o45439.ingest.sentry.io%20wss%3A//database-logs.s2r1.internal.digitalocean.com%3A443%20wss%3A//database-logs.digitalocean.com%3A443%20ws%3A//localdev.internal.digitalocean.com%3A8081/ws-notifications%20*.internal.digitalocean.com%20*.digitaloceanspaces.com%20https%3A//marketplace-staging.digitalocean.com%20https%3A//marketplace.digitalocean.com%20https%3A//marketplace.digitalocean.com%20https%3A//do-marketplace-testing.cdn.prismic.io%20https%3A//images.prismic.io%22%2C%22img-src%22%3A%22%27self%27%20data%3A%20https%3A//data.pendo.io%20https%3A//raw.githubusercontent.com%20https%3A//i1.wp.com/cloud.digitalocean.com%20https%3A//i0.wp.com/cloud.digitalocean.com%20https%3A//track.customer.io%20http%3A//www.google-analytics.com%20https%3A//p.typekit.net%20https%3A//ping.typekit.net%20https%3A//performance.typekit.net%20https%3A//secure.gravatar.com%20https%3A//www.gravatar.com%20https%3A//csi.gstatic.com%20http%3A//csi.gstatic.com%20https%3A//maps.gstatic.com%20http%3A//maps.gstatic.com%20app.getsentry.com%20*.internal.digitalocean.com%20*.digitaloceanspaces.com%20https%3A//images.prismic.io%20https%3A//marketplace-assets.digitalocean.com%22%2C%22style-src%22%3A%22%27self%27%20%27unsafe-inline%27%20https%3A//assets.digitalocean.com%20http%3A//fonts.googleapis.com%20http%3A//cdnjs.cloudflare.com%20https%3A//use.typekit.net%22%2C%22media-src%22%3A%22%27self%27%22%2C%22report-uri%22%3A%22https%3A//o45439.ingest.sentry.io%22%2C%22worker-src%22%3A%22blob%3A%22%7D%2C%22contentSecurityPolicyHeader%22%3A%22Content-Security-Policy-Report-Only%22%2C%22ember-cli-mirage%22%3A%7B%22usingProxy%22%3Afalse%2C%22useDefaultPassthroughs%22%3Atrue%7D%2C%22exportApplicationGlobal%22%3Afalse%7D" />
+    <meta
+      name="aurora/config/environment"
+      content="%7B%22modulePrefix%22%3A%22aurora%22%2C%22environment%22%3A%22production%22%2C%22rootURL%22%3A%22/%22%2C%22locationType%22%3A%22router-scroll%22%2C%22historySupportMiddleware%22%3Atrue%2C%22moment%22%3A%7B%22includeTimezone%22%3A%22all%22%7D%2C%22i18n%22%3A%7B%22defaultLocale%22%3A%22en%22%7D%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%7D%2C%22APP%22%3A%7B%22bucketLocation%22%3A%22%7B%24region%7D.digitaloceanspaces.com%22%2C%22cloudTabs%22%3A%7B%22/settings/api%23access-tokens%22%3A%22api.tokens%22%2C%22/settings/api%23dev-apps%22%3A%22api.applications%22%2C%22/settings/api%23security%22%3A%22api.access%22%2C%22/images%23actions-snapshots%22%3A%22images.snapshots%22%2C%22/images%23actions-backups%22%3A%22images.backups%22%2C%22/images%23actions-custom-images%22%3A%22images.customImages%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-power%22%3A%22droplet%5B%241%5D.power%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-access%22%3A%22droplet%5B%241%5D.access%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-resize%22%3A%22droplet%5B%241%5D.resize%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-snapshots%22%3A%22droplet%5B%241%5D.snapshots%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-settings%22%3A%22droplet%5B%241%5D.networking%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-backups%22%3A%22droplet%5B%241%5D.backups%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-graphs%22%3A%22droplet%5B%241%5D.graphs%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-history%22%3A%22droplet%5B%241%5D.history%22%2C%22/droplets/%28%5C%5Cd+%29%23actions-destroy%22%3A%22droplet%5B%241%5D.destroy%22%2C%22/networking%23actions-floating-ip%22%3A%22networking.floatingIp%22%2C%22/domains%23tab-floating-IP%22%3A%22networking.floatingIp%22%2C%22/networking%23actions-domains%22%3A%22networking.domains%22%2C%22/networking%23tab-domains%22%3A%22networking.domains%22%2C%22/networking%23actions-ptr%22%3A%22networking.ptr%22%7D%2C%22featureFlippedCloudTabs%22%3A%7B%7D%2C%22contexts%22%3A%5B%7B%22cloudUrlRegex%22%3A%22/droplets/new%22%2C%22searchQuery%22%3A%22How%20do%20I%20create%20a%20Droplet%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/droplets%22%2C%22searchQuery%22%3A%22What%20is%20a%20Droplet%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/images%22%2C%22searchQuery%22%3A%22What%20is%20an%20Image%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/domains%22%2C%22searchQuery%22%3A%22How%20do%20I%20edit%20DNS%20records%20for%20my%20domain%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/applications%22%2C%22searchQuery%22%3A%22How%20can%20I%20use%20the%20API%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/account/billing%22%2C%22searchQuery%22%3A%22Where%20can%20I%20find%20my%20billing%20history%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/account/team%22%2C%22searchQuery%22%3A%22What%20are%20team%20accounts%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings/referrals%22%2C%22searchQuery%22%3A%22What%20is%20the%20referral%20program%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings/security%22%2C%22searchQuery%22%3A%22How%20can%20I%20improve%20Droplet%20security%3F%22%7D%2C%7B%22cloudUrlRegex%22%3A%22/settings%22%2C%22searchQuery%22%3A%22What%20settings%20can%20I%20change%3F%22%7D%5D%2C%22defaultSearchQuery%22%3A%22What%20is%20a%20Droplet%3F%22%2C%22theme%22%3A%22default%22%2C%22WEBSOCKET_HOST%22%3A%22wss%3A//push.digitalocean.com/ws-notifications%22%2C%22MONGODB_WEBSOCKET_HOST%22%3A%22wss%3A//database-logs.digitalocean.com%3A443%22%2C%22name%22%3A%22aurora%22%2C%22version%22%3A%220.0.0+69e8221e%22%7D%2C%22torii%22%3A%7B%22providers%22%3A%7B%22github-proxy%22%3A%7B%22requestTokenUri%22%3A%22/auth/github%22%7D%2C%22twitter%22%3A%7B%22requestTokenUri%22%3A%22/auth/twitter%22%7D%2C%22google-proxy%22%3A%7B%22requestTokenUri%22%3A%22/auth/google%22%2C%22scope%22%3A%22readonly%22%7D%7D%7D%2C%22sentry%22%3A%7B%22release%22%3A%2269e8221%22%2C%22dsn%22%3A%22https%3A//cf947f5955914cd392431ffeba297927@o45439.ingest.sentry.io/97837%22%2C%22debug%22%3Afalse%2C%22environment%22%3A%22production%22%2C%22exposedPropertyName%22%3A%22logger%22%2C%22serviceName%22%3A%22logger%22%2C%22allowUrls%22%3A%5B%7B%7D%5D%2C%22tracesSampleRate%22%3A0.0005%2C%22globalErrorCatching%22%3Atrue%2C%22ignoreErrors%22%3A%5B%22/%5Esentry-ignore/%22%2C%22list%5Bi%5D%20is%20not%20a%20function%22%2C%22Cannot%20create%20property%20%27oncontextmenu%27%20on%20boolean%20%27true%27%22%2C%22container.className.match%20is%20not%20a%20function%22%2C%22Cannot%20read%20property%20%27manipulate_settings%27%20of%20undefined%22%2C%22plugin.setSuspendState%20is%20not%20a%20function%22%2C%22Cannot%20read%20property%20%27Event%27%20of%20null%22%2C%22can%27t%20assign%20to%20properties%20of%20%28new%20Boolean%28true%29%29%3A%20not%20an%20object%22%2C%22Error%20calling%20method%20on%20NPObject.%22%2C%22androidInterface%20is%20not%20defined%22%2C%22fns%5Bi%5D%20is%20not%20a%20function%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22blockAdBlock%5C%22%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22fuckAdBlock%5C%22%22%2C%22kDetect%20is%20not%20defined%22%2C%22InvalidAccessError%22%2C%7B%7D%2C%22Unknown%20Error%22%2C%22Forbidden%22%2C%22Internal%20Server%20Error%22%2C%22Unauthorized%22%2C%22Unhandled%20Promise%20error%20detected%22%2C%22window._castle%20is%20not%20a%20function%22%2C%22No%20Reason%20Phrase%22%2C%22401%3A%20OK%22%2C%22403%3A%20OK%22%2C%22401%3A%20HTTP/2.0%20401%22%2C%22403%3A%20HTTP/2.0%20403%22%2C%22NotFoundError%22%2C%22csRestoreTitle%20is%20not%20defined%22%2C%22A%20requested%20file%20or%20directory%20could%20not%20be%20found%20at%20the%20time%20an%20operation%20was%20processed%22%2C%220x805e0006%22%2C%22ambn%22%2C%22keyboardinputReset%22%2C%22can%27t%20redefine%20non-configurable%20property%20%5C%22userAgent%5C%22%22%2C%22Permission%20denied%20to%20access%20property%20%5C%22dispatchEvent%5C%22%20on%20cross-origin%20object%22%2C%22ResizeObserver%20loop%20limit%20exceeded%22%2C%22ResizeObserver%20loop%20completed%20with%20undelivered%20notifications%22%2C%22Permission%20denied%20to%20access%20property%20%5C%22document%5C%22%22%2C%7B%7D%2C%22o%5Br%5D%20is%20not%20a%20function%22%2C%22Error%3A%20AbortError%3A%20The%20operation%20was%20aborted.%22%2C%22Error%3A%20AbortError%3A%20The%20user%20aborted%20a%20request.%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20twttr%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20instantSearchSDKJSBridgeClearHighlight%27%22%2C%22ReferenceError%3A%20Can%27t%20find%20variable%3A%20WeixinJSBridge%27%22%2C%22ReferenceError%3A%20playBackgroundMusic%20is%20not%20defined%22%2C%22ReferenceError%3A%20%24%20is%20not%20defined%22%2C%22ReferenceError%3A%20jQuery%20is%20not%20defined%22%2C%22ReferenceError%3A%20privateSpecialRepair%20is%20not%20defined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeExtract%27%20of%20undefined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeConfig%27%20of%20undefined%22%2C%22TypeError%3A%20Cannot%20read%20property%20%27getReadModeRender%27%20of%20undefined%22%2C%22TypeError%3A%20null%20is%20not%20an%20object%20%28evaluating%20%27document.head.querySelector%28%5C%22meta%5Bname%3D%27supported-color-scheme...%22%2C%22TypeError%3A%20window.bannerNight%20is%20not%20a%20function%22%2C%22TypeError%3A%20Cannot%20read%20properties%20of%20null%20%28reading%20%27disconnect%27%29%22%2C%22TypeError%3A%20Cannot%20redefine%20property%3A%20BetterJsPop%22%2C%22TypeError%3A%20undefined%20is%20not%20an%20object%20%28evaluating%20%27ceCurrentVideo.currentTime%27%29%22%2C%22Non-Error%20exception%20captured%22%2C%22Non-Error%20promise%20rejection%20captured%20with%20keys%22%5D%7D%2C%22api-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22bucket-api-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22avatar-host%22%3A%22https%3A//cloud.digitalocean.com%22%2C%22segment%22%3A%7B%22LOG_EVENT_TRACKING%22%3Afalse%2C%22WRITE_KEY%22%3A%22lisvh8pnfj%22%7D%2C%22slack-app%22%3A%7B%22CLIENT_ID%22%3A%222151811447.211231202706%22%7D%2C%22pager-duty%22%3A%7B%22VENDOR_ID%22%3A%22f8e7f080931bdb30f142%22%7D%2C%22form-keep%22%3A%7B%22FORM_KEEP_URL%22%3A%22https%3A//formkeep.com/f/e4a2b0d87086%22%7D%2C%22google-places-api-key%22%3A%22AIzaSyDApRvY87TybhP0Aca8hWnpWuBz7_wz1qg%22%2C%22taxamo-public-token%22%3A%22public_lZmxCS1HAuGcz2ec_ZfBi8rED8VDaEQ014-pS90RW4k%22%2C%22marketplace-host%22%3A%22https%3A//api.digitalocean.com%22%2C%22prismic-api%22%3A%22https%3A//do-marketplace-testing.cdn.prismic.io/api/v2%22%2C%22algolia-app-id%22%3A%226ZHEUVKJ88%22%2C%22algolia-public-key%22%3A%22c5470567eae7fa1177d43222e18ba086%22%2C%22algolia-marketplace-index%22%3A%22production_MARKETPLACE%22%2C%22dotty-console-install-script-url%22%3A%22https%3A//repos-droplet.digitalocean.com/install.sh%22%2C%22canny-app-id%22%3A%22602d75d41b8f79100ee34f59%22%2C%22amplitude-api-key%22%3A%22deb86ab4f1db664150dfadff7652c966%22%2C%22amplitude-experiment-key%22%3A%22client-OtEcDpyNiWopL470six2zJydPkuRSDOq%22%2C%22amplitude-amd-api-key%22%3A%22e18d5a65f2713a5894dca355fe2ceda2%22%2C%22api-namespace%22%3A%22api/v1%22%2C%22api-v2-namespace%22%3A%22api/v2%22%2C%22sentry-reporting-uri%22%3A%22https%3A//o45439.ingest.sentry.io%22%2C%22contentSecurityPolicy%22%3A%7B%22default-src%22%3A%22%27none%27%22%2C%22object-src%22%3A%22%27self%27%22%2C%22script-src%22%3A%22%27self%27%20%27unsafe-eval%27%20%27unsafe-inline%27%20https%3A//cdn.amplitude.com%20https%3A//cdn.pendo.io%20https%3A//data.pendo.io%20https%3A//assets.digitalocean.com%20https%3A//unpkg.com%20http%3A//d2wy8f7a9ursnm.cloudfront.net/%20http%3A//cdnjs.cloudflare.com%20https%3A//d2wy8f7a9ursnm.cloudfront.net/%20http%3A//stats.pusher.com%20http%3A//cdn.segment.com%20https%3A//assets.customer.io%20%20http%3A//www.google-analytics.com%20http%3A//use.typekit.net%20https%3A//use.typekit.net%20https%3A//websites.cdn.getfeedback.com%20https%3A//status.digitalocean.com%20https%3A//js.stripe.com%20https%3A//maps.googleapis.com%20https%3A//services.taxamo.com%20cdn.ravenjs.com%20https%3A//static.cdn.prismic.io%20https%3A//www.paypal.com%20https%3A//canny.io%20https%3A//cloud.digitalocean.com%22%2C%22frame-src%22%3A%22%27self%27%20https%3A//marketplace.digitalocean.com%20https%3A//marketplace-staging.digitalocean.com%20https%3A//js.stripe.com%20https%3A//hooks.stripe.com%20https%3A//cloud.digitalocean.com%20https%3A//do-marketplace-testing.prismic.io/%20https%3A//www.sandbox.paypal.com/%20https%3A//www.paypal.com/%20https%3A//changelog-widget.canny.io%22%2C%22font-src%22%3A%22%27self%27%20http%3A//fonts.gstatic.com%20data%3A%20https%3A//fonts.typekit.net%20https%3A//use.typekit.net%22%2C%22connect-src%22%3A%22%27self%27%20https%3A//api.amplitude.com%20https%3A//*.amplitude.com%20https%3A//segment.digitalocean.com%20http%3A//api.segment.io%20https%3A//formkeep.com%20https%3A//performance.typekit.net%20http%3A//freegeoip.net/json/%20status.digitalocean.com%20https%3A//maps.googleapis.com%20https%3A//services-ca.taxamo.com%20https%3A//do-marketplace-testing.prismic.io%20https%3A//www.sandbox.paypal.com%20https%3A//www.paypal.com%20https%3A//api.canny.io%20https%3A//cloud.digitalocean.com%20https%3A//cloud.digitalocean.com%20https%3A//cloud.digitalocean.com%20https%3A//api.digitalocean.com%20https%3A//o45439.ingest.sentry.io%20wss%3A//database-logs.s2r1.internal.digitalocean.com%3A443%20wss%3A//database-logs.digitalocean.com%3A443%20ws%3A//localdev.internal.digitalocean.com%3A8081/ws-notifications%20*.internal.digitalocean.com%20*.digitaloceanspaces.com%20https%3A//marketplace-staging.digitalocean.com%20https%3A//marketplace.digitalocean.com%20https%3A//marketplace.digitalocean.com%20https%3A//do-marketplace-testing.cdn.prismic.io%20https%3A//images.prismic.io%22%2C%22img-src%22%3A%22%27self%27%20data%3A%20https%3A//data.pendo.io%20https%3A//raw.githubusercontent.com%20https%3A//i1.wp.com/cloud.digitalocean.com%20https%3A//i0.wp.com/cloud.digitalocean.com%20https%3A//track.customer.io%20http%3A//www.google-analytics.com%20https%3A//p.typekit.net%20https%3A//ping.typekit.net%20https%3A//performance.typekit.net%20https%3A//secure.gravatar.com%20https%3A//www.gravatar.com%20https%3A//csi.gstatic.com%20http%3A//csi.gstatic.com%20https%3A//maps.gstatic.com%20http%3A//maps.gstatic.com%20app.getsentry.com%20*.internal.digitalocean.com%20*.digitaloceanspaces.com%20https%3A//images.prismic.io%20https%3A//marketplace-assets.digitalocean.com%22%2C%22style-src%22%3A%22%27self%27%20%27unsafe-inline%27%20https%3A//assets.digitalocean.com%20http%3A//fonts.googleapis.com%20http%3A//cdnjs.cloudflare.com%20https%3A//use.typekit.net%22%2C%22media-src%22%3A%22%27self%27%22%2C%22report-uri%22%3A%22https%3A//o45439.ingest.sentry.io%22%2C%22worker-src%22%3A%22blob%3A%22%7D%2C%22contentSecurityPolicyHeader%22%3A%22Content-Security-Policy-Report-Only%22%2C%22ember-cli-mirage%22%3A%7B%22usingProxy%22%3Afalse%2C%22useDefaultPassthroughs%22%3Atrue%7D%2C%22exportApplicationGlobal%22%3Afalse%7D"
+    />
 
-<link rel="stylesheet" href="https://ui-cdn.digitalocean-ui.com/aurora/assets/vendor-a9d68c6e5af34dc193c360339e5d7952.css">
-<link rel="stylesheet" href="https://ui-cdn.digitalocean-ui.com/aurora/assets/aurora-8859095c375824a6a2d092a6bea7fa9b.css">
+    <link
+      rel="stylesheet"
+      href="https://ui-cdn.digitalocean-ui.com/aurora/assets/vendor-a9d68c6e5af34dc193c360339e5d7952.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://ui-cdn.digitalocean-ui.com/aurora/assets/aurora-8859095c375824a6a2d092a6bea7fa9b.css"
+    />
 
+    <style>
+      body {
+        font-family:
+          "proxima-nova", "proxima nova", "helvetica neue", "helvetica",
+          "arial", sans-serif;
+      }
+    </style>
+    <script>
+      (function (d) {
+        var config = {
+            kitId: "ryt7tqg",
+            scriptTimeout: 3000,
+            async: true,
+          },
+          h = d.documentElement,
+          t = setTimeout(function () {
+            h.className =
+              h.className.replace(/\bwf-loading\b/g, "") + " wf-inactive";
+          }, config.scriptTimeout),
+          tk = d.createElement("script"),
+          f = false,
+          s = d.getElementsByTagName("script")[0],
+          a;
+        h.className += " wf-loading";
+        tk.src = "https://use.typekit.net/" + config.kitId + ".js";
+        tk.async = true;
+        tk.onload = tk.onreadystatechange = function () {
+          a = this.readyState;
+          if (f || (a && a != "complete" && a != "loaded")) return;
+          f = true;
+          clearTimeout(t);
+          try {
+            Typekit.load(config);
+          } catch (e) {}
+        };
+        s.parentNode.insertBefore(tk, s);
+      })(document);
+    </script>
 
+    <script>
+      (function () {
+        if (typeof window.CustomEvent === "function") {
+          return false;
+        }
 
-<style>
-body { font-family: "proxima-nova", "proxima nova", "helvetica neue", "helvetica", "arial", sans-serif;}
-</style>
-<script>
-  (function(d) {
-    var config = {
-      kitId: 'ryt7tqg',
-      scriptTimeout: 3000,
-      async: true
-    },
-    h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
-  })(document);
-</script>
+        function CustomEvent(event, params) {
+          params = params || {
+            bubbles: false,
+            cancelable: false,
+            detail: undefined,
+          };
+          var evt = document.createEvent("CustomEvent");
+          evt.initCustomEvent(
+            event,
+            params.bubbles,
+            params.cancelable,
+            params.detail
+          );
+          return evt;
+        }
 
-<script>
-  (function () {
-    if(typeof window.CustomEvent === 'function') { return false; }
+        CustomEvent.prototype = window.Event.prototype;
 
-    function CustomEvent(event, params) {
-      params = params || { bubbles: false, cancelable: false, detail: undefined };
-      var evt = document.createEvent( 'CustomEvent' );
-      evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-      return evt;
-    }
+        window.CustomEvent = CustomEvent;
+      })();
+    </script>
 
-    CustomEvent.prototype = window.Event.prototype;
-
-    window.CustomEvent = CustomEvent;
-  })();
-</script>
-
-  <script>
-    window.addEventListener('DOMContentLoaded', function() {
-      window.cookieconsent_status = '';
-      window.dispatchEvent(new CustomEvent('cookieconsent_statuschange', {
-        detail: { status: '' }
-      }));
-    });
-  </script>
-
-
-<meta name="csrf-param" content="authenticity_token" />
-<meta name="csrf-token" content="LVlIlTvTeJm2ARAHF10ux+fDGlTA5EDb/FeJWEHxK7DemueYbtYQXeHaVOEHBRkBBTZ2O+iTZvsEJQH472EpdQ==" />
-<script src="https://d2t77mnxyo7adj.cloudfront.net/v1/c.js?615869898396295"></script>
-<script>
-  _castle('identify', '14306590');
-</script>
-
-<script type="text/javascript">
-var _user_id = '14306590';
-var _session_id = "cae27f72-9206-4e01-9734-aa6047aa8cee";
-var _sift =  window._sift = window._sift || [];
-_sift.push(['_setAccount', '96ba7c9ef0']);
-_sift.push(['_setUserId', _user_id]);
-_sift.push(['_setSessionId', _session_id]);
-_sift.push(['_trackPageview']);
-(function() {
-  function ls() {
-    var e = document.createElement('script');
-    e.type = 'text/javascript';
-    e.async = true;
-    e.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'sbc.digitalocean.com/s.js';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(e, s);
-  }
-  if (window.attachEvent) {
-    window.attachEvent('onload', ls);
-  } else {
-    window.addEventListener('load', ls, false);
-  }
-
-  if (history.replaceState) {
-    history.replaceState = ( f => function replaceState(){
-      var ret = f.apply(this, arguments);
-      _sift.push(['_setAccount', '96ba7c9ef0']);
-      _sift.push(['_setUserId', _user_id]);
-      _sift.push(['_setSessionId', _session_id]);
-      _sift.push(['_trackPageview']);
-      return ret;
-    })(history.replaceState);
-  }
-})();
-</script>
-
-
-<script>
-  window.featureFlags = {
-    dbaas: true, // Out of use DBaaS flippers hardcoded true for the UI until resolution of CENG-1706
-    dbaasOptIn: true,
-    dbaasGa: true,
-    dbaasMysql: true,
-    dbaasRedis: true,
-    dbaasRedisMetrics: true,
-    dbaasPrivateNetworking: true,
-    dbaasSqlModes: true,
-    objectStorage: true,
-    teamsSecureSignIn: true
-  };
-    window.featureFlags.accountServiceBillingHistory = true;
-    window.featureFlags.applyBackupsCampaign = true;
-    window.featureFlags.appsInProjects = true;
-    window.featureFlags.auroraBalancedPlans = true;
-    window.featureFlags.auroraDropletSharedToDedicatedCpuSizesAvailable = true;
-    window.featureFlags.billingAddressEdit = true;
-    window.featureFlags.billingBlocksTeamDelete = true;
-    window.featureFlags.billingInvoiceNew = true;
-    window.featureFlags.caaRecords = true;
-    window.featureFlags.clientEngineeringModAccountSettings = true;
-    window.featureFlags.clientEngineeringSidenavMpUpdates = true;
-    window.featureFlags.clientEngineeringUiMarketplaceSaas = true;
-    window.featureFlags.clientEngineeringUiMarketplaceVp = true;
-    window.featureFlags.cloudNyc1 = true;
-    window.featureFlags.computeBwPolicy = true;
-    window.featureFlags.containers = true;
-    window.featureFlags.containersAutoscale = true;
-    window.featureFlags.containersClusterLinterUi = true;
-    window.featureFlags.containersDashboardLink = true;
-    window.featureFlags.containersGa = true;
-    window.featureFlags.containersOptIn = true;
-    window.featureFlags.containersRequiredUpgrades = true;
-    window.featureFlags.containersSurgeUpgrades = true;
-    window.featureFlags.dbaasAlerting = true;
-    window.featureFlags.dbaasCreateUiV2 = true;
-    window.featureFlags.dbaasExpandedPlans = true;
-    window.featureFlags.dbaasMysqlAuth = true;
-    window.featureFlags.dbaasOnlineMigration = true;
-    window.featureFlags.dbaasPg13 = true;
-    window.featureFlags.dbaasPg14 = true;
-    window.featureFlags.dbaasUiV2 = true;
-    window.featureFlags.defaultCc = true;
-    window.featureFlags.docrUiV2 = true;
-    window.featureFlags.doksUiLbaasPageAssociatedResourcesChanges = true;
-    window.featureFlags.doksUiV2 = true;
-    window.featureFlags.domainsNew = true;
-    window.featureFlags.dropletAssociatedResources = true;
-    window.featureFlags.dropletCarousel = true;
-    window.featureFlags.dropletCreateContainerImages = true;
-    window.featureFlags.dropletDottyInsider = true;
-    window.featureFlags.dropletGpuSizesAvailable = true;
-    window.featureFlags.dropletLabels = true;
-    window.featureFlags.dropletPremiumCpuOptimizedSizes = true;
-    window.featureFlags.dropletUiTierIncreaseLimitsService = true;
-    window.featureFlags.dropletsHigherTierTicketRequest = true;
-    window.featureFlags.editCc = true;
-    window.featureFlags.expandedDroplet = true;
-    window.featureFlags.fleetsVolumes = true;
-    window.featureFlags.flexiblePlanExperiment = true;
-    window.featureFlags.forceShowFlexiblePlanExperiment = true;
-    window.featureFlags.fourDollarDroplet = true;
-    window.featureFlags.gdprStripe = true;
-    window.featureFlags.genaiAgentEvaluations = true;
-    window.featureFlags.genaiInCreateDropdown = true;
-    window.featureFlags.genaiInProjects = true;
-    window.featureFlags.genaiRebrand = true;
-    window.featureFlags.genaiServerlessInference = true;
-    window.featureFlags.globalSearchMultiple = true;
-    window.featureFlags.growthEngFeaturePreview = true;
-    window.featureFlags.growthEngFtoOfferUpgrade = true;
-    window.featureFlags.growthEngGhspOfferUpgrade = true;
-    window.featureFlags.iamSessionExpiry = true;
-    window.featureFlags.iamSessionManager = true;
-    window.featureFlags.incidentsEndpoint = true;
-    window.featureFlags.insightsDbaasEmbeddedGrafana = true;
-    window.featureFlags.insightsDoksEmbeddedGrafana = true;
-    window.featureFlags.insightsEmbeddedGrafana = true;
-    window.featureFlags.insightsMonitoringUiV2 = true;
-    window.featureFlags.k8sProjects = true;
-    window.featureFlags.kubernetesAssociatedResources = true;
-    window.featureFlags.letsEncryptCertificates = true;
-    window.featureFlags.liveResizeResolvableByRetry = true;
-    window.featureFlags.loadBalancersIpv6 = true;
-    window.featureFlags.loadBalancersNlbaas = true;
-    window.featureFlags.managedNfsGlobalReleaseUi = true;
-    window.featureFlags.memoryOptimizedCarouselUi = true;
-    window.featureFlags.memoryOptimizedResizeUi = true;
-    window.featureFlags.mongoEnabled = true;
-    window.featureFlags.mongoGa = true;
-    window.featureFlags.mongoSsl = true;
-    window.featureFlags.mpExistingCluster = true;
-    window.featureFlags.mpKeepImageQueryParam = true;
-    window.featureFlags.newApiTokensUi = true;
-    window.featureFlags.newBillingAddressForm = true;
-    window.featureFlags.newMonitorCreate = true;
-    window.featureFlags.newReservedIpUi = true;
-    window.featureFlags.newTeamCreate = true;
-    window.featureFlags.newTeamSettingsUi = true;
-    window.featureFlags.onfidoRollout = true;
-    window.featureFlags.optimizely = true;
-    window.featureFlags.payNowPage = true;
-    window.featureFlags.paymentAuth = true;
-    window.featureFlags.paypalCapture = true;
-    window.featureFlags.paypalIpnPaymentServiceMigration = true;
-    window.featureFlags.paypalPaynowUpgrade = true;
-    window.featureFlags.paypalRecurring = true;
-    window.featureFlags.pricingStep1 = true;
-    window.featureFlags.progressiveProfileV1 = true;
-    window.featureFlags.promosAggregatorCanApplyPromo = true;
-    window.featureFlags.rootPasswordDropletCreate = true;
-    window.featureFlags.salesforceCreateTicketLinks = true;
-    window.featureFlags.securityGroupKubernetesPeerType = true;
-    window.featureFlags.securityGroups = true;
-    window.featureFlags.securityLimitsServiceRollout = true;
-    window.featureFlags.serverlessStandaloneGa = true;
-    window.featureFlags.sfo3Frontend = true;
-    window.featureFlags.slsPredeploy = true;
-    window.featureFlags.snapshooterLeftNav = true;
-    window.featureFlags.spacesAms3 = true;
-    window.featureFlags.spacesCdn = true;
-    window.featureFlags.spacesCdnCustomHostnames = true;
-    window.featureFlags.spacesCors = true;
-    window.featureFlags.spacesFra1 = true;
-    window.featureFlags.spacesNoTrial = true;
-    window.featureFlags.spacesNyc3 = true;
-    window.featureFlags.spacesSfo2 = true;
-    window.featureFlags.spacesSfo3 = true;
-    window.featureFlags.spacesSgp1 = true;
-    window.featureFlags.spacesSyd1 = true;
-    window.featureFlags.spacesUiV2 = true;
-    window.featureFlags.statuspage = true;
-    window.featureFlags.summaryInvoiceTable = true;
-    window.featureFlags.teamsv3CloudTakeoverTeams = true;
-    window.featureFlags.teamsv3NavShellUpdates = true;
-    window.featureFlags.tokenLastUsedAt = true;
-    window.featureFlags.uiByDigitalocean = true;
-    window.featureFlags.uiCopilot = true;
-    window.featureFlags.uiDomainsV2 = true;
-    window.featureFlags.uiDropletBackupsWithExpiry = true;
-    window.featureFlags.uiDropletsAutoscalePools = true;
-    window.featureFlags.uiGenAi = true;
-    window.featureFlags.uiGpuDropletsLeftNav = true;
-    window.featureFlags.uiLbaasDropletHealthChecks = true;
-    window.featureFlags.uiMarketplaceVpDbaasOptionsCloud = true;
-    window.featureFlags.uiMovePaywall2025 = true;
-    window.featureFlags.uiMovePaywall2025Phase2 = true;
-    window.featureFlags.uiNewDropletDetailsPage = true;
-    window.featureFlags.uiSaasAddOns = true;
-    window.featureFlags.uiVolumesLimitsV3 = true;
-    window.featureFlags.uptimeBeta = true;
-    window.featureFlags.uptimeCreateCheck = true;
-    window.featureFlags.verifyCard = true;
-    window.featureFlags.verifyTeamEmail = true;
-    window.featureFlags.volumeFormat = true;
-    window.featureFlags.volumeSnapshots = true;
-    window.featureFlags.vpcInterconnectUiEnabled = true;
-    window.featureFlags.vpcV3AllDropletsPrivate = true;
-    window.featureFlags.walletPayments = true;
-    window.featureFlags.walletPaymentsApple = true;
-</script>
-
-<script>
-  window.pendingDisplayedNotifications = []
-</script>
-
-<script>
-  window.stripePublicKey = "pk_live_ckPnmJJZTFKgKGv6RihxsV8g";
-  window.payPalIpnUrl = "https://www.paypal.com/cgi-bin/webscr";
-  window.payPalMerchantId = "3RAT9TQDQ546C";
-</script>
-
-</head>
-<body class='aurora control_panel index'>
-  <script>
-    window.addEventListener('cookieconsent_statuschange', function(e) {
-      if(e.detail.status === 'deny') { return; }
-      window.dataLayer = [];
-      window.dataLayer.push({
-        userDropletCount: 0,
-        userOrOrgHasCreatedDroplets: false,
-        recentlySignedUp: false,
-        marketoId: "0ac0832d7f78e8ff5d13b3ed50cfd2bbbde751ed"
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        window.cookieconsent_status = "";
+        window.dispatchEvent(
+          new CustomEvent("cookieconsent_statuschange", {
+            detail: { status: "" },
+          })
+        );
       });
+    </script>
 
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-KHWBBT');
-    });
-  </script>
+    <meta name="csrf-param" content="authenticity_token" />
+    <meta
+      name="csrf-token"
+      content="LVlIlTvTeJm2ARAHF10ux+fDGlTA5EDb/FeJWEHxK7DemueYbtYQXeHaVOEHBRkBBTZ2O+iTZvsEJQH472EpdQ=="
+    />
+    <script src="https://d2t77mnxyo7adj.cloudfront.net/v1/c.js?615869898396295"></script>
+    <script>
+      _castle("identify", "14306590");
+    </script>
 
-<div id='container'>
-<div id='content'>
-<div class='contents'>
-<div class='cloud-container' id='main'>
-<div class='row'>
-<div class='small-12 columns'>
-<header class='u-clearfix'>
+    <script type="text/javascript">
+      var _user_id = "14306590";
+      var _session_id = "cae27f72-9206-4e01-9734-aa6047aa8cee";
+      var _sift = (window._sift = window._sift || []);
+      _sift.push(["_setAccount", "96ba7c9ef0"]);
+      _sift.push(["_setUserId", _user_id]);
+      _sift.push(["_setSessionId", _session_id]);
+      _sift.push(["_trackPageview"]);
+      (function () {
+        function ls() {
+          var e = document.createElement("script");
+          e.type = "text/javascript";
+          e.async = true;
+          e.src =
+            ("https:" == document.location.protocol ? "https://" : "http://") +
+            "sbc.digitalocean.com/s.js";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(e, s);
+        }
+        if (window.attachEvent) {
+          window.attachEvent("onload", ls);
+        } else {
+          window.addEventListener("load", ls, false);
+        }
 
-</header>
-</div>
-</div>
+        if (history.replaceState) {
+          history.replaceState = ((f) =>
+            function replaceState() {
+              var ret = f.apply(this, arguments);
+              _sift.push(["_setAccount", "96ba7c9ef0"]);
+              _sift.push(["_setUserId", _user_id]);
+              _sift.push(["_setSessionId", _session_id]);
+              _sift.push(["_trackPageview"]);
+              return ret;
+            })(history.replaceState);
+        }
+      })();
+    </script>
 
+    <script>
+      window.featureFlags = {
+        dbaas: true, // Out of use DBaaS flippers hardcoded true for the UI until resolution of CENG-1706
+        dbaasOptIn: true,
+        dbaasGa: true,
+        dbaasMysql: true,
+        dbaasRedis: true,
+        dbaasRedisMetrics: true,
+        dbaasPrivateNetworking: true,
+        dbaasSqlModes: true,
+        objectStorage: true,
+        teamsSecureSignIn: true,
+      };
+      window.featureFlags.accountServiceBillingHistory = true;
+      window.featureFlags.applyBackupsCampaign = true;
+      window.featureFlags.appsInProjects = true;
+      window.featureFlags.auroraBalancedPlans = true;
+      window.featureFlags.auroraDropletSharedToDedicatedCpuSizesAvailable = true;
+      window.featureFlags.billingAddressEdit = true;
+      window.featureFlags.billingBlocksTeamDelete = true;
+      window.featureFlags.billingInvoiceNew = true;
+      window.featureFlags.caaRecords = true;
+      window.featureFlags.clientEngineeringModAccountSettings = true;
+      window.featureFlags.clientEngineeringSidenavMpUpdates = true;
+      window.featureFlags.clientEngineeringUiMarketplaceSaas = true;
+      window.featureFlags.clientEngineeringUiMarketplaceVp = true;
+      window.featureFlags.cloudNyc1 = true;
+      window.featureFlags.computeBwPolicy = true;
+      window.featureFlags.containers = true;
+      window.featureFlags.containersAutoscale = true;
+      window.featureFlags.containersClusterLinterUi = true;
+      window.featureFlags.containersDashboardLink = true;
+      window.featureFlags.containersGa = true;
+      window.featureFlags.containersOptIn = true;
+      window.featureFlags.containersRequiredUpgrades = true;
+      window.featureFlags.containersSurgeUpgrades = true;
+      window.featureFlags.dbaasAlerting = true;
+      window.featureFlags.dbaasCreateUiV2 = true;
+      window.featureFlags.dbaasExpandedPlans = true;
+      window.featureFlags.dbaasMysqlAuth = true;
+      window.featureFlags.dbaasOnlineMigration = true;
+      window.featureFlags.dbaasPg13 = true;
+      window.featureFlags.dbaasPg14 = true;
+      window.featureFlags.dbaasUiV2 = true;
+      window.featureFlags.defaultCc = true;
+      window.featureFlags.docrUiV2 = true;
+      window.featureFlags.doksUiLbaasPageAssociatedResourcesChanges = true;
+      window.featureFlags.doksUiV2 = true;
+      window.featureFlags.domainsNew = true;
+      window.featureFlags.dropletAssociatedResources = true;
+      window.featureFlags.dropletCarousel = true;
+      window.featureFlags.dropletCreateContainerImages = true;
+      window.featureFlags.dropletDottyInsider = true;
+      window.featureFlags.dropletGpuSizesAvailable = true;
+      window.featureFlags.dropletLabels = true;
+      window.featureFlags.dropletPremiumCpuOptimizedSizes = true;
+      window.featureFlags.dropletUiTierIncreaseLimitsService = true;
+      window.featureFlags.dropletsHigherTierTicketRequest = true;
+      window.featureFlags.editCc = true;
+      window.featureFlags.expandedDroplet = true;
+      window.featureFlags.fleetsVolumes = true;
+      window.featureFlags.flexiblePlanExperiment = true;
+      window.featureFlags.forceShowFlexiblePlanExperiment = true;
+      window.featureFlags.fourDollarDroplet = true;
+      window.featureFlags.gdprStripe = true;
+      window.featureFlags.genaiAgentEvaluations = true;
+      window.featureFlags.genaiInCreateDropdown = true;
+      window.featureFlags.genaiInProjects = true;
+      window.featureFlags.genaiRebrand = true;
+      window.featureFlags.genaiServerlessInference = true;
+      window.featureFlags.globalSearchMultiple = true;
+      window.featureFlags.growthEngFeaturePreview = true;
+      window.featureFlags.growthEngFtoOfferUpgrade = true;
+      window.featureFlags.growthEngGhspOfferUpgrade = true;
+      window.featureFlags.iamSessionExpiry = true;
+      window.featureFlags.iamSessionManager = true;
+      window.featureFlags.incidentsEndpoint = true;
+      window.featureFlags.insightsDbaasEmbeddedGrafana = true;
+      window.featureFlags.insightsDoksEmbeddedGrafana = true;
+      window.featureFlags.insightsEmbeddedGrafana = true;
+      window.featureFlags.insightsMonitoringUiV2 = true;
+      window.featureFlags.k8sProjects = true;
+      window.featureFlags.kubernetesAssociatedResources = true;
+      window.featureFlags.letsEncryptCertificates = true;
+      window.featureFlags.liveResizeResolvableByRetry = true;
+      window.featureFlags.loadBalancersIpv6 = true;
+      window.featureFlags.loadBalancersNlbaas = true;
+      window.featureFlags.managedNfsGlobalReleaseUi = true;
+      window.featureFlags.memoryOptimizedCarouselUi = true;
+      window.featureFlags.memoryOptimizedResizeUi = true;
+      window.featureFlags.mongoEnabled = true;
+      window.featureFlags.mongoGa = true;
+      window.featureFlags.mongoSsl = true;
+      window.featureFlags.mpExistingCluster = true;
+      window.featureFlags.mpKeepImageQueryParam = true;
+      window.featureFlags.newApiTokensUi = true;
+      window.featureFlags.newBillingAddressForm = true;
+      window.featureFlags.newMonitorCreate = true;
+      window.featureFlags.newReservedIpUi = true;
+      window.featureFlags.newTeamCreate = true;
+      window.featureFlags.newTeamSettingsUi = true;
+      window.featureFlags.onfidoRollout = true;
+      window.featureFlags.optimizely = true;
+      window.featureFlags.payNowPage = true;
+      window.featureFlags.paymentAuth = true;
+      window.featureFlags.paypalCapture = true;
+      window.featureFlags.paypalIpnPaymentServiceMigration = true;
+      window.featureFlags.paypalPaynowUpgrade = true;
+      window.featureFlags.paypalRecurring = true;
+      window.featureFlags.pricingStep1 = true;
+      window.featureFlags.progressiveProfileV1 = true;
+      window.featureFlags.promosAggregatorCanApplyPromo = true;
+      window.featureFlags.rootPasswordDropletCreate = true;
+      window.featureFlags.salesforceCreateTicketLinks = true;
+      window.featureFlags.securityGroupKubernetesPeerType = true;
+      window.featureFlags.securityGroups = true;
+      window.featureFlags.securityLimitsServiceRollout = true;
+      window.featureFlags.serverlessStandaloneGa = true;
+      window.featureFlags.sfo3Frontend = true;
+      window.featureFlags.slsPredeploy = true;
+      window.featureFlags.snapshooterLeftNav = true;
+      window.featureFlags.spacesAms3 = true;
+      window.featureFlags.spacesCdn = true;
+      window.featureFlags.spacesCdnCustomHostnames = true;
+      window.featureFlags.spacesCors = true;
+      window.featureFlags.spacesFra1 = true;
+      window.featureFlags.spacesNoTrial = true;
+      window.featureFlags.spacesNyc3 = true;
+      window.featureFlags.spacesSfo2 = true;
+      window.featureFlags.spacesSfo3 = true;
+      window.featureFlags.spacesSgp1 = true;
+      window.featureFlags.spacesSyd1 = true;
+      window.featureFlags.spacesUiV2 = true;
+      window.featureFlags.statuspage = true;
+      window.featureFlags.summaryInvoiceTable = true;
+      window.featureFlags.teamsv3CloudTakeoverTeams = true;
+      window.featureFlags.teamsv3NavShellUpdates = true;
+      window.featureFlags.tokenLastUsedAt = true;
+      window.featureFlags.uiByDigitalocean = true;
+      window.featureFlags.uiCopilot = true;
+      window.featureFlags.uiDomainsV2 = true;
+      window.featureFlags.uiDropletBackupsWithExpiry = true;
+      window.featureFlags.uiDropletsAutoscalePools = true;
+      window.featureFlags.uiGenAi = true;
+      window.featureFlags.uiGpuDropletsLeftNav = true;
+      window.featureFlags.uiLbaasDropletHealthChecks = true;
+      window.featureFlags.uiMarketplaceVpDbaasOptionsCloud = true;
+      window.featureFlags.uiMovePaywall2025 = true;
+      window.featureFlags.uiMovePaywall2025Phase2 = true;
+      window.featureFlags.uiNewDropletDetailsPage = true;
+      window.featureFlags.uiSaasAddOns = true;
+      window.featureFlags.uiVolumesLimitsV3 = true;
+      window.featureFlags.uptimeBeta = true;
+      window.featureFlags.uptimeCreateCheck = true;
+      window.featureFlags.verifyCard = true;
+      window.featureFlags.verifyTeamEmail = true;
+      window.featureFlags.volumeFormat = true;
+      window.featureFlags.volumeSnapshots = true;
+      window.featureFlags.vpcInterconnectUiEnabled = true;
+      window.featureFlags.vpcV3AllDropletsPrivate = true;
+      window.featureFlags.walletPayments = true;
+      window.featureFlags.walletPaymentsApple = true;
+    </script>
 
+    <script>
+      window.pendingDisplayedNotifications = [];
+    </script>
 
+    <script>
+      window.stripePublicKey = "pk_live_ckPnmJJZTFKgKGv6RihxsV8g";
+      window.payPalIpnUrl = "https://www.paypal.com/cgi-bin/webscr";
+      window.payPalMerchantId = "3RAT9TQDQ546C";
+    </script>
+  </head>
+  <body class="aurora control_panel index">
+    <script>
+      window.addEventListener("cookieconsent_statuschange", function (e) {
+        if (e.detail.status === "deny") {
+          return;
+        }
+        window.dataLayer = [];
+        window.dataLayer.push({
+          userDropletCount: 0,
+          userOrOrgHasCreatedDroplets: false,
+          recentlySignedUp: false,
+          marketoId: "0ac0832d7f78e8ff5d13b3ed50cfd2bbbde751ed",
+        });
 
+        (function (w, d, s, l, i) {
+          w[l] = w[l] || [];
+          w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+          var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s),
+            dl = l != "dataLayer" ? "&l=" + l : "";
+          j.async = true;
+          j.src = "//www.googletagmanager.com/gtm.js?id=" + i + dl;
+          f.parentNode.insertBefore(j, f);
+        })(window, document, "script", "dataLayer", "GTM-KHWBBT");
+      });
+    </script>
 
+    <div id="container">
+      <div id="content">
+        <div class="contents">
+          <div class="cloud-container" id="main">
+            <div class="row">
+              <div class="small-12 columns">
+                <header class="u-clearfix"></header>
+              </div>
+            </div>
 
-<div id="aurora-container"></div>
+            <div id="aurora-container"></div>
 
+            <script src="https://ui-cdn.digitalocean-ui.com/aurora/assets/vendor-6b06dd19a4b6179ddcae20a83e5ac24c.js"></script>
+            <script src="https://ui-cdn.digitalocean-ui.com/aurora/assets/aurora-f2e56bf40a13722ba6d842ef0fa04de4.js"></script>
 
+            <div id="ember-basic-dropdown-wormhole"></div>
+            <script type="text/javascript">
+              !(function () {
+                var analytics = (window.analytics = window.analytics || []);
+                if (!analytics.initialize)
+                  if (analytics.invoked)
+                    window.console &&
+                      console.error &&
+                      console.error("Segment snippet included twice.");
+                  else {
+                    analytics.invoked = !0;
+                    analytics.methods = [
+                      "trackSubmit",
+                      "trackClick",
+                      "trackLink",
+                      "trackForm",
+                      "pageview",
+                      "identify",
+                      "reset",
+                      "group",
+                      "track",
+                      "ready",
+                      "alias",
+                      "debug",
+                      "page",
+                      "once",
+                      "off",
+                      "on",
+                      "addSourceMiddleware",
+                      "addIntegrationMiddleware",
+                      "setAnonymousId",
+                      "addDestinationMiddleware",
+                    ];
+                    analytics.factory = function (e) {
+                      return function () {
+                        var t = Array.prototype.slice.call(arguments);
+                        t.unshift(e);
+                        analytics.push(t);
+                        return analytics;
+                      };
+                    };
+                    for (var e = 0; e < analytics.methods.length; e++) {
+                      var key = analytics.methods[e];
+                      analytics[key] = analytics.factory(key);
+                    }
+                    analytics.load = function (config, e) {
+                      var t = document.createElement("script");
+                      t.type = "text/javascript";
+                      t.async = !0;
+                      t.src =
+                        config.scriptSrc + config.token + "/analytics.min.js";
+                      var n = document.getElementsByTagName("script")[0];
+                      n.parentNode.insertBefore(t, n);
+                      analytics._loadOptions = e;
+                    };
+                    analytics.SNIPPET_VERSION = "4.15.3";
+                  }
+              })();
+            </script>
 
-<script src="https://ui-cdn.digitalocean-ui.com/aurora/assets/vendor-6b06dd19a4b6179ddcae20a83e5ac24c.js"></script>
-<script src="https://ui-cdn.digitalocean-ui.com/aurora/assets/aurora-f2e56bf40a13722ba6d842ef0fa04de4.js"></script>
-
-<div id="ember-basic-dropdown-wormhole"></div>
-<script type="text/javascript">!function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(config,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.src=config.scriptSrc + config.token + "/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.15.3";}}();</script>
-
-<script>
-  $.noConflict(true);
-</script>
-
-
-
-</div>
-</div>
-</div>
-</div>
-
-</body>
+            <script>
+              $.noConflict(true);
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

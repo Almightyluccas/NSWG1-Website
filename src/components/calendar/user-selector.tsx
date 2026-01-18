@@ -1,22 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check, ChevronsUpDown, User } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useState } from "react";
+import { Check, ChevronsUpDown, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface UserSelectorProps {
-  users: { id: string; name: string; username?: string; discriminator?: string; unit?: string; position?: string }[]
-  selectedUserId: string | undefined
-  onSelectUser: (userId: string | null) => void
+  users: {
+    id: string;
+    name: string;
+    username?: string;
+    discriminator?: string;
+    unit?: string;
+    position?: string;
+  }[];
+  selectedUserId: string | undefined;
+  onSelectUser: (userId: string | null) => void;
 }
 
-export function UserSelector({ users, selectedUserId, onSelectUser }: UserSelectorProps) {
-  const [open, setOpen] = useState(false)
+export function UserSelector({
+  users,
+  selectedUserId,
+  onSelectUser,
+}: UserSelectorProps) {
+  const [open, setOpen] = useState(false);
 
-  const selectedUser = users.find((user) => user.id === selectedUserId)
+  const selectedUser = users.find((user) => user.id === selectedUserId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,12 +77,17 @@ export function UserSelector({ users, selectedUserId, onSelectUser }: UserSelect
                   key={user.id}
                   value={`${user.name} ${user.username || ""}`}
                   onSelect={() => {
-                    onSelectUser(user.id === selectedUserId ? null : user.id)
-                    setOpen(false)
+                    onSelectUser(user.id === selectedUserId ? null : user.id);
+                    setOpen(false);
                   }}
                   className="cursor-pointer"
                 >
-                  <Check className={cn("mr-2 h-4 w-4", selectedUserId === user.id ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedUserId === user.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
@@ -84,5 +111,5 @@ export function UserSelector({ users, selectedUserId, onSelectUser }: UserSelect
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

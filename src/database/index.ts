@@ -1,3 +1,3 @@
-import { DatabaseClient } from './DatabaseClient'
+import { DatabaseClient } from "./DatabaseClient";
 
-export const database: DatabaseClient = DatabaseClient.getInstance()
+export const database: DatabaseClient = DatabaseClient.getInstance();

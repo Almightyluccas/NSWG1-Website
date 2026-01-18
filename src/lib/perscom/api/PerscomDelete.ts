@@ -1,14 +1,15 @@
-import type { PerscomClient } from './PerscomClient';
+import type { PerscomClient } from "./PerscomClient";
 
 export class PerscomDelete {
-
   constructor(private client: PerscomClient) {}
 
-
-  private async deleteResource<T = any>(endpoint: string, id: number | string): Promise<T> {
+  private async deleteResource<T = any>(
+    endpoint: string,
+    id: number | string
+  ): Promise<T> {
     try {
       const response = await this.client.fetch<T>(`${endpoint}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       return response;
     } catch (error) {
@@ -18,39 +19,38 @@ export class PerscomDelete {
   }
 
   async user(userId: number): Promise<any> {
-    return this.deleteResource('/users', userId);
+    return this.deleteResource("/users", userId);
   }
 
   async application(submissionId: number): Promise<any> {
-    return this.deleteResource('/submissions', submissionId);
+    return this.deleteResource("/submissions", submissionId);
   }
 
   async rank(rankId: number): Promise<any> {
-    return this.deleteResource('/ranks', rankId);
+    return this.deleteResource("/ranks", rankId);
   }
 
   async unit(unitId: number): Promise<any> {
-    return this.deleteResource('/units', unitId);
+    return this.deleteResource("/units", unitId);
   }
 
   async position(positionId: number): Promise<any> {
-    return this.deleteResource('/positions', positionId);
+    return this.deleteResource("/positions", positionId);
   }
 
   async award(awardId: number): Promise<any> {
-    return this.deleteResource('/awards', awardId);
+    return this.deleteResource("/awards", awardId);
   }
 
-
   async combatRecord(recordId: number): Promise<any> {
-    return this.deleteResource('/combat-records', recordId);
+    return this.deleteResource("/combat-records", recordId);
   }
 
   async assignment(recordId: number): Promise<any> {
-    return this.deleteResource('/assignment-records', recordId);
+    return this.deleteResource("/assignment-records", recordId);
   }
 
   async qualification(qualificationId: number): Promise<any> {
-    return this.deleteResource('/qualifications', qualificationId);
+    return this.deleteResource("/qualifications", qualificationId);
   }
 }

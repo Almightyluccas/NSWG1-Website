@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await fetch(imageUrl);
-    console.log(response)
+    console.log(response);
     if (!response.ok) throw new Error("Failed to fetch");
 
     const arrayBuffer = await response.arrayBuffer();

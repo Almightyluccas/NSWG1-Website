@@ -1,4 +1,9 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 import { UploadType } from "@/types/objectStorage";
@@ -8,18 +13,23 @@ class ObjectStorageService {
   readonly #bucketName: string;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      throw new Error("ObjectStorageService can only be used on the server-side.");
+    if (typeof window !== "undefined") {
+      throw new Error(
+        "ObjectStorageService can only be used on the server-side."
+      );
     }
 
     const accessKeyId: string | undefined = process.env.OCI_ACCESS_KEY_ID;
-    const secretAccessKey: string | undefined = process.env.OCI_SECRET_ACCESS_KEY;
+    const secretAccessKey: string | undefined =
+      process.env.OCI_SECRET_ACCESS_KEY;
     const bucketName: string | undefined = process.env.OCI_BUCKET_NAME;
     const endpoint: string | undefined = process.env.OCI_ENDPOINT;
     const region = "us-ashburn-1";
 
     if (!accessKeyId || !secretAccessKey || !bucketName || !endpoint) {
-      throw new Error("Missing required environment variables for ObjectStorageService.");
+      throw new Error(
+        "Missing required environment variables for ObjectStorageService."
+      );
     }
 
     this.#bucketName = bucketName;
@@ -64,23 +74,21 @@ class ObjectStorageService {
       return "/default-avatar.png";
     }
   }
-// TODO: Figure out if we can convert to webp at some point perhaps if not it's not a big deal
-  async createPresignedUploadUrl(uploadType: UploadType, contentType: string): Promise<{ url: string, key: string }> {
-    const extension: string = contentType.split('/')[1] || 'bin';
+  // TODO: Figure out if we can convert to webp at some point perhaps if not it's not a big deal
+  async createPresignedUploadUrl(
+    uploadType: UploadType,
+    contentType: string
+  ): Promise<{ url: string; key: string }> {
+    const extension: string = contentType.split("/")[1] || "bin";
 
     const key = `${uploadType}s/${randomUUID()}.${extension}`;
-
 
     const command = new PutObjectCommand({
       Bucket: this.#bucketName,
       Key: key,
       ContentType: contentType,
     });
-    const url = await getSignedUrl(
-      this.#s3Client,
-      command,
-      { expiresIn: 300 }
-    );
+    const url = await getSignedUrl(this.#s3Client, command, { expiresIn: 300 });
     return { url, key };
   }
 }

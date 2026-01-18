@@ -1,17 +1,17 @@
-import { Suspense } from "react"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
-import { MySubmissionsClient } from "./my-submissions-client"
-import { Skeleton } from "@/components/ui/skeleton"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/authOptions"
-import { redirect } from "next/navigation"
+import { Suspense } from "react";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { MySubmissionsClient } from "./my-submissions-client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { redirect } from "next/navigation";
 
 export default async function MySubmissionsPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    redirect("/login")
+    redirect("/login");
   }
 
   return (
@@ -22,7 +22,9 @@ export default async function MySubmissionsPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-4">My Submitted Forms</h1>
-              <p className="text-muted-foreground text-lg">View the status and details of your form submissions</p>
+              <p className="text-muted-foreground text-lg">
+                View the status and details of your form submissions
+              </p>
             </div>
 
             <Suspense
@@ -46,5 +48,5 @@ export default async function MySubmissionsPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

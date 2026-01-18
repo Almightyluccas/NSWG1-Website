@@ -1,28 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useTheme } from "@/components/theme/theme-provider"
-import { Camera, Check, Plus, User, Palette, Settings } from 'lucide-react'
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { SessionUser } from "@/types/next-auth"
-import {CustomHeroImages, CustomTheme} from "@/types/database"
-import {useSession} from "next-auth/react";
-import {toast} from "sonner";
-import { useRouter } from "next/navigation"
-import {FileUploadDialog} from "@/components/ui/image-upload-dialog";
-import {fileUpload} from "@/lib/Object-Storage/objectStorageActions";
-import {UploadType} from "@/types/objectStorage";
+import { useState, useRef, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useTheme } from "@/components/theme/theme-provider";
+import { Camera, Check, Plus, User, Palette, Settings } from "lucide-react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { SessionUser } from "@/types/next-auth";
+import { CustomHeroImages, CustomTheme } from "@/types/database";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { FileUploadDialog } from "@/components/ui/image-upload-dialog";
+import { fileUpload } from "@/lib/Object-Storage/objectStorageActions";
+import { UploadType } from "@/types/objectStorage";
 
 interface SettingsClientProps {
-  user: SessionUser,
-  customHeroImages: CustomHeroImages[]
+  user: SessionUser;
+  customHeroImages: CustomHeroImages[];
 }
 
 const predefinedBackgrounds = [
@@ -31,93 +43,127 @@ const predefinedBackgrounds = [
   { id: 3, url: "/images/heroBackgrounds/160th-1.png" },
   { id: 4, url: "/images/heroBackgrounds/160th-2.png" },
   { id: 5, url: "/images/heroBackgrounds/group-1.png" },
-  { id: 6, url: "/images/heroBackgrounds/chill-1.png" }
-]
+  { id: 6, url: "/images/heroBackgrounds/chill-1.png" },
+];
 
 const menuItems = [
-  { id: "profile", name: "Profile Settings", icon: User, description: "Manage your personal information" },
-  { id: "appearance", name: "Website Appearance", icon: Palette, description: "Customize theme and backgrounds" },
-  { id: "preferences", name: "Preferences", icon: Settings, description: "General application settings" }
-]
+  {
+    id: "profile",
+    name: "Profile Settings",
+    icon: User,
+    description: "Manage your personal information",
+  },
+  {
+    id: "appearance",
+    name: "Website Appearance",
+    icon: Palette,
+    description: "Customize theme and backgrounds",
+  },
+  {
+    id: "preferences",
+    name: "Preferences",
+    icon: Settings,
+    description: "General application settings",
+  },
+];
 
-export function SettingsClient({ user, customHeroImages }: SettingsClientProps) {
-  const { themes: originalThemes, currentAccent, setCurrentAccent, addCustomTheme } = useTheme()
-  const { data: session, status, update: updateSession } = useSession()
-  const router = useRouter()
+export function SettingsClient({
+  user,
+  customHeroImages,
+}: SettingsClientProps) {
+  const {
+    themes: originalThemes,
+    currentAccent,
+    setCurrentAccent,
+    addCustomTheme,
+  } = useTheme();
+  const { data: session, status, update: updateSession } = useSession();
+  const router = useRouter();
 
   const allBackgrounds = [...predefinedBackgrounds, ...customHeroImages];
 
-  const [activeSection, setActiveSection] = useState("profile")
-  const [displayName, setDisplayName] = useState(user.name || "")
-  const [profileImage, setProfileImage] = useState(user.image || "")
-  const [selectedBackground, setSelectedBackground] = useState(session?.user.preferences.homepageImageUrl || "Default")
-  const [customBackground, setCustomBackground] = useState<string | null>(null)
-  const [pendingAccent, setPendingAccent] = useState<CustomTheme>(currentAccent)
-  const [componentThemes, setComponentThemes] = useState<CustomTheme[]>(originalThemes)
-  const [hasChanges, setHasChanges] = useState(false)
+  const [activeSection, setActiveSection] = useState("profile");
+  const [displayName, setDisplayName] = useState(user.name || "");
+  const [profileImage, setProfileImage] = useState(user.image || "");
+  const [selectedBackground, setSelectedBackground] = useState(
+    session?.user.preferences.homepageImageUrl || "Default"
+  );
+  const [customBackground, setCustomBackground] = useState<string | null>(null);
+  const [pendingAccent, setPendingAccent] =
+    useState<CustomTheme>(currentAccent);
+  const [componentThemes, setComponentThemes] =
+    useState<CustomTheme[]>(originalThemes);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  const [isAddingTheme, setIsAddingTheme] = useState(false)
-  const [newThemeName, setNewThemeName] = useState("")
-  const [newThemeColor, setNewThemeColor] = useState("#DFC069")
-  const [isProfilePictureUploadOpen, setIsProfilePictureUploadOpen] = useState(false);
-  const [isBackgroundPictureUploadOpen, setIsBackgroundPictureUploadOpen] = useState(false);
+  const [isAddingTheme, setIsAddingTheme] = useState(false);
+  const [newThemeName, setNewThemeName] = useState("");
+  const [newThemeColor, setNewThemeColor] = useState("#DFC069");
+  const [isProfilePictureUploadOpen, setIsProfilePictureUploadOpen] =
+    useState(false);
+  const [isBackgroundPictureUploadOpen, setIsBackgroundPictureUploadOpen] =
+    useState(false);
 
   useEffect(() => {
-    setPendingAccent(currentAccent)
-    setComponentThemes(originalThemes)
-    setDisplayName(user.name || "")
-    setProfileImage(user.image || "")
-  }, [currentAccent, originalThemes, user])
+    setPendingAccent(currentAccent);
+    setComponentThemes(originalThemes);
+    setDisplayName(user.name || "");
+    setProfileImage(user.image || "");
+  }, [currentAccent, originalThemes, user]);
 
   const handleDisplayNameChange = (value: string) => {
-    setDisplayName(value)
-    setHasChanges(true)
-  }
+    setDisplayName(value);
+    setHasChanges(true);
+  };
 
-  const handleImageUpload  = async (formData: FormData, uploadType: UploadType) => {
-    await fileUpload({formData, uploadType, router, updateSession})
-  }
+  const handleImageUpload = async (
+    formData: FormData,
+    uploadType: UploadType
+  ) => {
+    await fileUpload({ formData, uploadType, router, updateSession });
+  };
 
   const handleAccentChange = (theme: CustomTheme) => {
-    setPendingAccent(theme)
-    setHasChanges(true)
-  }
+    setPendingAccent(theme);
+    setHasChanges(true);
+  };
 
-  const handleBackgroundSelect =  (homepageImageUrl: string) => {
-    setSelectedBackground(homepageImageUrl)
+  const handleBackgroundSelect = (homepageImageUrl: string) => {
+    setSelectedBackground(homepageImageUrl);
     if (homepageImageUrl !== "custom") {
-      setCustomBackground(null)
+      setCustomBackground(null);
     }
-    setHasChanges(true)
-  }
+    setHasChanges(true);
+  };
 
   const handleAddTheme = () => {
-    const r = parseInt(newThemeColor.slice(1, 3), 16)
-    const g = parseInt(newThemeColor.slice(3, 5), 16)
-    const b = parseInt(newThemeColor.slice(5, 7), 16)
-    const darkerR = Math.floor(r * 0.8)
-    const darkerG = Math.floor(g * 0.8)
-    const darkerB = Math.floor(b * 0.8)
+    const r = parseInt(newThemeColor.slice(1, 3), 16);
+    const g = parseInt(newThemeColor.slice(3, 5), 16);
+    const b = parseInt(newThemeColor.slice(5, 7), 16);
+    const darkerR = Math.floor(r * 0.8);
+    const darkerG = Math.floor(g * 0.8);
+    const darkerB = Math.floor(b * 0.8);
 
     const newTheme: CustomTheme = {
       name: newThemeName,
       accent: `${r}, ${g}, ${b}`,
       accentDarker: `${darkerR}, ${darkerG}, ${darkerB}`,
-    }
+    };
 
-    setComponentThemes(prev => [...prev, newTheme])
-    setPendingAccent(newTheme)
-    setIsAddingTheme(false)
-    setNewThemeName("")
-    setNewThemeColor("#DFC069")
-    setHasChanges(true)
-  }
+    setComponentThemes((prev) => [...prev, newTheme]);
+    setPendingAccent(newTheme);
+    setIsAddingTheme(false);
+    setNewThemeName("");
+    setNewThemeColor("#DFC069");
+    setHasChanges(true);
+  };
 
   const handleSave = async () => {
     const updatedFields = [];
 
     setCurrentAccent(pendingAccent);
-    const isNewCustomTheme = !originalThemes.some(t => t.name === pendingAccent.name);
+    const isNewCustomTheme = !originalThemes.some(
+      (t) => t.name === pendingAccent.name
+    );
     if (isNewCustomTheme) {
       addCustomTheme(pendingAccent);
       updatedFields.push("Theme");
@@ -125,7 +171,9 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
 
     if (selectedBackground !== session?.user.preferences.homepageImageUrl) {
       try {
-        await updateSession({ preferences: { homepageImageUrl: selectedBackground } });
+        await updateSession({
+          preferences: { homepageImageUrl: selectedBackground },
+        });
         updatedFields.push("Homepage Background");
       } catch (e) {
         toast.error("Failed to update homepage background");
@@ -161,14 +209,16 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
   };
 
   const handleCancel = () => {
-    setDisplayName(user.name || "")
-    setProfileImage(user.image || "")
-    setSelectedBackground(session?.user.preferences.homepageImageUrl || "Default")
-    setCustomBackground(null)
-    setPendingAccent(currentAccent)
-    setComponentThemes(originalThemes)
-    setHasChanges(false)
-  }
+    setDisplayName(user.name || "");
+    setProfileImage(user.image || "");
+    setSelectedBackground(
+      session?.user.preferences.homepageImageUrl || "Default"
+    );
+    setCustomBackground(null);
+    setPendingAccent(currentAccent);
+    setComponentThemes(originalThemes);
+    setHasChanges(false);
+  };
 
   const renderProfileSettings = () => (
     <Card>
@@ -182,7 +232,10 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={session?.user.image || "/placeholder.svg"} alt={displayName} />
+              <AvatarImage
+                src={session?.user.image || "/placeholder.svg"}
+                alt={displayName}
+              />
               <AvatarFallback className="text-lg">
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -195,7 +248,9 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
             </button>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white">Profile Picture</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white">
+              Profile Picture
+            </h3>
             <p className="text-sm text-gray-500 dark:text-zinc-400">
               Click the camera icon to change your profile picture
             </p>
@@ -226,7 +281,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderAppearanceSettings = () => (
     <Card>
@@ -305,7 +360,8 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
             </Dialog>
           </div>
           <p className="text-xs text-gray-500 dark:text-zinc-400">
-            Select your preferred accent color for the website or create a custom one
+            Select your preferred accent color for the website or create a
+            custom one
           </p>
         </div>
 
@@ -324,7 +380,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
               >
                 <Image
                   src={bg.url || "/placeholder.svg"}
-                  alt={'background image'}
+                  alt={"background image"}
                   fill
                   className="object-cover"
                 />
@@ -333,7 +389,6 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
                     <Check className="h-8 w-8 text-white drop-shadow-lg" />
                   </div>
                 )}
-
               </button>
             ))}
 
@@ -375,7 +430,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderPreferencesSettings = () => (
     <Card>
@@ -392,20 +447,20 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   const renderContent = () => {
     switch (activeSection) {
       case "profile":
-        return renderProfileSettings()
+        return renderProfileSettings();
       case "appearance":
-        return renderAppearanceSettings()
+        return renderAppearanceSettings();
       case "preferences":
-        return renderPreferencesSettings()
+        return renderPreferencesSettings();
       default:
-        return renderProfileSettings()
+        return renderProfileSettings();
     }
-  }
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-8 p-4 md:p-6 lg:p-8">
@@ -414,7 +469,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
           <CardContent className="p-2 md:p-4">
             <nav className="space-y-1">
               {menuItems.map((item) => {
-                const Icon = item.icon
+                const Icon = item.icon;
                 return (
                   <button
                     key={item.id}
@@ -431,7 +486,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
                       <div className="font-medium text-sm">{item.name}</div>
                     </div>
                   </button>
-                )
+                );
               })}
             </nav>
           </CardContent>
@@ -447,10 +502,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
               You have unsaved changes.
             </p>
             <div>
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-              >
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button
@@ -473,10 +525,10 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
           description="Choose a new profile picture"
           handleUpload={handleImageUpload}
           onUploadSuccess={(result) => {
-            toast.success("Upload successful:", result)
+            toast.success("Upload successful:", result);
           }}
           onUploadError={(error: string) => {
-            toast.error(`Upload failed: ${error}`)
+            toast.error(`Upload failed: ${error}`);
           }}
         />
       )}
@@ -489,13 +541,13 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
           description="Choose a new background image"
           handleUpload={handleImageUpload}
           onUploadSuccess={(result) => {
-            toast.success("Upload successful:", result)
+            toast.success("Upload successful:", result);
           }}
           onUploadError={(error: string) => {
-            toast.error(`Upload failed: ${error}`)
+            toast.error(`Upload failed: ${error}`);
           }}
         />
       )}
     </div>
-  )
+  );
 }

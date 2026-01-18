@@ -9,33 +9,29 @@ export interface BaseMessage {
 }
 
 export interface AcceptedMessage extends BaseMessage {
-  name: 'accepted';
+  name: "accepted";
 }
 
 export interface RejectedMessage extends BaseMessage {
-  name: 'rejected';
+  name: "rejected";
   reasonKey: ReasonKey;
   customReason?: string;
 }
 
-export type ReasonKey = 'age' | 'lackOfEffort' | 'default' | 'custom';
-export type Units = '160th' | 'tacdevron';
+export type ReasonKey = "age" | "lackOfEffort" | "default" | "custom";
+export type Units = "160th" | "tacdevron";
 
 export interface SubmissionMessage extends BaseMessage {
-  name: 'submission';
+  name: "submission";
 }
 
-export type MessageType =
-  | AcceptedMessage
-  | RejectedMessage
-  | SubmissionMessage;
+export type MessageType = AcceptedMessage | RejectedMessage | SubmissionMessage;
 
 export type CandidateMessageType = Exclude<MessageType, SubmissionMessage>;
-export type InstructorMessageType = Exclude<MessageType, AcceptedMessage | RejectedMessage>;
-
-
-
-
+export type InstructorMessageType = Exclude<
+  MessageType,
+  AcceptedMessage | RejectedMessage
+>;
 
 export interface DiscordWebhookPayload {
   /** The plain text message content (up to 2000 characters) */
@@ -53,7 +49,7 @@ export interface DiscordWebhookPayload {
 
 export interface DiscordEmbed {
   title?: string;
-  type?: 'rich' | 'image' | 'video' | 'gifv' | 'article' | 'link'; // 'rich' is the default
+  type?: "rich" | "image" | "video" | "gifv" | "article" | "link"; // 'rich' is the default
   description?: string;
   url?: string;
   timestamp?: string; // ISO8601 timestamp string
@@ -107,7 +103,7 @@ export interface DiscordEmbedField {
 }
 
 export interface AllowedMentions {
-  parse?: ('roles' | 'users' | 'everyone')[];
+  parse?: ("roles" | "users" | "everyone")[];
   roles?: string[]; // role IDs
   users?: string[]; // user IDs
   replied_user?: boolean;

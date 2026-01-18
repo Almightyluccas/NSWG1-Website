@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!session || !session.user) {
     return NextResponse.json(
       { error: "Unauthorized: You must be logged in to upload files." },
-      { status: 401 },
+      { status: 401 }
     );
   }
 
@@ -47,10 +47,9 @@ export async function POST(request: NextRequest) {
   if (!success) {
     return NextResponse.json(
       { error: "Rate limit exceeded. Please try again later." },
-      { status: 429 },
+      { status: 429 }
     );
   }
-
 
   try {
     const { uploadType, contentType }: RequestBody = await request.json();
@@ -58,20 +57,20 @@ export async function POST(request: NextRequest) {
     if (!uploadType) {
       return NextResponse.json(
         { error: "Invalid 'uploadType' specified." },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!ALLOWED_MIME_TYPES.includes(contentType)) {
       return NextResponse.json(
         { error: `Unsupported 'contentType': ${contentType}` },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { url, key } = await objectStorageService.createPresignedUploadUrl(
       uploadType,
-      contentType,
+      contentType
     );
 
     return NextResponse.json({ url, key });
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in generate-upload-url API route:", error);
     return NextResponse.json(
       { error: `Failed to generate upload URL: ${error}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

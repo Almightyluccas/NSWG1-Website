@@ -15,7 +15,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
 
   if (!token) {
     const isProtectedRoute = Object.keys(routePermissions).some((path) =>
-      request.nextUrl.pathname.startsWith(path),
+      request.nextUrl.pathname.startsWith(path)
     );
     if (isProtectedRoute) {
       return NextResponse.redirect(new URL("/login", request.url));
@@ -41,7 +41,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
   }
 
   const requiredPermissionEntry = Object.entries(routePermissions).find(
-    ([path]) => request.nextUrl.pathname.startsWith(path),
+    ([path]) => request.nextUrl.pathname.startsWith(path)
   );
 
   if (requiredPermissionEntry) {
@@ -56,7 +56,7 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     if (!hasPermission && permission.minimumRole) {
       const userLevel = Math.max(
         0,
-        ...userRoles.map((role) => roleHierarchy[role] || 0),
+        ...userRoles.map((role) => roleHierarchy[role] || 0)
       );
       const requiredLevel = roleHierarchy[permission.minimumRole] || Infinity;
       if (userLevel >= requiredLevel) {

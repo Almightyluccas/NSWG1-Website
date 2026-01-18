@@ -74,7 +74,9 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
 }
 
 /* Theme utility classes */
@@ -165,7 +167,6 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--accent-color));
 }
-
 
 @custom-variant dark (&:is(.dark *));
 

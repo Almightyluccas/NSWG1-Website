@@ -1,15 +1,13 @@
-"use client"
+"use client";
 
-import {FadeIn} from "@/components/ui/fade-in";
-import {Button} from "@/components/ui/button";
-import React, {useState} from "react";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
-import {RequirementItem} from "@/components/ui/requirment-list-items";
+import { FadeIn } from "@/components/ui/fade-in";
+import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { RequirementItem } from "@/components/ui/requirment-list-items";
 import Link from "next/link";
 
-
-
-export function ReadyToJoinSection () {
+export function ReadyToJoinSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openRequirementsModal = (): void => setIsModalOpen(true);
@@ -26,22 +24,33 @@ export function ReadyToJoinSection () {
           <FadeIn>
             <div className="bg-zinc-800/50 backdrop-blur-sm p-10 rounded-lg border border-zinc-700">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center">
-                Are <span className="text-accent">you</span> ready to join <span className="text-accent">NSWG1</span>?
+                Are <span className="text-accent">you</span> ready to join{" "}
+                <span className="text-accent">NSWG1</span>?
               </h2>
               <div className="h-1 w-24 bg-accent mx-auto mb-8"></div>
               <p className="text-lg text-zinc-300 mb-8 text-center">
-                Whether you&apos;re a seasoned MILSIM veteran or brand new to the scene, experience military realism at its
-                finest with Naval Special Warfare Group One. Join an elite tactical team in Arma 3, where immersive
-                simulations meet real-world tactics. Your journey into true military realism begins here.
+                Whether you&apos;re a seasoned MILSIM veteran or brand new to
+                the scene, experience military realism at its finest with Naval
+                Special Warfare Group One. Join an elite tactical team in Arma
+                3, where immersive simulations meet real-world tactics. Your
+                journey into true military realism begins here.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href={"/join"}>
-                  <Button size="lg" className="bg-accent hover:bg-accent-darker text-black">
+                  <Button
+                    size="lg"
+                    className="bg-accent hover:bg-accent-darker text-black"
+                  >
                     Enlist Today
                   </Button>
                 </Link>
-                <Button onClick={openRequirementsModal} size="lg" variant="outline" className="border-zinc-600 hover:bg-zinc-700">
+                <Button
+                  onClick={openRequirementsModal}
+                  size="lg"
+                  variant="outline"
+                  className="border-zinc-600 hover:bg-zinc-700"
+                >
                   View Requirements
                 </Button>
               </div>
@@ -51,18 +60,23 @@ export function ReadyToJoinSection () {
       </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
-            <ul className="space-y-6">
-              <RequirementItem>You must be at least 18 years of age (Waivers can apply).</RequirementItem>
-              <RequirementItem>
-                You must be willing to submit to a lengthy and detailed training process.
-              </RequirementItem>
-              <RequirementItem>You must be able to attend Eastern Time Operations / Events.</RequirementItem>
-              <RequirementItem>You must have a working Microphone (No static, echo, etc).</RequirementItem>
+          <ul className="space-y-6">
+            <RequirementItem>
+              You must be at least 18 years of age (Waivers can apply).
+            </RequirementItem>
+            <RequirementItem>
+              You must be willing to submit to a lengthy and detailed training
+              process.
+            </RequirementItem>
+            <RequirementItem>
+              You must be able to attend Eastern Time Operations / Events.
+            </RequirementItem>
+            <RequirementItem>
+              You must have a working Microphone (No static, echo, etc).
+            </RequirementItem>
           </ul>
         </DialogContent>
-
       </Dialog>
     </section>
-
-  )
+  );
 }

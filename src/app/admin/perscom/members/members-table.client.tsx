@@ -1,16 +1,28 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { ChevronDown, Filter, MoreHorizontal, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PerscomUserResponse } from "@/types/api/perscomApi";
 import { PaginationBar } from "@/components/ui/pagination";
 import { UpdateMemberDialog } from "@/app/admin/perscom/members/update-member-dialog";
-
 
 interface MembersTableProps {
   members: PerscomUserResponse[];
@@ -19,21 +31,24 @@ interface MembersTableProps {
 const itemsPerPage = 10;
 
 export const MembersTable = ({ members }: MembersTableProps) => {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedUser, setSelectedUser] = useState<PerscomUserResponse | null>(null)
-  const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<PerscomUserResponse | null>(
+    null
+  );
+  const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [positionFilters, setPositionFilters] = useState<string[]>([]);
   const [unitFilters, setUnitFilters] = useState<string[]>([]);
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
-  const [expandedFilterSection, setExpandedFilterSection] = useState<'status' | 'position' | 'unit' | null>(null);
-
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [expandedFilterSection, setExpandedFilterSection] = useState<
+    "status" | "position" | "unit" | null
+  >(null);
 
   const availableStatuses = Array.from(
     new Set(
       members
-        .map(user => user.status?.name)
+        .map((user) => user.status?.name)
         .filter((status): status is string => !!status)
     )
   );
@@ -41,7 +56,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const availablePositions = Array.from(
     new Set(
       members
-        .map(user => user.position?.name)
+        .map((user) => user.position?.name)
         .filter((position): position is string => !!position)
     )
   );
@@ -49,30 +64,37 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const availableUnits = Array.from(
     new Set(
       members
-        .map(user => user.unit?.name)
+        .map((user) => user.unit?.name)
         .filter((unit): unit is string => !!unit)
     )
   );
 
   const filteredUsers = members.filter((user) => {
-    const searchLower = searchQuery.toLowerCase()
+    const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
-      (user.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.rank?.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.unit?.name?.toLowerCase().includes(searchLower) || false) ||
-      (user.status?.name?.toLowerCase().includes(searchLower) || false)
+      user.name?.toLowerCase().includes(searchLower) ||
+      false ||
+      user.rank?.name?.toLowerCase().includes(searchLower) ||
+      false ||
+      user.unit?.name?.toLowerCase().includes(searchLower) ||
+      false ||
+      user.status?.name?.toLowerCase().includes(searchLower) ||
+      false;
 
-    const statusMatch = statusFilters.length === 0 ||
+    const statusMatch =
+      statusFilters.length === 0 ||
       (user.status?.name && statusFilters.includes(user.status.name));
 
-    const positionMatch = positionFilters.length === 0 ||
+    const positionMatch =
+      positionFilters.length === 0 ||
       (user.position?.name && positionFilters.includes(user.position.name));
 
-    const unitMatch = unitFilters.length === 0 ||
+    const unitMatch =
+      unitFilters.length === 0 ||
       (user.unit?.name && unitFilters.includes(user.unit.name));
 
     return matchesSearch && statusMatch && positionMatch && unitMatch;
-  })
+  });
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const paginatedUsers = filteredUsers.slice(
@@ -81,13 +103,13 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   );
 
   const handleViewDetails = (user: PerscomUserResponse) => {
-    setSelectedUser(user)
-    setIsUserDetailsOpen(true)
-  }
+    setSelectedUser(user);
+    setIsUserDetailsOpen(true);
+  };
   const handleUpdateMemberDetails = (user: PerscomUserResponse) => {
-    setSelectedUser(user)
-    setIsUpdateDialogOpen(true)
-  }
+    setSelectedUser(user);
+    setIsUpdateDialogOpen(true);
+  };
   const handleDialogOpenChange = (open: boolean) => {
     setIsUserDetailsOpen(open);
     if (!open) {
@@ -108,10 +130,12 @@ export const MembersTable = ({ members }: MembersTableProps) => {
         document.body.style.pointerEvents = "auto";
       }, 100);
     }
-  }
+  };
 
-  const toggleFilterSection = (section: 'status' | 'position' | 'unit') => {
-    setExpandedFilterSection(expandedFilterSection === section ? null : section);
+  const toggleFilterSection = (section: "status" | "position" | "unit") => {
+    setExpandedFilterSection(
+      expandedFilterSection === section ? null : section
+    );
   };
 
   return (
@@ -132,33 +156,41 @@ export const MembersTable = ({ members }: MembersTableProps) => {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                Filter{statusFilters.length + unitFilters.length + positionFilters.length > 0 &&
-                ` (${statusFilters.length + unitFilters.length + positionFilters.length})`}
+                Filter
+                {statusFilters.length +
+                  unitFilters.length +
+                  positionFilters.length >
+                  0 &&
+                  ` (${statusFilters.length + unitFilters.length + positionFilters.length})`}
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-56">
               <div>
                 <button
-                  onClick={() => toggleFilterSection('status')}
+                  onClick={() => toggleFilterSection("status")}
                   className="w-full px-2 py-1.5 text-sm font-medium flex justify-between items-center hover:bg-accent hover:text-accent-foreground rounded-sm"
                 >
                   <span>Status</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedFilterSection === 'status' ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${expandedFilterSection === "status" ? "rotate-180" : ""}`}
+                  />
                 </button>
 
-                {expandedFilterSection === 'status' && (
+                {expandedFilterSection === "status" && (
                   <div className="pl-2 py-1 border-l-2 ml-3 mt-1">
-                    {availableStatuses.map(status => (
+                    {availableStatuses.map((status) => (
                       <DropdownMenuCheckboxItem
                         key={status}
                         checked={statusFilters.includes(status)}
-                        onCheckedChange={checked =>
-                          setStatusFilters(prev =>
-                            checked ? [...prev, status] : prev.filter(s => s !== status)
+                        onCheckedChange={(checked) =>
+                          setStatusFilters((prev) =>
+                            checked
+                              ? [...prev, status]
+                              : prev.filter((s) => s !== status)
                           )
                         }
-                        onSelect={e => e.preventDefault()}
+                        onSelect={(e) => e.preventDefault()}
                       >
                         {status}
                       </DropdownMenuCheckboxItem>
@@ -171,25 +203,29 @@ export const MembersTable = ({ members }: MembersTableProps) => {
 
               <div>
                 <button
-                  onClick={() => toggleFilterSection('position')}
+                  onClick={() => toggleFilterSection("position")}
                   className="w-full px-2 py-1.5 text-sm font-medium flex justify-between items-center hover:bg-accent hover:text-accent-foreground rounded-sm"
                 >
                   <span>Position</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedFilterSection === 'position' ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${expandedFilterSection === "position" ? "rotate-180" : ""}`}
+                  />
                 </button>
 
-                {expandedFilterSection === 'position' && (
+                {expandedFilterSection === "position" && (
                   <div className="pl-2 py-1 border-l-2 ml-3 mt-1">
-                    {availablePositions.map(position => (
+                    {availablePositions.map((position) => (
                       <DropdownMenuCheckboxItem
                         key={position}
                         checked={positionFilters.includes(position)}
-                        onCheckedChange={checked =>
-                          setPositionFilters(prev =>
-                            checked ? [...prev, position] : prev.filter(p => p !== position)
+                        onCheckedChange={(checked) =>
+                          setPositionFilters((prev) =>
+                            checked
+                              ? [...prev, position]
+                              : prev.filter((p) => p !== position)
                           )
                         }
-                        onSelect={e => e.preventDefault()}
+                        onSelect={(e) => e.preventDefault()}
                       >
                         {position}
                       </DropdownMenuCheckboxItem>
@@ -202,25 +238,29 @@ export const MembersTable = ({ members }: MembersTableProps) => {
 
               <div>
                 <button
-                  onClick={() => toggleFilterSection('unit')}
+                  onClick={() => toggleFilterSection("unit")}
                   className="w-full px-2 py-1.5 text-sm font-medium flex justify-between items-center hover:bg-accent hover:text-accent-foreground rounded-sm"
                 >
                   <span>Unit</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedFilterSection === 'unit' ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${expandedFilterSection === "unit" ? "rotate-180" : ""}`}
+                  />
                 </button>
 
-                {expandedFilterSection === 'unit' && (
+                {expandedFilterSection === "unit" && (
                   <div className="pl-2 py-1 border-l-2 ml-3 mt-1">
-                    {availableUnits.map(unit => (
+                    {availableUnits.map((unit) => (
                       <DropdownMenuCheckboxItem
                         key={unit}
                         checked={unitFilters.includes(unit)}
-                        onCheckedChange={checked =>
-                          setUnitFilters(prev =>
-                            checked ? [...prev, unit] : prev.filter(u => u !== unit)
+                        onCheckedChange={(checked) =>
+                          setUnitFilters((prev) =>
+                            checked
+                              ? [...prev, unit]
+                              : prev.filter((u) => u !== unit)
                           )
                         }
-                        onSelect={e => e.preventDefault()}
+                        onSelect={(e) => e.preventDefault()}
                       >
                         {unit}
                       </DropdownMenuCheckboxItem>
@@ -229,14 +269,19 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                 )}
               </div>
 
-              {(statusFilters.length > 0 || positionFilters.length > 0 || unitFilters.length > 0) && (
+              {(statusFilters.length > 0 ||
+                positionFilters.length > 0 ||
+                unitFilters.length > 0) && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => {
-                    setStatusFilters([]);
-                    setPositionFilters([]);
-                    setUnitFilters([]);
-                  }} className="text-center">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setStatusFilters([]);
+                      setPositionFilters([]);
+                      setUnitFilters([]);
+                    }}
+                    className="text-center"
+                  >
                     Clear all filters
                   </DropdownMenuItem>
                 </>
@@ -248,92 +293,116 @@ export const MembersTable = ({ members }: MembersTableProps) => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-            <tr className="bg-gray-50 dark:bg-zinc-700/50 text-left">
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                User
-              </th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Rank
-              </th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Unit
-              </th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
+              <tr className="bg-gray-50 dark:bg-zinc-700/50 text-left">
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Rank
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Unit
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-zinc-700">
-            {paginatedUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3">
-                      {/*<Image*/}
-                      {/*  src={user.user?.avatar || "/placeholder.svg"}*/}
-                      {/*  alt={user.user?.username || 'User'}*/}
-                      {/*  fill*/}
-                      {/*  className="object-cover"*/}
-                      {/*/>*/}
+              {paginatedUsers.map((user) => (
+                <tr
+                  key={user.id}
+                  className="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="relative h-10 w-10 rounded-full overflow-hidden mr-3">
+                        {/*<Image*/}
+                        {/*  src={user.user?.avatar || "/placeholder.svg"}*/}
+                        {/*  alt={user.user?.username || 'User'}*/}
+                        {/*  fill*/}
+                        {/*  className="object-cover"*/}
+                        {/*/>*/}
+                      </div>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-zinc-400">
+                          {user.email}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-gray-500 dark:text-zinc-400">{user.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline">{user.rank?.name}</Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant="outline">{user.position?.name}</Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Badge variant={user.status?.name === "Active" ? "accent" : "outline"}>
-                    {user.status?.name}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.unit?.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewDetails(user)}>View Details</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleUpdateMemberDetails(user)}>Update Member</DropdownMenuItem>
-                      {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant="outline">{user.rank?.name}</Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant="outline">{user.position?.name}</Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge
+                      variant={
+                        user.status?.name === "Active" ? "accent" : "outline"
+                      }
+                    >
+                      {user.status?.name}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.unit?.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleViewDetails(user)}
+                        >
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleUpdateMemberDetails(user)}
+                        >
+                          Update Member
+                        </DropdownMenuItem>
+                        {/*<DropdownMenuItem className="text-red-500 dark:text-red-400">Suspend User</DropdownMenuItem>*/}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-
         {filteredUsers.length === 0 && (
           <div className="p-6 text-center">
-            <p className="text-gray-500 dark:text-zinc-400">No users found matching your search criteria.</p>
+            <p className="text-gray-500 dark:text-zinc-400">
+              No users found matching your search criteria.
+            </p>
           </div>
         )}
 
         <div className="p-4 border-t border-gray-200 dark:border-zinc-700 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-gray-500 dark:text-zinc-400">
-            Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
+            Showing{" "}
+            <span className="font-medium">
+              {(currentPage - 1) * itemsPerPage + 1}
+            </span>{" "}
+            to{" "}
             <span className="font-medium">
               {Math.min(currentPage * itemsPerPage, filteredUsers.length)}
-            </span> of{" "}
-            <span className="font-medium">{filteredUsers.length}</span> users
+            </span>{" "}
+            of <span className="font-medium">{filteredUsers.length}</span> users
           </div>
         </div>
       </div>
@@ -352,13 +421,13 @@ export const MembersTable = ({ members }: MembersTableProps) => {
       )}
 
       {selectedUser && (
-
-
         <Dialog open={isUserDetailsOpen} onOpenChange={handleDialogOpenChange}>
           <DialogContent className="w-[90vw] md:w-[50vw] !max-w-none">
             <DialogHeader>
               <DialogTitle>User Details</DialogTitle>
-              <DialogDescription>Detailed information about the selected user.</DialogDescription>
+              <DialogDescription>
+                Detailed information about the selected user.
+              </DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -373,7 +442,9 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     {/*/>*/}
                   </div>
                   {/*<h3 className="text-lg font-bold">{selectedUser.user?.username}</h3>*/}
-                  <p className="text-gray-500 dark:text-zinc-400">{selectedUser.rank?.name}</p>
+                  <p className="text-gray-500 dark:text-zinc-400">
+                    {selectedUser.rank?.name}
+                  </p>
                 </div>
               </div>
 
@@ -386,11 +457,15 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <p className="text-sm font-medium">Email</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.email}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">
+                          {selectedUser.email}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Status</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.status?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">
+                          {selectedUser.status?.name}
+                        </p>
                       </div>
                     </div>
                     <div>
@@ -410,11 +485,15 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <p className="text-sm font-medium">Unit</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.unit?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">
+                          {selectedUser.unit?.name}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Position</p>
-                        <p className="text-sm text-gray-500 dark:text-zinc-400">{selectedUser.position?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-zinc-400">
+                          {selectedUser.position?.name}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -426,4 +505,4 @@ export const MembersTable = ({ members }: MembersTableProps) => {
       )}
     </>
   );
-}
+};

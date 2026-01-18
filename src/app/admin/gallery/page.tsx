@@ -1,4 +1,4 @@
-import { GalleryManagementClient } from "./gallery-management-client"
+import { GalleryManagementClient } from "./gallery-management-client";
 
 export default function GalleryManagementPage() {
   return (
@@ -6,7 +6,9 @@ export default function GalleryManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Gallery Management</h1>
-          <p className="text-gray-500 dark:text-zinc-400">Manage gallery images and videos.</p>
+          <p className="text-gray-500 dark:text-zinc-400">
+            Manage gallery images and videos.
+          </p>
         </div>
       </div>
 
@@ -14,5 +16,5 @@ export default function GalleryManagementPage() {
         <GalleryManagementClient />
       </div>
     </div>
-  )
+  );
 }

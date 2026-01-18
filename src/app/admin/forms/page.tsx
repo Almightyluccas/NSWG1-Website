@@ -1,13 +1,13 @@
-import { Suspense } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { FileText, Users, Clock } from "lucide-react"
-import { getForms } from "@/app/admin/forms/actions" // Updated import
-import { FormsManagementClient } from "./forms-management-client"
-import ServerRoleGuard from "@/components/auth/server-role-guard"
+import { Suspense } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FileText, Users, Clock } from "lucide-react";
+import { getForms } from "@/app/admin/forms/actions"; // Updated import
+import { FormsManagementClient } from "./forms-management-client";
+import ServerRoleGuard from "@/components/auth/server-role-guard";
 
 async function FormsStats() {
-  const forms = await getForms()
+  const forms = await getForms();
 
   return (
     <div className="grid gap-4 md:grid-cols-3 mb-8">
@@ -23,7 +23,9 @@ async function FormsStats() {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Total Submissions
+          </CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -42,7 +44,7 @@ async function FormsStats() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 export default async function AdminFormsPage() {
@@ -51,7 +53,9 @@ export default async function AdminFormsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Forms Management</h1>
-          <p className="text-muted-foreground">Create and manage forms, view submissions</p>
+          <p className="text-muted-foreground">
+            Create and manage forms, view submissions
+          </p>
         </div>
 
         <Suspense
@@ -71,5 +75,5 @@ export default async function AdminFormsPage() {
         </Suspense>
       </div>
     </ServerRoleGuard>
-  )
+  );
 }

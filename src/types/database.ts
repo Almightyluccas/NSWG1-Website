@@ -1,19 +1,19 @@
 export enum UserRole {
-  guest = 'guest',
-  applicant = 'applicant',
-  candidate = 'candidate',
-  administration = 'J-1',
-  intelligence = 'J-2',
-  trainingAndDevelopment = 'J-3',
-  logistics = 'J-4',
-  greenTeam = 'greenTeam',
-  member = 'member',
-  '160th' = '160th',
-  tacdevron = 'tacdevron',
-  instructor = 'instructor',
-  admin = 'admin',
-  superAdmin = 'superAdmin',
-  developer = 'developer',
+  guest = "guest",
+  applicant = "applicant",
+  candidate = "candidate",
+  administration = "J-1",
+  intelligence = "J-2",
+  trainingAndDevelopment = "J-3",
+  logistics = "J-4",
+  greenTeam = "greenTeam",
+  member = "member",
+  "160th" = "160th",
+  tacdevron = "tacdevron",
+  instructor = "instructor",
+  admin = "admin",
+  superAdmin = "superAdmin",
+  developer = "developer",
 }
 
 export const roleHierarchy: Record<string, number> = {
@@ -26,11 +26,9 @@ export const roleHierarchy: Record<string, number> = {
   [UserRole.admin]: 80,
   [UserRole.superAdmin]: 90,
   [UserRole.developer]: 100,
-
 };
 
-export type Units = '160th' | 'tacdevron';
-
+export type Units = "160th" | "tacdevron";
 
 export type RefreshTokenRow = {
   user_id?: string;
@@ -41,7 +39,6 @@ export type RefreshTokenRow = {
   created_at?: Date;
   updated_at?: Date;
 };
-
 
 export interface User {
   id: string;
@@ -57,54 +54,54 @@ export interface User {
 }
 
 export interface Campaign {
-  id: string
-  name: string
-  description: string
-  startDate: string
-  endDate: string
-  status: "planning" | "active" | "completed" | "cancelled"
-  createdBy: string
-  createdAt: string
-  missions: Mission[]
+  id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: "planning" | "active" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  missions: Mission[];
 }
 
 export interface Mission {
-  id: string
-  campaignId: string
-  name: string
-  description: string
-  date: string
-  time: string
-  location: string
-  maxPersonnel?: number
-  requiredMOS?: string[]
-  status: "scheduled" | "in-progress" | "completed" | "cancelled"
-  createdBy: string
-  createdAt: string
-  rsvps: RSVP[]
-  attendance: AttendanceRecord[]
+  id: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  maxPersonnel?: number;
+  requiredMOS?: string[];
+  status: "scheduled" | "in-progress" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  rsvps: RSVP[];
+  attendance: AttendanceRecord[];
 }
 
 export interface RSVP {
-  id: string
-  missionId: string
-  userId: string
-  userName: string
-  status: "attending" | "not-attending" | "maybe"
-  notes?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  missionId: string;
+  userId: string;
+  userName: string;
+  status: "attending" | "not-attending" | "maybe";
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AttendanceRecord {
-  id: string
-  missionId: string
-  userId: string
-  userName: string
-  status: "present" | "absent" | "late" | "excused"
-  notes?: string
-  markedBy: string
-  markedAt: string
+  id: string;
+  missionId: string;
+  userId: string;
+  userName: string;
+  status: "present" | "absent" | "late" | "excused";
+  notes?: string;
+  markedBy: string;
+  markedAt: string;
 }
 
 export interface CustomTheme {
@@ -123,12 +120,12 @@ export interface UserFullInfo {
   perscomId: string | null;
   name: string | null;
   discordName: string | null;
-  preferences: Preferences
+  preferences: Preferences;
   customThemes: CustomTheme[];
   imageUrl: string | null;
 }
 
 export interface CustomHeroImages {
-  id: number,
+  id: number;
   url: string;
 }

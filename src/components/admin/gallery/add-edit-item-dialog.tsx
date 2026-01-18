@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -14,19 +14,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { FormDataGallery } from "@/types/admin/gallery"
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { FormDataGallery } from "@/types/admin/gallery";
 import React from "react";
 
 interface AddEditItemDialogProps {
-  isOpen: boolean
-  onCloseAction: (open: boolean) => void
-  editMode: boolean
-  formData: FormDataGallery
-  setFormDataAction: React.Dispatch<React.SetStateAction<FormDataGallery>>
-  categories: string[]
-  onSaveAction: () => void
+  isOpen: boolean;
+  onCloseAction: (open: boolean) => void;
+  editMode: boolean;
+  formData: FormDataGallery;
+  setFormDataAction: React.Dispatch<React.SetStateAction<FormDataGallery>>;
+  categories: string[];
+  onSaveAction: () => void;
 }
 
 export function AddEditItemDialog({
@@ -44,29 +44,33 @@ export function AddEditItemDialog({
         return {
           ...prev,
           categories: prev.categories.filter((c) => c !== category),
-        }
+        };
       } else {
         return {
           ...prev,
           categories: [...prev.categories, category],
-        }
+        };
       }
-    })
-  }
+    });
+  };
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      onCloseAction(false)
+      onCloseAction(false);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onCloseAction(false)}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{editMode ? "Edit Gallery Item" : "Add New Gallery Item"}</DialogTitle>
+          <DialogTitle>
+            {editMode ? "Edit Gallery Item" : "Add New Gallery Item"}
+          </DialogTitle>
           <DialogDescription>
-            {editMode ? "Update the details of this gallery item." : "Add a new image or video to the gallery."}
+            {editMode
+              ? "Update the details of this gallery item."
+              : "Add a new image or video to the gallery."}
           </DialogDescription>
         </DialogHeader>
 
@@ -85,7 +89,9 @@ export function AddEditItemDialog({
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormDataAction({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormDataAction({ ...formData, title: e.target.value })
+                    }
                     placeholder="Enter a title for this item"
                   />
                 </div>
@@ -95,7 +101,12 @@ export function AddEditItemDialog({
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormDataAction({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormDataAction({
+                        ...formData,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Enter a description"
                     rows={4}
                   />
@@ -105,9 +116,16 @@ export function AddEditItemDialog({
                   <Checkbox
                     id="featured"
                     checked={formData.featured}
-                    onCheckedChange={(checked) => setFormDataAction({ ...formData, featured: checked === true })}
+                    onCheckedChange={(checked) =>
+                      setFormDataAction({
+                        ...formData,
+                        featured: checked === true,
+                      })
+                    }
                   />
-                  <Label htmlFor="featured">Featured item (will be highlighted in the gallery)</Label>
+                  <Label htmlFor="featured">
+                    Featured item (will be highlighted in the gallery)
+                  </Label>
                 </div>
               </div>
             </div>
@@ -126,7 +144,9 @@ export function AddEditItemDialog({
                         name="type"
                         value="image"
                         checked={formData.type === "image"}
-                        onChange={() => setFormDataAction({ ...formData, type: "image" })}
+                        onChange={() =>
+                          setFormDataAction({ ...formData, type: "image" })
+                        }
                         className="h-4 w-4"
                       />
                       <Label htmlFor="type-image">Image</Label>
@@ -138,7 +158,9 @@ export function AddEditItemDialog({
                         name="type"
                         value="video"
                         checked={formData.type === "video"}
-                        onChange={() => setFormDataAction({ ...formData, type: "video" })}
+                        onChange={() =>
+                          setFormDataAction({ ...formData, type: "video" })
+                        }
                         className="h-4 w-4"
                       />
                       <Label htmlFor="type-video">Video</Label>
@@ -150,7 +172,9 @@ export function AddEditItemDialog({
                         name="type"
                         value="youtube"
                         checked={formData.type === "youtube"}
-                        onChange={() => setFormDataAction({ ...formData, type: "youtube" })}
+                        onChange={() =>
+                          setFormDataAction({ ...formData, type: "youtube" })
+                        }
                         className="h-4 w-4"
                       />
                       <Label htmlFor="type-youtube">YouTube</Label>
@@ -164,12 +188,19 @@ export function AddEditItemDialog({
                     <Input
                       id="videoId"
                       value={formData.videoId || ""}
-                      onChange={(e) => setFormDataAction({ ...formData, videoId: e.target.value })}
+                      onChange={(e) =>
+                        setFormDataAction({
+                          ...formData,
+                          videoId: e.target.value,
+                        })
+                      }
                       placeholder="Enter YouTube video ID (e.g., dQw4w9WgXcQ)"
                     />
                     <p className="text-sm text-gray-500 dark:text-zinc-400">
-                      Extract the video ID from the YouTube URL. For example, from
-                      &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot; use &quot;dQw4w9WgXcQ&quot;
+                      Extract the video ID from the YouTube URL. For example,
+                      from
+                      &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;
+                      use &quot;dQw4w9WgXcQ&quot;
                     </p>
                   </div>
                 ) : (
@@ -178,8 +209,14 @@ export function AddEditItemDialog({
                     <Input
                       id="url"
                       value={formData.url}
-                      onChange={(e) => setFormDataAction({ ...formData, url: e.target.value })}
-                      placeholder={formData.type === "image" ? "Enter image URL" : "Enter video URL"}
+                      onChange={(e) =>
+                        setFormDataAction({ ...formData, url: e.target.value })
+                      }
+                      placeholder={
+                        formData.type === "image"
+                          ? "Enter image URL"
+                          : "Enter video URL"
+                      }
                     />
                   </div>
                 )}
@@ -189,7 +226,12 @@ export function AddEditItemDialog({
                   <Input
                     id="thumbnail"
                     value={formData.thumbnail}
-                    onChange={(e) => setFormDataAction({ ...formData, thumbnail: e.target.value })}
+                    onChange={(e) =>
+                      setFormDataAction({
+                        ...formData,
+                        thumbnail: e.target.value,
+                      })
+                    }
                     placeholder="Enter thumbnail URL"
                   />
                 </div>
@@ -208,7 +250,7 @@ export function AddEditItemDialog({
                               title="YouTube video preview"
                             />
                           </div>
-                        )
+                        );
                       } else if (formData.url) {
                         if (formData.type === "image") {
                           return (
@@ -218,12 +260,22 @@ export function AddEditItemDialog({
                               fill
                               className="object-contain"
                             />
-                          )
+                          );
                         } else if (formData.type === "video") {
-                          return <video src={formData.url} controls className="w-full h-full object-contain" />
+                          return (
+                            <video
+                              src={formData.url}
+                              controls
+                              className="w-full h-full object-contain"
+                            />
+                          );
                         }
                       }
-                      return <div className="text-gray-400 dark:text-zinc-500">No media preview available</div>
+                      return (
+                        <div className="text-gray-400 dark:text-zinc-500">
+                          No media preview available
+                        </div>
+                      );
                     })()}
                   </div>
                 </div>
@@ -244,7 +296,10 @@ export function AddEditItemDialog({
                       checked={formData.categories.includes(category)}
                       onCheckedChange={() => handleCategoryToggle(category)}
                     />
-                    <Label htmlFor={`category-${category}`} className="capitalize">
+                    <Label
+                      htmlFor={`category-${category}`}
+                      className="capitalize"
+                    >
                       {category.replace(/-/g, " ")}
                     </Label>
                   </div>
@@ -261,7 +316,9 @@ export function AddEditItemDialog({
                       </Badge>
                     ))
                   ) : (
-                    <div className="text-gray-500 dark:text-zinc-400">No categories selected</div>
+                    <div className="text-gray-500 dark:text-zinc-400">
+                      No categories selected
+                    </div>
                   )}
                 </div>
               </div>
@@ -273,9 +330,11 @@ export function AddEditItemDialog({
           <Button variant="outline" onClick={() => onCloseAction(false)}>
             Cancel
           </Button>
-          <Button onClick={onSaveAction}>{editMode ? "Update" : "Create"}</Button>
+          <Button onClick={onSaveAction}>
+            {editMode ? "Update" : "Create"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

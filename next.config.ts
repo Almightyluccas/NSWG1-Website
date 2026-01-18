@@ -27,11 +27,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: 'objectstorage.us-ashburn-1.oraclecloud.com',
+        hostname: "objectstorage.us-ashburn-1.oraclecloud.com",
         pathname: "/**",
-      }
-
-    ]
+      },
+    ],
   },
   //TODO: REMOVE THIS AFTER
   eslint: {

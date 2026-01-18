@@ -1,4 +1,4 @@
-import {CustomTheme} from "@/types/database";
+import { CustomTheme } from "@/types/database";
 
 export const defaultThemes: CustomTheme[] = [
   { name: "Gold", accent: "223, 192, 105", accentDarker: "201, 168, 75" },

@@ -1,64 +1,70 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Palette, Moon, Sun, Plus } from "lucide-react"
-import { useTheme} from "@/components/theme/theme-provider"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog"
-import {Input} from "@/components/ui/input"
-import {Label} from "@/components/ui/label"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Palette, Moon, Sun, Plus } from "lucide-react";
+import { useTheme } from "@/components/theme/theme-provider";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CustomTheme } from "@/types/database";
 
 export function ThemeSwitcher() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
   const {
     mode,
     toggleMode,
     themes,
     currentAccent,
     setCurrentAccent,
-    addCustomTheme
-  } = useTheme()
-  const [isAddingTheme, setIsAddingTheme] = useState(false)
-  const [newThemeName, setNewThemeName] = useState("")
-  const [newThemeColor, setNewThemeColor] = useState("#DFC069")
+    addCustomTheme,
+  } = useTheme();
+  const [isAddingTheme, setIsAddingTheme] = useState(false);
+  const [newThemeName, setNewThemeName] = useState("");
+  const [newThemeColor, setNewThemeColor] = useState("#DFC069");
 
   const changeTheme = (theme: CustomTheme) => {
-    setCurrentAccent(theme)
-    setIsOpen(false)
-  }
+    setCurrentAccent(theme);
+    setIsOpen(false);
+  };
 
   const handleAddTheme = () => {
-    const r = Number.parseInt(newThemeColor.slice(1, 3), 16)
-    const g = Number.parseInt(newThemeColor.slice(3, 5), 16)
-    const b = Number.parseInt(newThemeColor.slice(5, 7), 16)
+    const r = Number.parseInt(newThemeColor.slice(1, 3), 16);
+    const g = Number.parseInt(newThemeColor.slice(3, 5), 16);
+    const b = Number.parseInt(newThemeColor.slice(5, 7), 16);
 
-    const darkerR = Math.floor(r * 0.8)
-    const darkerG = Math.floor(g * 0.8)
-    const darkerB = Math.floor(b * 0.8)
+    const darkerR = Math.floor(r * 0.8);
+    const darkerG = Math.floor(g * 0.8);
+    const darkerB = Math.floor(b * 0.8);
 
     const newTheme = {
       name: newThemeName,
       accent: `${r}, ${g}, ${b}`,
       accentDarker: `${darkerR}, ${darkerG}, ${darkerB}`,
-    }
+    };
 
-    addCustomTheme(newTheme)
-    setCurrentAccent(newTheme)
-    setIsAddingTheme(false)
-    setNewThemeName("")
-    setNewThemeColor("#DFC069")
-  }
+    addCustomTheme(newTheme);
+    setCurrentAccent(newTheme);
+    setIsAddingTheme(false);
+    setNewThemeName("");
+    setNewThemeColor("#DFC069");
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
       {/* Dark/Light Mode Toggle */}
-        {/*<Button*/}
-        {/*  onClick={toggleMode}*/}
-        {/*  className="rounded-full w-12 h-12 flex items-center justify-center bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 shadow-lg"*/}
-        {/*>*/}
-        {/*  {mode === "dark" ? <Sun className="h-5 w-5 text-accent" /> : <Moon className="h-5 w-5 text-accent" />}*/}
-        {/*</Button>*/}
+      {/*<Button*/}
+      {/*  onClick={toggleMode}*/}
+      {/*  className="rounded-full w-12 h-12 flex items-center justify-center bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-700 dark:hover:bg-zinc-600 shadow-lg"*/}
+      {/*>*/}
+      {/*  {mode === "dark" ? <Sun className="h-5 w-5 text-accent" /> : <Moon className="h-5 w-5 text-accent" />}*/}
+      {/*</Button>*/}
 
       {/* Color Theme Switcher */}
       <div className="relative">
@@ -78,10 +84,15 @@ export function ThemeSwitcher() {
                   key={theme.name}
                   onClick={() => changeTheme(theme)}
                   className={`flex items-center w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors ${
-                    currentAccent.name === theme.name ? "bg-gray-100 dark:bg-zinc-700" : ""
+                    currentAccent.name === theme.name
+                      ? "bg-gray-100 dark:bg-zinc-700"
+                      : ""
                   }`}
                 >
-                  <div className="w-6 h-6 rounded-full mr-3" style={{ backgroundColor: `rgb(${theme.accent})` }}></div>
+                  <div
+                    className="w-6 h-6 rounded-full mr-3"
+                    style={{ backgroundColor: `rgb(${theme.accent})` }}
+                  ></div>
                   <span className="text-sm">{theme.name}</span>
                 </button>
               ))}
@@ -123,7 +134,11 @@ export function ThemeSwitcher() {
                       />
                     </div>
                   </div>
-                  <Button onClick={handleAddTheme} disabled={!newThemeName.trim() || !newThemeColor} className="w-full">
+                  <Button
+                    onClick={handleAddTheme}
+                    disabled={!newThemeName.trim() || !newThemeColor}
+                    className="w-full"
+                  >
                     Add Theme
                   </Button>
                 </div>
@@ -133,5 +148,5 @@ export function ThemeSwitcher() {
         )}
       </div>
     </div>
-  )
+  );
 }

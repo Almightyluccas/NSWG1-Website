@@ -1,6 +1,6 @@
 // tailwind.config.ts
-import type { Config } from "tailwindcss"
-import tailwindcssRadix from "tailwindcss-radix" // Import the plugin
+import type { Config } from "tailwindcss";
+import tailwindcssRadix from "tailwindcss-radix"; // Import the plugin
 
 const config: Config = {
   darkMode: "class",
@@ -95,7 +95,7 @@ const config: Config = {
       // For your case, `disabled` is key.
     }),
     // If you use animations from shadcn/ui, you'll need this.
-                                    // It's often included in shadcn setup.
+    // It's often included in shadcn setup.
   ],
-}
-export default config
+};
+export default config;
