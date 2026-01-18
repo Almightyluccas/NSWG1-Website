@@ -1,4 +1,4 @@
-wexport interface BaseEntity {
+export interface BaseEntity {
   id: number;
   created_at: string;
   updated_at: string;
@@ -32,14 +32,13 @@ export interface Image extends BaseEntity {
   image_url: string;
 }
 
-
 export interface Status extends BaseEntity {
   name: string;
   color: string;
   order: number;
 }
 
-export interface LeaveApplication  extends BaseEntity {
+export interface LeaveApplication extends BaseEntity {
   form_id: number;
   user_id: number;
   first_name: string;
@@ -88,12 +87,12 @@ export interface Award extends BaseEntity {
   image?: Image;
 }
 
-export interface CreateAwardRecord extends BaseCreateRecord{
+export interface CreateAwardRecord extends BaseCreateRecord {
   award: CreateAwardRecord;
   award_id: number;
 }
 
-export type CreateCombatRecord = BaseCreateRecord
+export type CreateCombatRecord = BaseCreateRecord;
 
 export enum RankRecordType {
   Promotion = 0,
@@ -113,7 +112,7 @@ export interface CreateAssignmentRecord extends BaseCreateRecord {
   unit_id: number | null;
   position_id: number | null;
   specialty_id: number | null;
-  type: 'primary' | 'secondary';
+  type: "primary" | "secondary";
 }
 
 export interface CreateQualificationRecord extends BaseCreateRecord {
@@ -127,7 +126,6 @@ export interface UpdateUserUnit {
   name: string;
 }
 
-
 export interface Qualification extends BaseEntity {
   name: string;
   description: string;
@@ -139,7 +137,7 @@ export interface AwardRecord extends BaseRecord {
   award_id: number;
 }
 
-export type CombatRecord = BaseRecord
+export type CombatRecord = BaseRecord;
 
 export interface QualificationRecord extends BaseRecord {
   qualification_id: number;
@@ -255,8 +253,7 @@ export interface PerscomUserCreationResponse {
     specialty?: Specialty | null;
     status?: Status;
     unit?: Unit;
-  }
-
+  };
 }
 
 export interface ApplicationSubmission {
@@ -288,7 +285,7 @@ export interface ApplicationSubmissionResponse {
     label: string;
     created_at: string;
     updated_at: string;
-  }
+  };
 }
 
 export interface PaginatedResponse<T> {

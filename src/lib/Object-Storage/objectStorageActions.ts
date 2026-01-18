@@ -115,7 +115,12 @@ export const fileUpload = async ({
       case "document":
         const documentMetadata: DocumentMetaData = {
           title: formData.get("title") as string,
-          roles: JSON.parse(formData.get("roles") as string) as string[],
+          description: formData.get("description") as string,
+          unit: formData.get("unit") as string,
+          category: formData.get("category") as string,
+          authorizedRoles: JSON.parse(
+            formData.get("roles") as string
+          ) as string[],
         };
         await saveUploadDetails(key, uploadType, documentMetadata);
         break;
