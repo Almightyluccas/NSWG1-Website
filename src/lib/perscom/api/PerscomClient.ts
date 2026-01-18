@@ -1,10 +1,7 @@
 import { PerscomGet } from './PerscomGet'
 import { PerscomPost } from './PerscomPost'
 import { PerscomPatch } from './PerscomPatch'
-import {PerscomDelete} from "@/lib/perscom/api/PerscomDelete";
-
-export const sharedCache: Record<string, { data: any; timestamp: number }> = {};
-export const CACHE_DURATION_MS = 5 * 60 * 1000
+import { PerscomDelete } from "@/lib/perscom/api/PerscomDelete";
 
 
 export class PerscomClient {
@@ -14,7 +11,6 @@ export class PerscomClient {
   private _post?: PerscomPost
   private _patch?: PerscomPatch
   private _delete?: PerscomDelete
-  private pendingRequests: Map<string, Promise<any>> = new Map()
 
   constructor() {
     this.apiKey = process.env.PERSCOM_API_KEY!
@@ -22,7 +18,7 @@ export class PerscomClient {
   }
 
   get get(): PerscomGet {
-    if (!this._get) this._get = new PerscomGet(this, sharedCache)
+    if (!this._get) this._get = new PerscomGet(this)
     return this._get
   }
 
@@ -41,20 +37,8 @@ export class PerscomClient {
     return this._delete
   }
 
-  invalidateCache(endpoint: string): void {
-    const resource = endpoint.split('/')[1];
-    Object.keys(sharedCache).forEach(key => {
-      if (key.includes(resource)) delete sharedCache[key];
-    });
-  }
-
-  async fetch<T>(endpoint: string, options: RequestInit): Promise<T> {
+  async fetch<T>(endpoint: string, options: RequestInit & { next?: NextFetchRequestConfig }): Promise<T> {
     const method = options.method || 'GET';
-    const requestKey = `${method}:${endpoint}:${options.body || ''}`;
-
-    if (method === 'GET' && this.pendingRequests.has(requestKey)) {
-      return this.pendingRequests.get(requestKey) as Promise<T>;
-    }
 
     const executeRequest = async (retries = 2): Promise<T> => {
       try {
@@ -67,14 +51,6 @@ export class PerscomClient {
           },
         });
 
-        // if (!response.ok) {
-        //   if (retries > 0 && response.status >= 500) {
-        //     await new Promise(r => setTimeout(r, 1000 * (3 - retries)));
-        //     return executeRequest(retries - 1);
-        //   }
-        //   throw new Error(`Perscom API error: ${response.status}`);
-        // }
-
         if (!response.ok) {
           const errorBody = await response.json().catch(() => ({}));
 
@@ -82,7 +58,6 @@ export class PerscomClient {
             status: response.status,
             url: `${this.apiUrl}${endpoint}`,
             method,
-            body: options.body,
             errorBody,
           });
 
@@ -91,11 +66,7 @@ export class PerscomClient {
             return executeRequest(retries - 1);
           }
 
-          throw new Error(`Perscom API error: ${response.status} - ${JSON.stringify(errorBody)}`);
-        }
-
-        if (method !== 'GET') {
-          this.invalidateCache(endpoint);
+          throw new Error(`Perscom API error: ${response.status}`);
         }
 
         return response.json();
@@ -108,15 +79,6 @@ export class PerscomClient {
       }
     };
 
-    const promise = executeRequest();
-
-    if (method === 'GET') {
-      this.pendingRequests.set(requestKey, promise);
-      promise.finally(() => {
-        this.pendingRequests.delete(requestKey);
-      });
-    }
-
-    return promise;
+    return executeRequest();
   }
 }

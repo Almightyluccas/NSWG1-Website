@@ -6,7 +6,7 @@ import {
 import type { PerscomClient } from './PerscomClient'
 
 export class PerscomPost {
-  constructor(private client: PerscomClient) {}
+  constructor(private client: PerscomClient) { }
 
   async user(data: CreatePerscomUser): Promise<PerscomUserCreationResponse> {
     return this.client.fetch<PerscomUserCreationResponse>('/users', {

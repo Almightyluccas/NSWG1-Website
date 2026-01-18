@@ -51,8 +51,15 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       sections: []
     };
 
+    const dischargedUnit: MainUnit = {
+      id: "discharged",
+      name: "Personnel On Leave",
+      sections: []
+    };
+
     const tacdevronSections = new Map<number, Section>();
     const soarSections = new Map<number, Section>();
+    const dischargedSections = new Map<number, Section>();
 
     members?.forEach(member => {
       if (!member.unit?.id || !member.unit?.name) return;
@@ -61,12 +68,17 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       const unitName = member.unit.name;
 
       let targetSectionsMap: Map<number, Section>;
+      // TODO: check types to improve the if statements especially memebr.status.name .. .shoudl be equal to perscom.user.status.leave somethign like this
 
       if (unitName.toLowerCase().includes("tacdevron") || unitName.toLowerCase().includes('green team')) {
         targetSectionsMap = tacdevronSections;
       } else if (unitName.toLowerCase().includes("160th")) {
         targetSectionsMap = soarSections;
+      } else if (unitName.toLowerCase().includes("discharge") && member.status?.name.toLowerCase() === "leave of absence") {
+        console.log(member)
+        targetSectionsMap = dischargedSections;
       } else {
+        console.log(`Skipping member ${member.name} with unit ${unitName} - does not belong to Tacdevron or 160th`)
         return;
       }
 
@@ -122,10 +134,12 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
     tacdevronUnit.sections = sortSections(Array.from(tacdevronSections.values()));
     soarUnit.sections = sortSections(Array.from(soarSections.values()));
+    dischargedUnit.sections = sortSections(Array.from(dischargedSections.values()));
 
     const unitsWithPersonnel: MainUnit[] = [];
     if (tacdevronUnit.sections.length > 0) unitsWithPersonnel.push(tacdevronUnit);
     if (soarUnit.sections.length > 0) unitsWithPersonnel.push(soarUnit);
+    if (dischargedUnit.sections.length > 0) unitsWithPersonnel.push(dischargedUnit);
 
     setMainUnits(unitsWithPersonnel);
 
@@ -150,6 +164,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
             </TabsTrigger>
           ))}
         </TabsList>
+
       </Tabs>
       <div className="space-y-6">
         {currentMainUnit?.sections.map((section) => (
@@ -158,6 +173,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
             <CardContent className="p-0">
               <ul className="divide-y divide-border">
                 {section.personnel.map((person) => (
+
                   <li key={person.id} className="hover:bg-accent/5 transition-colors">
                     <Link href={`/perscom/user/${person.id}`} className="block p-4">
                       <div className="flex items-center justify-between">
@@ -169,7 +185,8 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
                               width={24}
                               height={24}
                               className="h-6 w-6 rounded-full"
-                            />                          </div>
+                            />
+                          </div>
                           <div className="flex flex-col sm:flex-row sm:items-center">
                             <span className="font-medium mr-2">{person.name}</span>
                             <span className="text-sm text-gray-500 dark:text-zinc-400 hidden md:inline">

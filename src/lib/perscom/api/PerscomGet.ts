@@ -5,28 +5,28 @@ import {
   Unit,
   Position,
   ApplicationData,
-  Award, CombatRecord, AssignmentRecord, Qualification
+  Award,
+  CombatRecord,
+  AssignmentRecord,
+  Qualification
 } from '@/types/api/perscomApi'
 import type { PerscomClient } from './PerscomClient'
-import { CACHE_DURATION_MS } from './PerscomClient'
-
 
 export class PerscomGet {
-  constructor(
-    private client: PerscomClient,
-    private cache: Record<string, { data: any; timestamp: number }> = {}
-  ) {}
-
-  private isCacheValid(key: string): boolean {
-    const entry = this.cache[key]
-    if (!entry) return false
-    return Date.now() - entry.timestamp < CACHE_DURATION_MS
-  }
-
-  private async fetchPaginated<T>(endpoint: string, includes?: string[]): Promise<T[]> {
+  constructor(private client: PerscomClient) { }
+  private async fetchPaginated<T>(
+    endpoint: string,
+    includes?: string[],
+    options?: RequestInit
+  ): Promise<T[]> {
     try {
       const includeQuery = includes?.length ? `?include=${includes.join(',')}` : ''
-      const response = await this.client.fetch<PaginatedResponse<T>>(`${endpoint}${includeQuery}`, { method: 'GET' })
+      const cacheBuster = `&_t=${Date.now()}`;
+
+      const response = await this.client.fetch<PaginatedResponse<T>>(
+        `${endpoint}${includeQuery}${cacheBuster}`,
+        { method: 'GET', ...options }
+      )
 
       if (!response?.meta?.last_page) {
         return response.data || []
@@ -34,26 +34,25 @@ export class PerscomGet {
 
       const allPages = await Promise.all(
         Array.from({ length: response.meta.last_page }, (_, i) => i + 1).map(async page => {
-          try {
-            const pageParam = includeQuery ? `&page=${page}` : `?page=${page}`
-            return await this.client.fetch<PaginatedResponse<T>>(`${endpoint}${includeQuery}${pageParam}`, { method: 'GET' })
-          } catch (error) {
-            console.error(`Failed to fetch page ${page} for ${endpoint}:`, error)
-            return { data: [] }
-          }
+          if (page === 1) return { data: [] };
+          const pageParam = includeQuery ? `&page=${page}` : `?page=${page}`
+          return await this.client.fetch<PaginatedResponse<T>>(
+            `${endpoint}${includeQuery}${pageParam}${cacheBuster}`,
+            { method: 'GET', ...options }
+          )
         })
       )
 
-      return allPages.flatMap(page => page.data || [])
+      const restOfData = allPages.flatMap(p => p.data || []);
+      return [...(response.data || []), ...restOfData];
+
     } catch (error) {
       console.error(`Failed to fetch data from ${endpoint}:`, error)
       return []
     }
   }
 
-  async users(forceRefresh = false): Promise<PerscomUserResponse[]> {
-    if (!forceRefresh && this.isCacheValid('users')) return this.cache.users.data
-
+  async users(): Promise<PerscomUserResponse[]> {
     const includes = [
       'assignment_records', 'attachments', 'award_records',
       'combat_records', 'fields', 'position', 'primary_assignment_records',
@@ -61,76 +60,41 @@ export class PerscomGet {
       'secondary_assignment_records', 'service_records', 'specialty',
       'status', 'unit'
     ]
-
-    const data = await this.fetchPaginated<PerscomUserResponse>('/users', includes)
-    this.cache.users = { data, timestamp: Date.now() }
-    return data
+    return this.fetchPaginated<PerscomUserResponse>('/users', includes, { cache: 'no-store' })
   }
 
-  async applications(forceRefresh = false): Promise<ApplicationData[]> {
-    if (!forceRefresh && this.isCacheValid('applications')) return this.cache.applications.data
-
-    const data = await this.fetchPaginated<ApplicationData>('/submissions', ['statuses'])
-    this.cache.applications = { data, timestamp: Date.now() }
-    return data
+  async applications(): Promise<ApplicationData[]> {
+    return this.fetchPaginated<ApplicationData>('/submissions', ['statuses'], { cache: 'no-store' })
   }
 
-  async ranks(forceRefresh = false): Promise<Rank[]> {
-    if (!forceRefresh && this.isCacheValid('ranks')) return this.cache.ranks.data
-
-    const data = await this.fetchPaginated<Rank>('/ranks', ['image'])
-    this.cache.ranks = { data, timestamp: Date.now() }
-    return data
+  async ranks(): Promise<Rank[]> {
+    return this.fetchPaginated<Rank>('/ranks', ['image'], { cache: 'no-store' })
   }
 
-  async units(forceRefresh = false): Promise<Unit[]> {
-    if (!forceRefresh && this.isCacheValid('units')) return this.cache.units.data
-
-    const data = await this.fetchPaginated<Unit>('/units')
-    this.cache.units = { data, timestamp: Date.now() }
-    return data
+  async units(): Promise<Unit[]> {
+    return this.fetchPaginated<Unit>('/units', [], { next: { revalidate: 3600 } })
   }
 
-  async positions(forceRefresh = false): Promise<Position[]> {
-    if (!forceRefresh && this.isCacheValid('positions')) return this.cache.positions.data
-
-    const data = await this.fetchPaginated<Position>('/positions')
-    this.cache.positions = { data, timestamp: Date.now() }
-    return data
+  async positions(): Promise<Position[]> {
+    return this.fetchPaginated<Position>('/positions', [], { next: { revalidate: 3600 } })
   }
 
-  async awards(forceRefresh = false): Promise<Award[]> {
-    if (!forceRefresh && this.isCacheValid('awards')) return this.cache.awards.data
-
-    const data = await this.fetchPaginated<Award>('/awards', ['image'])
-    this.cache.awards = { data, timestamp: Date.now() }
-    return data
+  async awards(): Promise<Award[]> {
+    return this.fetchPaginated<Award>('/awards', ['image'], { cache: 'no-store' })
   }
 
-  async combatRecords(forceRefresh = false): Promise<CombatRecord[]> {
-    if (!forceRefresh && this.isCacheValid('combatRecords')) return this.cache.combatRecords.data
-
-    const data = await this.fetchPaginated<CombatRecord>('/combat_records', ['image'])
-    this.cache.combatRecords = { data, timestamp: Date.now() }
-    return data
+  async combatRecords(): Promise<CombatRecord[]> {
+    return this.fetchPaginated<CombatRecord>('/combat_records', ['image'], { cache: 'no-store' })
   }
 
-  async assignments(forceRefresh = false): Promise<AssignmentRecord[]> {
-    if (!forceRefresh && this.isCacheValid('assignments')) return this.cache.assignments.data
-
+  async assignments(): Promise<AssignmentRecord[]> {
     const includes = [
       "author", "position", "specialty", "status", "unit", "user", "document"
     ]
-    const data = await this.fetchPaginated<AssignmentRecord>('/assignment-records', includes)
-    this.cache.assignments = { data, timestamp: Date.now() }
-    return data
+    return this.fetchPaginated<AssignmentRecord>('/assignment-records', includes, { cache: 'no-store' })
   }
 
-  async qualifications(forceRefresh = false): Promise<Qualification[]> {
-    if (!forceRefresh && this.isCacheValid('qualifications')) return this.cache.qualifications.data
-
-    const data = await this.fetchPaginated<Qualification>('/qualifications', ['image'])
-    this.cache.qualifications = { data, timestamp: Date.now() }
-    return data
+  async qualifications(): Promise<Qualification[]> {
+    return this.fetchPaginated<Qualification>('/qualifications', ['image'], { cache: 'no-store' })
   }
 }

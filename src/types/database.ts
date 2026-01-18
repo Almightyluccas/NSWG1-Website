@@ -29,6 +29,8 @@ export const roleHierarchy: Record<string, number> = {
 
 };
 
+export type Units = '160th' | 'tacdevron';
+
 
 export type RefreshTokenRow = {
   user_id?: string;

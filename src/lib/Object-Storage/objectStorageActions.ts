@@ -1,7 +1,7 @@
-import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import imageCompression from "browser-image-compression";
-import {Session} from "next-auth";
-import {GalleryItem, UploadType} from "@/types/objectStorage";
+import { Session } from "next-auth";
+import { GalleryItem, UploadType } from "@/types/objectStorage";
 
 const ImageOptions = {
   maxSizeMB: 2,
@@ -38,7 +38,13 @@ export const imageUpload = async ({ formData, uploadType, router, updateSession 
       }),
     });
 
-    if (!presignedUrlResponse.ok) throw new Error('Failed to get a secure upload URL.');
+    if (!presignedUrlResponse.ok) {
+      const errorData = await presignedUrlResponse.json().catch(() => null);
+
+      const errorMessage = errorData?.error || 'Failed to get a secure upload URL.';
+
+      throw new Error(errorMessage);
+    }
 
     const { url, key } = await presignedUrlResponse.json();
 

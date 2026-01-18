@@ -10,8 +10,6 @@ export class PerscomDelete {
       const response = await this.client.fetch<T>(`${endpoint}/${id}`, {
         method: 'DELETE',
       });
-
-      this.client.invalidateCache(endpoint);
       return response;
     } catch (error) {
       console.error(`Failed to delete resource from ${endpoint}/${id}:`, error);
