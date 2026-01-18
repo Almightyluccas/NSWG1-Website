@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { database } from "@/database";
-import {authOptions} from "@/lib/authOptions";
-import ImageStorage from "@/lib/Object-Storage/ImageStorage";
-import {GalleryItem, UploadType} from "@/types/objectStorage";
+import { authOptions } from "@/lib/authOptions";
+import ImageStorage from "@/lib/Object-Storage/ObjectStorage";
+import { GalleryItem, UploadType } from "@/types/objectStorage";
 
 
 interface RequestBody {
   key: string;
   uploadType: UploadType;
-  galleryItem: GalleryItem | null ;
+  galleryItem?: GalleryItem;
 }
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { key, uploadType, galleryItem } : RequestBody = await request.json();
+  const { key, uploadType, galleryItem }: RequestBody = await request.json();
 
   try {
 
@@ -39,6 +39,9 @@ export async function POST(request: NextRequest) {
         break;
       case 'gallery':
         await database.post.galleryImage(key, userId, galleryItem!);
+        break;
+      case 'document':
+        // await database.post.userDocument(key, userId);
         break;
     }
 

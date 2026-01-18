@@ -315,6 +315,13 @@ export function FileUploadDialog({
       clearInterval(progressInterval)
       setUploadProgress(100)
 
+      if (result && typeof result === 'object' && 'error' in result) {
+        throw new Error(result.error)
+      }
+      if (result && result.status && result.status >= 400) {
+         throw new Error(result.error || "Upload failed")
+      }
+
       setTimeout(() => {
         setUploadState("success")
         setSuccessMessage(`${typeLabel} uploaded successfully!`)

@@ -17,7 +17,7 @@ import {useSession} from "next-auth/react";
 import {toast} from "sonner";
 import { useRouter } from "next/navigation"
 import {FileUploadDialog} from "@/components/ui/image-upload-dialog";
-import {imageUpload} from "@/lib/Object-Storage/imageActions";
+import {fileUpload} from "@/lib/Object-Storage/objectStorageActions";
 import {UploadType} from "@/types/objectStorage";
 
 interface SettingsClientProps {
@@ -75,7 +75,7 @@ export function SettingsClient({ user, customHeroImages }: SettingsClientProps) 
   }
 
   const handleImageUpload  = async (formData: FormData, uploadType: UploadType) => {
-    await imageUpload({formData, uploadType, router, updateSession})
+    await fileUpload({formData, uploadType, router, updateSession})
   }
 
   const handleAccentChange = (theme: CustomTheme) => {

@@ -1,7 +1,7 @@
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import imageCompression from "browser-image-compression";
 import { Session } from "next-auth";
-import { GalleryItem, UploadType } from "@/types/objectStorage";
+import { GalleryItem, UploadType, DocumentMetaData } from "@/types/objectStorage";
 
 const ImageOptions = {
   maxSizeMB: 2,
@@ -11,6 +11,11 @@ const ImageOptions = {
   initialQuality: 1,
 };
 
+interface presignedUrlResponse {
+  url: string;
+  key: string;
+}
+
 interface UploadParams {
   formData: FormData;
   uploadType: UploadType;
@@ -18,65 +23,90 @@ interface UploadParams {
   updateSession?: (data: { image: string }) => Promise<Session | null>;
 }
 
+const getPresignedUrl = async (uploadType: UploadType, contentType: string): Promise<presignedUrlResponse> => {
+  const presignedUrlResponse = await fetch('/api/object-storage/generate-upload-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      uploadType: uploadType,
+      contentType: contentType,
+    }),
+  });
 
-export const imageUpload = async ({ formData, uploadType, router, updateSession }: UploadParams) => {
-  const file = formData.get('file') as File;
+  if (!presignedUrlResponse.ok) {
+    const errorData = await presignedUrlResponse.json().catch(() => null);
+    const errorMessage = errorData?.error || 'Failed to get a secure upload URL.';
 
-  if (!file) {
-    throw new Error("No file provided.");
+    throw new Error(errorMessage);
   }
 
+
+  const { url, key } = await presignedUrlResponse.json();
+  return { url, key };
+}
+
+const uploadFileToStorage = async (url: string, file: File) => {
+  const directUploadResponse = await fetch(url, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type },
+  });
+
+  if (!directUploadResponse.ok) throw new Error('File upload to storage failed.');
+}
+
+const saveUploadDetails = async (key: string, uploadType: UploadType, metadata?: GalleryItem | DocumentMetaData) => {
+  const saveKeyResponse = await fetch('/api/object-storage/save-upload-key', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, uploadType, metadata }),
+  });
+
+  if (!saveKeyResponse.ok) throw new Error('Failed to save upload details to database.');
+}
+
+export const fileUpload = async ({ formData, uploadType, router, updateSession }: UploadParams) => {
+  const file = formData.get('file') as File;
+
+  if (!file) throw new Error("No file provided.");
+
   try {
-    const optimizedFile = await imageCompression(file, ImageOptions);
+    const fileToUpload = file.type.startsWith('image/')
+      ? await imageCompression(file, ImageOptions)
+      : file;
 
-    const presignedUrlResponse = await fetch('/api/object-storage/generate-upload-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uploadType: uploadType,
-        contentType: optimizedFile.type,
-      }),
-    });
+    const { url, key } = await getPresignedUrl(uploadType, fileToUpload.type);
 
-    if (!presignedUrlResponse.ok) {
-      const errorData = await presignedUrlResponse.json().catch(() => null);
+    await uploadFileToStorage(url, fileToUpload);
 
-      const errorMessage = errorData?.error || 'Failed to get a secure upload URL.';
+    switch (uploadType) {
+      case 'gallery':
+        const galleryItem: GalleryItem = {
+          title: formData.get('title') as string,
+          altText: formData.get('altText') as string,
+          description: formData.get('description') as string,
+          category: formData.get('category') as string,
+          unit: formData.get('unit') as string,
+        };
+        await saveUploadDetails(key, uploadType, galleryItem);
+        break;
 
-      throw new Error(errorMessage);
-    }
+      case 'document':
+        const documentMetadata: DocumentMetaData = {
+          title: formData.get('title') as string,
+          roles: JSON.parse(formData.get('roles') as string) as string[],
+        };
+        await saveUploadDetails(key, uploadType, documentMetadata);
+        break;
 
-    const { url, key } = await presignedUrlResponse.json();
+      case 'profile':
+        if (updateSession) await updateSession({ image: key });
+        await saveUploadDetails(key, uploadType);
+        break;
 
-    const directUploadResponse = await fetch(url, {
-      method: 'PUT',
-      body: optimizedFile,
-      headers: { 'Content-Type': optimizedFile.type },
-    });
-
-    if (!directUploadResponse.ok) throw new Error('File upload to storage failed.');
-
-    let galleryItem: GalleryItem | null = null;
-    if (uploadType === "gallery") {
-      galleryItem = {
-        title: formData.get('title') as string,
-        altText: formData.get('altText') as string,
-        description: formData.get('description') as string,
-        category: formData.get('category') as string,
-        unit: formData.get('unit') as string,
-      };
-    }
-
-    const saveKeyResponse = await fetch('/api/object-storage/save-upload-key', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, uploadType, galleryItem }),
-    });
-
-    if (!saveKeyResponse.ok) throw new Error('Failed to save upload details to database.');
-
-    if (uploadType === "profile" && updateSession) {
-      await updateSession({ image: key });
+      default:
+        await saveUploadDetails(key, uploadType);
+        break;
     }
 
     router.refresh();

@@ -38,8 +38,8 @@ export class DatabasePost {
 
   async userCustomHeroImage(s3Key: string, userId: string): Promise<void> {
     await this.client.query<any[]>(
-      `INSERT INTO images (image_url, image_type, category, author_id) VALUES (?, ?, ?, ?)`,
-      [s3Key, 'hero', 'Misc', userId]
+      `INSERT INTO images (image_url, image_type, author_id) VALUES (?, ?, ?)`,
+      [s3Key, 'hero', userId]
     );
   }
 

@@ -12,7 +12,7 @@ import { AddEditItemDialog } from "@/components/admin/gallery/add-edit-item-dial
 import { DeleteConfirmationDialog } from "@/components/admin/gallery/delete-confirmation-dialog"
 import type { GalleryItem, FormDataGallery } from "@/types/admin/gallery"
 import {FileUploadDialog} from "@/components/ui/image-upload-dialog";
-import {imageUpload} from "@/lib/Object-Storage/imageActions";
+import {fileUpload} from "@/lib/Object-Storage/objectStorageActions";
 import {UploadType} from "@/types/objectStorage";
 import {useRouter} from "next/navigation";
 import {useSession} from "next-auth/react";
@@ -135,7 +135,7 @@ export function GalleryManagementClient() {
   }
 
   const handleImageUpload  = async (formData: FormData, uploadType: UploadType) => {
-    await imageUpload({formData, uploadType, router, updateSession})
+    await fileUpload({formData, uploadType, router, updateSession})
   }
 
   const handleAddNew = (mediaType: "image" | "video" | "youtube" = "image") => {

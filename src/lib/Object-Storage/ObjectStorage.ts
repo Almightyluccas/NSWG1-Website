@@ -64,9 +64,9 @@ class ObjectStorageService {
       return "/default-avatar.png";
     }
   }
-
+// TODO: Figure out if we can convert to webp at some point perhaps if not it's not a big deal
   async createPresignedUploadUrl(uploadType: UploadType, contentType: string): Promise<{ url: string, key: string }> {
-    const extension = contentType.split('/')[1] || 'bin';
+    const extension: string = contentType.split('/')[1] || 'bin';
 
     const key = `${uploadType}s/${randomUUID()}.${extension}`;
 
