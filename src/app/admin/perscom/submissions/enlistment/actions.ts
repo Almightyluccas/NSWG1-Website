@@ -19,7 +19,6 @@ export async function acceptApplication(
   await perscom.post.submissionStatus(submissionId, 'Accepted');
   await database.put.userRoleByPerscomId('candidate', perscomId);
   await perscom.patch.userApproval(perscomId, true, name);
-  perscom.invalidateCache('applications');
   await perscom.post.clearPerscomCache()
   revalidatePath('/admin/perscom/submissions/enlistment');
 
@@ -48,7 +47,6 @@ export async function rejectApplication(
 
   await perscom.post.submissionStatus(submissionId, 'Denied');
   await database.put.userRoleByPerscomId('guest', perscomId);
-  perscom.invalidateCache('applications');
   await perscom.post.clearPerscomCache()
   revalidatePath('/admin/perscom/submissions/enlistment');
 
