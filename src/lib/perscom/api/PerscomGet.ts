@@ -13,7 +13,7 @@ import {
 import type { PerscomClient } from "./PerscomClient";
 
 export class PerscomGet {
-  constructor(private client: PerscomClient) {}
+  constructor(private client: PerscomClient) { }
   private async fetchPaginated<T>(
     endpoint: string,
     includes?: string[],
@@ -74,7 +74,7 @@ export class PerscomGet {
       "unit",
     ];
     return this.fetchPaginated<PerscomUserResponse>("/users", includes, {
-      cache: "no-store",
+      next: { revalidate: 1800 },
     });
   }
 
