@@ -23,7 +23,8 @@ export class PerscomGet {
       const includeQuery = includes?.length
         ? `?include=${includes.join(",")}`
         : "";
-      const cacheBuster = `&_t=${Date.now()}`;
+      const timeBucket = Math.floor(Date.now() / (1000 * 1800));
+      const cacheBuster = `&_t=${timeBucket}`;
 
       const response = await this.client.fetch<PaginatedResponse<T>>(
         `${endpoint}${includeQuery}${cacheBuster}`,
