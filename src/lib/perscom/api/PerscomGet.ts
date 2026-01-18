@@ -26,9 +26,11 @@ export class PerscomGet {
       const timeBucket = Math.floor(Date.now() / (1000 * 1800));
       const cacheBuster = `&_t=${timeBucket}`;
 
+      const finalOptions = options || { next: { revalidate: 1800 } };
+
       const response = await this.client.fetch<PaginatedResponse<T>>(
         `${endpoint}${includeQuery}${cacheBuster}`,
-        { method: "GET", ...options }
+        { method: "GET", ...finalOptions }
       );
 
       if (!response?.meta?.last_page) {
@@ -58,25 +60,12 @@ export class PerscomGet {
 
   async users(): Promise<PerscomUserResponse[]> {
     const includes = [
-      "assignment_records",
-      "attachments",
-      "award_records",
-      "combat_records",
-      "fields",
-      "position",
-      "primary_assignment_records",
-      "qualification_records",
-      "rank",
-      "rank_records",
-      "secondary_assignment_records",
-      "service_records",
-      "specialty",
-      "status",
-      "unit",
+      "assignment_records", "attachments", "award_records", "combat_records",
+      "fields", "position", "primary_assignment_records", "qualification_records",
+      "rank", "rank_records", "secondary_assignment_records", "service_records",
+      "specialty", "status", "unit",
     ];
-    return this.fetchPaginated<PerscomUserResponse>("/users", includes, {
-      next: { revalidate: 1800 },
-    });
+    return this.fetchPaginated<PerscomUserResponse>("/users", includes);
   }
 
   async applications(): Promise<ApplicationData[]> {
@@ -86,55 +75,34 @@ export class PerscomGet {
   }
 
   async ranks(): Promise<Rank[]> {
-    return this.fetchPaginated<Rank>("/ranks", ["image"], {
-      cache: "no-store",
-    });
+    return this.fetchPaginated<Rank>("/ranks", ["image"]);
   }
 
   async units(): Promise<Unit[]> {
-    return this.fetchPaginated<Unit>("/units", [], {
-      next: { revalidate: 3600 },
-    });
+    return this.fetchPaginated<Unit>("/units", []);
   }
 
   async positions(): Promise<Position[]> {
-    return this.fetchPaginated<Position>("/positions", [], {
-      next: { revalidate: 3600 },
-    });
+    return this.fetchPaginated<Position>("/positions", []);
   }
 
   async awards(): Promise<Award[]> {
-    return this.fetchPaginated<Award>("/awards", ["image"], {
-      cache: "no-store",
-    });
+    return this.fetchPaginated<Award>("/awards", ["image"]);
   }
 
   async combatRecords(): Promise<CombatRecord[]> {
-    return this.fetchPaginated<CombatRecord>("/combat_records", ["image"], {
-      cache: "no-store",
-    });
+    return this.fetchPaginated<CombatRecord>("/combat_records", ["image"]);
   }
 
   async assignments(): Promise<AssignmentRecord[]> {
     const includes = [
-      "author",
-      "position",
-      "specialty",
-      "status",
-      "unit",
-      "user",
-      "document",
+      "author", "position", "specialty", "status",
+      "unit", "user", "document",
     ];
-    return this.fetchPaginated<AssignmentRecord>(
-      "/assignment-records",
-      includes,
-      { cache: "no-store" }
-    );
+    return this.fetchPaginated<AssignmentRecord>("/assignment-records", includes);
   }
 
   async qualifications(): Promise<Qualification[]> {
-    return this.fetchPaginated<Qualification>("/qualifications", ["image"], {
-      cache: "no-store",
-    });
+    return this.fetchPaginated<Qualification>("/qualifications", ["image"]);
   }
 }
