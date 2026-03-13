@@ -16,7 +16,7 @@ import {getServerSession} from "next-auth";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  const defaultImage = "/images/heroBackgrounds/default.png";
+  const defaultImage = "/images/homepage.png";
   let heroImageSrc = session?.user?.preferences?.homepageImageUrl || defaultImage;
 
   if (heroImageSrc && !heroImageSrc.startsWith('/') && heroImageSrc.includes('image')) {

@@ -147,7 +147,6 @@ export default function Tacdevron2Page() {
                     <ul className="list-disc pl-5 space-y-2">
                       <li>Application Approval</li>
                       <li>Interview</li>
-                      <li>S&T Selection</li>
                       <li>Green Team</li>
                     </ul>
                   }
