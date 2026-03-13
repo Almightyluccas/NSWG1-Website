@@ -1,22 +1,38 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import { PerscomUserResponse } from "@/types/api/perscomApi"
-import { fetchMemberUpdateData, updateMember, UpdateMemberData } from "./action"
-import { cn } from "@/lib/utils"
-import { useSession } from "next-auth/react"
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { PerscomUserResponse } from "@/types/api/perscomApi";
+import {
+  fetchMemberUpdateData,
+  updateMember,
+  UpdateMemberData,
+} from "./action";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 interface UpdateMemberDialogProps {
-  open: boolean
-  onOpenChangeAction: (open: boolean) => void
-  member: PerscomUserResponse | null
+  open: boolean;
+  onOpenChangeAction: (open: boolean) => void;
+  member: PerscomUserResponse | null;
 }
 
 export function UpdateMemberDialog({
@@ -24,89 +40,97 @@ export function UpdateMemberDialog({
   onOpenChangeAction,
   member,
 }: UpdateMemberDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedTab, setSelectedTab] = useState<'award' | 'combat' | 'rank' | 'assignment' | 'qualification' | 'unit'>('award')
-  const [data, setData] = useState<UpdateMemberData>({ units: [], positions: [], ranks: [], awards: [], qualifications: [] })
-  const { data: session } = useSession()
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<
+    "award" | "combat" | "rank" | "assignment" | "qualification" | "unit"
+  >("award");
+  const [data, setData] = useState<UpdateMemberData>({
+    units: [],
+    positions: [],
+    ranks: [],
+    awards: [],
+    qualifications: [],
+  });
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (open) {
       fetchMemberUpdateData()
         .then(setData)
-        .catch(() => toast.error('Failed to load data'))
+        .catch(() => toast.error("Failed to load data"));
     }
-  }, [open])
+  }, [open]);
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setIsSubmitting(true)
+    event.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      const formData = new FormData(event.target as HTMLFormElement)
-      const payload: any = {}
+      const formData = new FormData(event.target as HTMLFormElement);
+      const payload: any = {};
 
       switch (selectedTab) {
-        case 'award':
+        case "award":
           payload.award = {
-            award_id: Number(formData.get('awardId')),
-            text: formData.get('awardText'),
+            award_id: Number(formData.get("awardId")),
+            text: formData.get("awardText"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
-        case 'combat':
+            author_id: session?.user.perscomId,
+          };
+          break;
+        case "combat":
           payload.combatRecord = {
-            description: formData.get('combatDescription'),
-            date: formData.get('combatDate'),
+            description: formData.get("combatDescription"),
+            date: formData.get("combatDate"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
-        case 'rank':
+            author_id: session?.user.perscomId,
+          };
+          break;
+        case "rank":
           payload.rank = {
-            rank_id: Number(formData.get('rankId')),
-            text: formData.get('rankText'),
+            rank_id: Number(formData.get("rankId")),
+            text: formData.get("rankText"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
-        case 'assignment':
+            author_id: session?.user.perscomId,
+          };
+          break;
+        case "assignment":
           payload.assignment = {
-            unit_id: Number(formData.get('unitId')),
-            position_id: Number(formData.get('positionId')),
-            text: formData.get('assignmentText'),
+            unit_id: Number(formData.get("unitId")),
+            position_id: Number(formData.get("positionId")),
+            text: formData.get("assignmentText"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
-        case 'qualification':
+            author_id: session?.user.perscomId,
+          };
+          break;
+        case "qualification":
           payload.qualification = {
-            qualification_id: Number(formData.get('qualificationId')),
-            text: formData.get('qualificationText'),
+            qualification_id: Number(formData.get("qualificationId")),
+            text: formData.get("qualificationText"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
-        case 'unit':
+            author_id: session?.user.perscomId,
+          };
+          break;
+        case "unit":
           payload.unit = {
-            unit_id: Number(formData.get('unitId')),
-            text: formData.get('unitText'),
+            unit_id: Number(formData.get("unitId")),
+            text: formData.get("unitText"),
             user_id: member?.id,
-            author_id: session?.user.perscomId
-          }
-          break
+            author_id: session?.user.perscomId,
+          };
+          break;
       }
 
-      await updateMember({type: selectedTab, data: payload})
-      toast.success('Member updated successfully')
-      onOpenChangeAction(false)
+      await updateMember({ type: selectedTab, data: payload });
+      toast.success("Member updated successfully");
+      onOpenChangeAction(false);
     } catch (error) {
-      toast.error('Failed to update member')
-      console.error(error)
+      toast.error("Failed to update member");
+      console.error(error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChangeAction} modal={true}>
@@ -114,7 +138,8 @@ export function UpdateMemberDialog({
         <DialogHeader>
           <DialogTitle>Update Member - {member?.name}</DialogTitle>
           <DialogDescription>
-            Modify member information by selecting a category below and filling in the required details.
+            Modify member information by selecting a category below and filling
+            in the required details.
           </DialogDescription>
         </DialogHeader>
 
@@ -123,10 +148,17 @@ export function UpdateMemberDialog({
           aria-label="Member update options"
           className="flex flex-wrap gap-2 mb-6"
         >
-          {['award', 'combat', 'rank', 'assignment', 'qualification', 'unit'].map((tab) => (
+          {[
+            "award",
+            "combat",
+            "rank",
+            "assignment",
+            "qualification",
+            "unit",
+          ].map((tab) => (
             <Button
               key={tab}
-              variant={selectedTab === tab ? 'default' : 'outline'}
+              variant={selectedTab === tab ? "default" : "outline"}
               onClick={() => setSelectedTab(tab as any)}
               className="capitalize text-xs sm:text-sm"
               role="tab"
@@ -145,7 +177,7 @@ export function UpdateMemberDialog({
             id={`${selectedTab}-panel`}
             aria-labelledby={`${selectedTab}-tab`}
           >
-            {selectedTab === 'award' && (
+            {selectedTab === "award" && (
               <div className="space-y-4">
                 <Select name="awardId" required>
                   <SelectTrigger className="w-full">
@@ -153,17 +185,15 @@ export function UpdateMemberDialog({
                   </SelectTrigger>
                   <SelectContent position="popper" sideOffset={4}>
                     {data.awards.map((award) => (
-                      <SelectItem
-                        key={award.id}
-                        value={award.id.toString()}
-                      >
+                      <SelectItem key={award.id} value={award.id.toString()}>
                         <div className="flex items-center gap-2">
                           <Image
                             src={award.image?.image_url || "/placeholder.svg"}
                             alt=""
                             className={cn(
                               "h-8 w-8 object-contain",
-                              !award.image?.image_url && "bg-gray-100 dark:bg-zinc-800 p-1"
+                              !award.image?.image_url &&
+                                "bg-gray-100 dark:bg-zinc-800 p-1"
                             )}
                             width={32}
                             height={32}
@@ -183,7 +213,7 @@ export function UpdateMemberDialog({
               </div>
             )}
 
-            {selectedTab === 'combat' && (
+            {selectedTab === "combat" && (
               <div className="space-y-4">
                 <Textarea
                   name="combatDescription"
@@ -201,7 +231,7 @@ export function UpdateMemberDialog({
               </div>
             )}
 
-            {selectedTab === 'rank' && (
+            {selectedTab === "rank" && (
               <div className="space-y-4">
                 <Select name="rankId" required>
                   <SelectTrigger className="w-full">
@@ -209,17 +239,15 @@ export function UpdateMemberDialog({
                   </SelectTrigger>
                   <SelectContent position="popper" sideOffset={4}>
                     {data.ranks.map((rank) => (
-                      <SelectItem
-                        key={rank.id}
-                        value={rank.id.toString()}
-                      >
+                      <SelectItem key={rank.id} value={rank.id.toString()}>
                         <div className="flex items-center gap-2">
                           <Image
                             src={rank.image?.image_url || "/placeholder.svg"}
                             alt=""
                             className={cn(
                               "h-8 w-8 object-contain",
-                              !rank.image?.image_url && "bg-gray-100 dark:bg-zinc-800 p-1"
+                              !rank.image?.image_url &&
+                                "bg-gray-100 dark:bg-zinc-800 p-1"
                             )}
                             width={32}
                             height={32}
@@ -239,7 +267,7 @@ export function UpdateMemberDialog({
               </div>
             )}
 
-            {selectedTab === 'assignment' && (
+            {selectedTab === "assignment" && (
               <div className="space-y-4">
                 <Select name="unitId" required>
                   <SelectTrigger className="w-full">
@@ -259,7 +287,10 @@ export function UpdateMemberDialog({
                   </SelectTrigger>
                   <SelectContent position="popper" sideOffset={4}>
                     {data.positions.map((position) => (
-                      <SelectItem key={position.id} value={position.id.toString()}>
+                      <SelectItem
+                        key={position.id}
+                        value={position.id.toString()}
+                      >
                         {position.name}
                       </SelectItem>
                     ))}
@@ -274,7 +305,7 @@ export function UpdateMemberDialog({
               </div>
             )}
 
-            {selectedTab === 'qualification' && (
+            {selectedTab === "qualification" && (
               <div className="space-y-4">
                 <Select name="qualificationId" required>
                   <SelectTrigger className="w-full">
@@ -282,17 +313,15 @@ export function UpdateMemberDialog({
                   </SelectTrigger>
                   <SelectContent position="popper" sideOffset={4}>
                     {data.qualifications.map((qual) => (
-                      <SelectItem
-                        key={qual.id}
-                        value={qual.id.toString()}
-                      >
+                      <SelectItem key={qual.id} value={qual.id.toString()}>
                         <div className="flex items-center gap-2">
                           <Image
                             src={qual.image?.image_url || "/placeholder.svg"}
                             alt=""
                             className={cn(
                               "h-8 w-8 object-contain",
-                              !qual.image?.image_url && "bg-gray-100 dark:bg-zinc-800 p-1"
+                              !qual.image?.image_url &&
+                                "bg-gray-100 dark:bg-zinc-800 p-1"
                             )}
                             width={32}
                             height={32}
@@ -312,7 +341,7 @@ export function UpdateMemberDialog({
               </div>
             )}
 
-            {selectedTab === 'unit' && (
+            {selectedTab === "unit" && (
               <div className="space-y-4">
                 <Select name="unitId" required>
                   <SelectTrigger className="w-full">
@@ -344,15 +373,12 @@ export function UpdateMemberDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Updating...' : 'Update Member'}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Updating..." : "Update Member"}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

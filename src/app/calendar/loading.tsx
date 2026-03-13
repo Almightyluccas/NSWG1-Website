@@ -2,7 +2,6 @@ import { Navbar } from "@/components/layout/navbar";
 import { FadeIn } from "@/components/ui/fade-in";
 import { Footer } from "@/components/layout/footer";
 
-
 export default function Loading() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-zinc-900">
@@ -38,11 +37,16 @@ export default function Loading() {
 
                 <div className="rounded-md border border-gray-200 dark:border-zinc-700 overflow-hidden">
                   <div className="grid grid-cols-7 bg-gray-50 dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                      <div key={day} className="py-2 text-center text-sm font-medium text-gray-400 dark:text-zinc-500">
-                        {day}
-                      </div>
-                    ))}
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                      (day) => (
+                        <div
+                          key={day}
+                          className="py-2 text-center text-sm font-medium text-gray-400 dark:text-zinc-500"
+                        >
+                          {day}
+                        </div>
+                      )
+                    )}
                   </div>
 
                   <div className="grid grid-cols-7 auto-rows-fr bg-white dark:bg-zinc-900">

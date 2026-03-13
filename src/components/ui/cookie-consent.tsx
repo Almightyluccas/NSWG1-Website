@@ -1,36 +1,36 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { X, Cookie } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { X, Cookie } from "lucide-react";
+import Link from "next/link";
 
 export function CookieConsent() {
-  const [showConsent, setShowConsent] = useState(false)
+  const [showConsent, setShowConsent] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent")
+    const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
-      setShowConsent(true)
+      setShowConsent(true);
     }
-  }, [])
+  }, []);
 
   const handleAccept = () => {
-    localStorage.setItem("cookie-consent", "accepted")
-    setShowConsent(false)
-  }
+    localStorage.setItem("cookie-consent", "accepted");
+    setShowConsent(false);
+  };
 
   const handleDecline = () => {
-    localStorage.setItem("cookie-consent", "declined")
-    setShowConsent(false)
-  }
+    localStorage.setItem("cookie-consent", "declined");
+    setShowConsent(false);
+  };
 
   const handleIgnore = () => {
-    setShowConsent(false)
-  }
+    setShowConsent(false);
+  };
 
-  if (!showConsent) return null
+  if (!showConsent) return null;
 
   return (
     <div className="fixed bottom-4 left-4 z-50 md:max-w-md">
@@ -40,8 +40,12 @@ export function CookieConsent() {
             <Cookie className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-zinc-300 leading-relaxed">
-                We use cookies to enhance your experience and analyze site usage.
-                <Link href="/privacy" className="text-accent hover:text-accent/80 underline ml-1">
+                We use cookies to enhance your experience and analyze site
+                usage.
+                <Link
+                  href="/privacy"
+                  className="text-accent hover:text-accent/80 underline ml-1"
+                >
                   Learn more
                 </Link>
               </p>
@@ -75,5 +79,5 @@ export function CookieConsent() {
         </div>
       </Card>
     </div>
-  )
+  );
 }

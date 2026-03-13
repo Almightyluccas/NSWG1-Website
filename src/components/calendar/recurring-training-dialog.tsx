@@ -1,20 +1,32 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus } from "lucide-react"
-import { createRecurringTraining } from "@/app/calendar/recurring-actions"
-import { toast } from "sonner"
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
+import { createRecurringTraining } from "@/app/calendar/recurring-actions";
+import { toast } from "sonner";
 
 interface RecurringTrainingDialogProps {
-  onSuccess: () => void
+  onSuccess: () => void;
 }
 
 const DAYS_OF_WEEK = [
@@ -25,11 +37,13 @@ const DAYS_OF_WEEK = [
   { value: 4, label: "Thursday" },
   { value: 5, label: "Friday" },
   { value: 6, label: "Saturday" },
-]
+];
 
-export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+export function RecurringTrainingDialog({
+  onSuccess,
+}: RecurringTrainingDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -38,16 +52,21 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
     location: "",
     instructor: "",
     maxPersonnel: "",
-  })
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.name || !formData.dayOfWeek || !formData.time || !formData.location) {
-      toast.error("Please fill in all required fields")
-      return
+    e.preventDefault();
+    if (
+      !formData.name ||
+      !formData.dayOfWeek ||
+      !formData.time ||
+      !formData.location
+    ) {
+      toast.error("Please fill in all required fields");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       await createRecurringTraining({
         name: formData.name,
@@ -56,10 +75,12 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
         time: formData.time,
         location: formData.location,
         instructor: formData.instructor || undefined,
-        maxPersonnel: formData.maxPersonnel ? Number.parseInt(formData.maxPersonnel) : undefined,
-      })
+        maxPersonnel: formData.maxPersonnel
+          ? Number.parseInt(formData.maxPersonnel)
+          : undefined,
+      });
 
-      toast.success("Recurring training created successfully!")
+      toast.success("Recurring training created successfully!");
       setFormData({
         name: "",
         description: "",
@@ -68,16 +89,16 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
         location: "",
         instructor: "",
         maxPersonnel: "",
-      })
-      setOpen(false)
-      onSuccess()
+      });
+      setOpen(false);
+      onSuccess();
     } catch (error) {
-      console.error("Failed to create recurring training:", error)
-      toast.error("Failed to create recurring training")
+      console.error("Failed to create recurring training:", error);
+      toast.error("Failed to create recurring training");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -97,7 +118,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="e.g., Weekly Flight Training"
               required
             />
@@ -108,7 +131,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Describe what this training covers..."
               rows={3}
             />
@@ -119,7 +144,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
               <Label htmlFor="dayOfWeek">Day of Week *</Label>
               <Select
                 value={formData.dayOfWeek}
-                onValueChange={(value) => setFormData({ ...formData, dayOfWeek: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, dayOfWeek: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select day" />
@@ -139,7 +166,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
                 id="time"
                 type="time"
                 value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, time: e.target.value })
+                }
                 required
               />
             </div>
@@ -150,7 +179,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
             <Input
               id="location"
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, location: e.target.value })
+              }
               placeholder="e.g., Training Room A"
               required
             />
@@ -162,7 +193,9 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
               <Input
                 id="instructor"
                 value={formData.instructor}
-                onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, instructor: e.target.value })
+                }
                 placeholder="e.g., John Doe"
               />
             </div>
@@ -173,22 +206,33 @@ export function RecurringTrainingDialog({ onSuccess }: RecurringTrainingDialogPr
                 type="number"
                 min="1"
                 value={formData.maxPersonnel}
-                onChange={(e) => setFormData({ ...formData, maxPersonnel: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, maxPersonnel: e.target.value })
+                }
                 placeholder="e.g., 20"
               />
             </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90 text-black" disabled={loading}>
+            <Button
+              type="submit"
+              className="bg-accent hover:bg-accent/90 text-black"
+              disabled={loading}
+            >
               {loading ? "Creating..." : "Create Recurring Training"}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

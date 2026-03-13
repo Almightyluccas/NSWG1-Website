@@ -1,3 +1,3 @@
-import { PerscomClient } from './PerscomClient'
+import { PerscomClient } from "./PerscomClient";
 
-export const perscom = new PerscomClient()
+export const perscom = new PerscomClient();

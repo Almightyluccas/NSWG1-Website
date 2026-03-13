@@ -1,15 +1,23 @@
-import type {CustomHeroImages, RefreshTokenRow, User, UserFullInfo} from "@/types/database"
-import type {DatabaseClient} from "./DatabaseClient"
-import type {RecurringTraining, RecurringTrainingWithStats} from "@/types/recurring-training"
+import type {
+  CustomHeroImages,
+  RefreshTokenRow,
+  User,
+  UserFullInfo,
+} from "@/types/database";
+import type { DatabaseClient } from "./DatabaseClient";
+import type {
+  RecurringTraining,
+  RecurringTrainingWithStats,
+} from "@/types/recurring-training";
 import type {
   DocumentAccessLog,
   FormDefinition,
   FormQuestion,
   FormSubmission,
   FormSubmissionAnswer,
-  RawSubmissionQueryResult
-} from "@/types/forms"
-import {GalleryItem} from "@/types/objectStorage";
+  RawSubmissionQueryResult,
+} from "@/types/forms";
+import { GalleryItem } from "@/types/objectStorage";
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -20,7 +28,7 @@ export class DatabaseGet {
                u.email, u.created_at, u.role, i.image_url
         FROM users u
                  LEFT JOIN images i ON u.profile_image_id = i.id
-    `)
+    `);
 
     return rows.map((row) => ({
       id: row.id,
@@ -33,15 +41,15 @@ export class DatabaseGet {
       created_at: new Date(row.created_at),
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
       imageUrl: row.image_url || null,
-    }))
+    }));
   }
 
   async usersForSelection(): Promise<
     Array<{
-      id: string
-      name: string
-      discord_username: string
-      role: string[]
+      id: string;
+      name: string;
+      discord_username: string;
+      role: string[];
     }>
   > {
     const rows = await this.client.query<any[]>(`
@@ -50,14 +58,14 @@ export class DatabaseGet {
         WHERE name IS NOT NULL AND name != ''
           AND role LIKE '%member%'
         ORDER BY name ASC
-    `)
+    `);
 
     return rows.map((row) => ({
       id: row.id,
       name: row.name || row.discord_username,
       discord_username: row.discord_username,
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
-    }))
+    }));
   }
 
   async recentUsers(limit: number): Promise<User[]> {
@@ -70,8 +78,8 @@ export class DatabaseGet {
           ORDER BY u.created_at DESC
           LIMIT ?
       `,
-      [limit],
-    )
+      [limit]
+    );
 
     return rows.map((row) => ({
       id: row.id,
@@ -84,7 +92,7 @@ export class DatabaseGet {
       created_at: new Date(row.created_at),
       role: row.role ? row.role.split(",").map((r: string) => r.trim()) : [],
       imageUrl: row.image_url || null,
-    }))
+    }));
   }
 
   async discordIdByPerscomId(perscomId: number): Promise<string | null> {
@@ -92,12 +100,12 @@ export class DatabaseGet {
       `
           SELECT id FROM users WHERE perscom_id = ?
       `,
-      [perscomId],
-    )
+      [perscomId]
+    );
 
-    if (rows.length === 0) return null
+    if (rows.length === 0) return null;
 
-    return rows[0].id || null
+    return rows[0].id || null;
   }
 
   async userInfo(userId: string): Promise<UserFullInfo> {
@@ -124,7 +132,7 @@ export class DatabaseGet {
           WHERE
               u.id = ?
       `,
-      [userId],
+      [userId]
     );
 
     if (rows.length === 0) {
@@ -135,13 +143,15 @@ export class DatabaseGet {
         preferences: { activeThemeName: null, homepageImageUrl: null },
         customThemes: [],
         imageUrl: null,
-        discordName: null
+        discordName: null,
       };
     }
 
     const firstRow = rows[0];
     const result: UserFullInfo = {
-      roles: firstRow.role ? firstRow.role.split(",").map((r: string) => r.trim()) : [],
+      roles: firstRow.role
+        ? firstRow.role.split(",").map((r: string) => r.trim())
+        : [],
       perscomId: firstRow.perscom_id,
       name: firstRow.name,
       discordName: firstRow.discord_username,
@@ -150,7 +160,7 @@ export class DatabaseGet {
         homepageImageUrl: firstRow.homepage_image_url,
       },
       customThemes: [],
-      imageUrl: firstRow.image_url || null
+      imageUrl: firstRow.image_url || null,
     };
 
     for (const row of rows) {
@@ -166,12 +176,16 @@ export class DatabaseGet {
     return result;
   }
 
-  async userCount(): Promise<{ currentCount: number; percentChange: number; isPositive: boolean }> {
-    const now = new Date()
-    const currentMonth = now.getMonth() + 1
-    const currentYear = now.getFullYear()
-    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1
-    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear
+  async userCount(): Promise<{
+    currentCount: number;
+    percentChange: number;
+    isPositive: boolean;
+  }> {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
 
     const currentResult = await this.client.query<any[]>(
       `
@@ -179,8 +193,8 @@ export class DatabaseGet {
           FROM users
           WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
       `,
-      [currentMonth, currentYear],
-    )
+      [currentMonth, currentYear]
+    );
 
     const previousResult = await this.client.query<any[]>(
       `
@@ -188,35 +202,37 @@ export class DatabaseGet {
           FROM users
           WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?
       `,
-      [previousMonth, previousYear],
-    )
+      [previousMonth, previousYear]
+    );
 
-    const currentCount = currentResult[0].count
-    const previousCount = previousResult[0].count
+    const currentCount = currentResult[0].count;
+    const previousCount = previousResult[0].count;
 
-    let percentChange = 0
+    let percentChange = 0;
     if (previousCount > 0) {
-      percentChange = ((currentCount - previousCount) / previousCount) * 100
+      percentChange = ((currentCount - previousCount) / previousCount) * 100;
     } else if (currentCount > 0) {
-      percentChange = 100
+      percentChange = 100;
     }
 
     return {
       currentCount,
       percentChange: Math.abs(Math.round(percentChange)),
       isPositive: percentChange >= 0,
-    }
+    };
   }
 
-  async userProfilePictureByPerscomId(perscomId: number): Promise<string | null> {
+  async userProfilePictureByPerscomId(
+    perscomId: number
+  ): Promise<string | null> {
     const rows = await this.client.query<any[]>(
       `
           SELECT i.image_url FROM users u LEFT JOIN images i ON i.id = u.profile_image_id WHERE u.perscom_id = ?
       `,
-      [perscomId],
-    )
+      [perscomId]
+    );
 
-    return rows.length > 0 ? rows[0].image_url : null
+    return rows.length > 0 ? rows[0].image_url : null;
   }
 
   async userCustomHeroImages(id: string): Promise<CustomHeroImages[]> {
@@ -224,21 +240,25 @@ export class DatabaseGet {
       `
           SELECT image_url, id FROM images WHERE author_id = ? AND image_type = 'hero'
       `,
-      [id],
-    )
-    return rows.map(row => ({
+      [id]
+    );
+    return rows.map((row) => ({
       id: row.id,
-      url: row.image_url
+      url: row.image_url,
     }));
   }
 
-  async refreshTokenByDetails(userId: string, ipAddress: string, userAgent: string) {
+  async refreshTokenByDetails(
+    userId: string,
+    ipAddress: string,
+    userAgent: string
+  ) {
     const rows = await this.client.query<RefreshTokenRow[]>(
       `
       SELECT token_hash FROM refresh_tokens
       WHERE user_id = ? AND revoked_at IS NULL AND expires_at > NOW() AND ip_address = ? AND user_agent = ?
     `,
-      [userId, ipAddress, userAgent],
+      [userId, ipAddress, userAgent]
     );
     if (!Array.isArray(rows)) {
       return null;
@@ -246,13 +266,15 @@ export class DatabaseGet {
     return rows[0] || null;
   }
 
-  async getRefreshTokenByHash(tokenHash: string): Promise<RefreshTokenRow | null> {
+  async getRefreshTokenByHash(
+    tokenHash: string
+  ): Promise<RefreshTokenRow | null> {
     const rows = await this.client.query<RefreshTokenRow[]>(
       `
       SELECT user_id, expires_at, user_agent FROM refresh_tokens
       WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > NOW()
     `,
-      [tokenHash],
+      [tokenHash]
     );
     if (!Array.isArray(rows)) {
       return null;
@@ -270,7 +292,7 @@ export class DatabaseGet {
                    LEFT JOIN missions m ON c.id = m.campaign_id
           GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
           ORDER BY c.created_at DESC
-      `)
+      `);
     }
 
     // For regular users, return all campaigns (they can see all but only RSVP to missions)
@@ -281,7 +303,7 @@ export class DatabaseGet {
                  LEFT JOIN missions m ON c.id = m.campaign_id
         GROUP BY c.id, c.name, c.description, c.start_date, c.end_date, c.status, c.created_by, c.created_at, c.updated_at
         ORDER BY c.created_at DESC
-    `)
+    `);
   }
 
   async campaignById(campaignId: string): Promise<any | null> {
@@ -289,9 +311,9 @@ export class DatabaseGet {
       `
           SELECT * FROM campaigns WHERE id = ?
       `,
-      [campaignId],
-    )
-    return rows.length > 0 ? rows[0] : null
+      [campaignId]
+    );
+    return rows.length > 0 ? rows[0] : null;
   }
 
   async missionsByCampaign(campaignId: string): Promise<any[]> {
@@ -301,11 +323,14 @@ export class DatabaseGet {
           WHERE campaign_id = ?
           ORDER BY date ASC, time ASC
       `,
-      [campaignId],
-    )
+      [campaignId]
+    );
   }
 
-  async missionsByDateRange(startDate: string, endDate: string): Promise<any[]> {
+  async missionsByDateRange(
+    startDate: string,
+    endDate: string
+  ): Promise<any[]> {
     return await this.client.query<any[]>(
       `
           SELECT m.*, c.name as campaign_name, DATE_FORMAT(m.date, '%Y-%m-%d') as date
@@ -314,8 +339,8 @@ export class DatabaseGet {
           WHERE m.date BETWEEN ? AND ?
           ORDER BY m.date ASC, m.time ASC
       `,
-      [startDate, endDate],
-    )
+      [startDate, endDate]
+    );
   }
 
   async missionRSVPs(missionId: string): Promise<any[]> {
@@ -327,8 +352,8 @@ export class DatabaseGet {
           WHERE mr.mission_id = ?
           ORDER BY mr.created_at ASC
       `,
-      [missionId],
-    )
+      [missionId]
+    );
   }
 
   async missionAttendance(missionId: string): Promise<any[]> {
@@ -341,8 +366,8 @@ export class DatabaseGet {
           WHERE ma.mission_id = ?
           ORDER BY ma.marked_at ASC
       `,
-      [missionId],
-    )
+      [missionId]
+    );
   }
 
   // Training methods
@@ -355,8 +380,8 @@ export class DatabaseGet {
                    LEFT JOIN training_rsvps tr ON t.id = tr.training_id
           GROUP BY t.id, t.name, t.description, t.date, t.time, t.location, t.instructor, t.max_personnel, t.status, t.created_by, t.created_at, t.updated_at
           ORDER BY t.date DESC, t.time DESC
-      `)
-      return rows
+      `);
+      return rows;
     }
 
     // For regular users, return all training records (they can see all but only RSVP)
@@ -367,20 +392,23 @@ export class DatabaseGet {
                  LEFT JOIN training_rsvps tr ON t.id = tr.training_id
         GROUP BY t.id, t.name, t.description, t.date, t.time, t.location, t.instructor, t.max_personnel, t.status, t.created_by, t.created_at, t.updated_at
         ORDER BY t.date DESC, t.time DESC
-    `)
-    return rows
+    `);
+    return rows;
   }
 
-  async trainingByDateRange(startDate: string, endDate: string): Promise<any[]> {
+  async trainingByDateRange(
+    startDate: string,
+    endDate: string
+  ): Promise<any[]> {
     const rows = await this.client.query<any[]>(
       `
           SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date FROM training_records
           WHERE date BETWEEN ? AND ?
           ORDER BY date ASC, time ASC
       `,
-      [startDate, endDate],
-    )
-    return rows
+      [startDate, endDate]
+    );
+    return rows;
   }
 
   async trainingRSVPs(trainingId: string): Promise<any[]> {
@@ -392,9 +420,9 @@ export class DatabaseGet {
           WHERE tr.training_id = ?
           ORDER BY tr.created_at ASC
       `,
-      [trainingId],
-    )
-    return rows
+      [trainingId]
+    );
+    return rows;
   }
 
   async trainingAttendance(trainingId: string): Promise<any[]> {
@@ -407,9 +435,9 @@ export class DatabaseGet {
           WHERE ta.training_id = ?
           ORDER BY ta.marked_at ASC
       `,
-      [trainingId],
-    )
-    return rows
+      [trainingId]
+    );
+    return rows;
   }
 
   // Attendance methods
@@ -421,8 +449,8 @@ export class DatabaseGet {
                    JOIN missions m ON ma.mission_id = m.id
           WHERE ma.user_id = ?
       `,
-      [userId],
-    )
+      [userId]
+    );
 
     const trainingAttendance = await this.client.query<any[]>(
       `
@@ -431,12 +459,12 @@ export class DatabaseGet {
                    JOIN training_records t ON ta.training_id = t.id
           WHERE ta.user_id = ?
       `,
-      [userId],
-    )
+      [userId]
+    );
 
     return [...missionAttendance, ...trainingAttendance].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    )
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
   }
 
   // Recurring Training methods
@@ -450,26 +478,39 @@ export class DatabaseGet {
                  LEFT JOIN users u ON rt.created_by = u.id
         GROUP BY rt.id
         ORDER BY rt.day_of_week ASC, rt.time ASC
-    `)
+    `);
 
-    const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    const DAY_NAMES = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
 
     return rows.map((row) => ({
       ...row,
       instances_created: row.instances_created || 0,
       created_by_name: row.created_by_name || "Unknown",
       dayName: DAY_NAMES[row.day_of_week] || "Unknown",
-    }))
+    }));
   }
 
   async recurringTrainingById(id: string): Promise<RecurringTraining | null> {
-    const rows = await this.client.query<any[]>(`SELECT * FROM recurring_trainings WHERE id = ?`, [id])
-    return rows.length > 0 ? (rows[0] as RecurringTraining) : null
+    const rows = await this.client.query<any[]>(
+      `SELECT * FROM recurring_trainings WHERE id = ?`,
+      [id]
+    );
+    return rows.length > 0 ? (rows[0] as RecurringTraining) : null;
   }
 
   async activeRecurringTrainings(): Promise<RecurringTraining[]> {
-    const rows = await this.client.query<any[]>(`SELECT * FROM recurring_trainings WHERE is_active = TRUE`)
-    return rows as RecurringTraining[]
+    const rows = await this.client.query<any[]>(
+      `SELECT * FROM recurring_trainings WHERE is_active = TRUE`
+    );
+    return rows as RecurringTraining[];
   }
 
   async recurringTrainingInstances(recurringId: string): Promise<any[]> {
@@ -481,87 +522,104 @@ export class DatabaseGet {
           WHERE rti.recurring_training_id = ?
           ORDER BY tr.date DESC
       `,
-      [recurringId],
-    )
-    return rows
+      [recurringId]
+    );
+    return rows;
   }
 
-  async recurringTrainingInstanceExists(recurringId: string, scheduledDate: string): Promise<boolean> {
+  async recurringTrainingInstanceExists(
+    recurringId: string,
+    scheduledDate: string
+  ): Promise<boolean> {
     const rows = await this.client.query<any[]>(
       `SELECT id FROM recurring_training_instances WHERE recurring_training_id = ? AND scheduled_date = ?`,
-      [recurringId, scheduledDate],
-    )
-    return rows.length > 0
+      [recurringId, scheduledDate]
+    );
+    return rows.length > 0;
   }
-
-
 
   async missionConflictsOnDate(date: string): Promise<any[]> {
     const rows = await this.client.query<any[]>(
       `SELECT id FROM missions WHERE date = ? AND status IN ('scheduled', 'in-progress')`,
-      [date],
-    )
-    return rows
+      [date]
+    );
+    return rows;
   }
 
-  async trainingRecordByDetails(name: string, date: string, time: string): Promise<any | null> {
+  async trainingRecordByDetails(
+    name: string,
+    date: string,
+    time: string
+  ): Promise<any | null> {
     const rows = await this.client.query<any[]>(
       `SELECT id FROM training_records WHERE name = ? AND date = ? AND time = ? ORDER BY created_at DESC LIMIT 1`,
-      [name, date, time],
-    )
-    return rows.length > 0 ? rows[0] : null
+      [name, date, time]
+    );
+    return rows.length > 0 ? rows[0] : null;
   }
 
   // Forms methods
   async getForms(): Promise<FormDefinition[]> {
     const forms = await this.client.query<FormDefinition[]>(
-      `SELECT * FROM form_definitions WHERE is_active = true ORDER BY created_at DESC`,
-    )
-    return forms
+      `SELECT * FROM form_definitions WHERE is_active = true ORDER BY created_at DESC`
+    );
+    return forms;
   }
 
   async getFormWithQuestions(formId: number): Promise<FormDefinition | null> {
-    const [form] = await this.client.query<FormDefinition[]>(`SELECT * FROM form_definitions WHERE id = ?`, [formId])
+    const [form] = await this.client.query<FormDefinition[]>(
+      `SELECT * FROM form_definitions WHERE id = ?`,
+      [formId]
+    );
 
-    if (!form) return null
+    if (!form) return null;
 
     const questions = await this.client.query<FormQuestion[]>(
       `SELECT * FROM form_questions WHERE form_id = ? ORDER BY order_index ASC`,
-      [formId],
-    )
+      [formId]
+    );
 
     const parsedQuestions = questions.map((q) => {
-      let options: string[] | undefined = undefined
+      let options: string[] | undefined = undefined;
 
       if (q.options !== null && typeof q.options !== "undefined") {
-
-        const optionsValue = q.options
+        const optionsValue = q.options;
 
         if (Array.isArray(optionsValue)) {
-          options = optionsValue.map((opt) => String(opt).trim()).filter((opt) => opt.length > 0)
+          options = optionsValue
+            .map((opt) => String(opt).trim())
+            .filter((opt) => opt.length > 0);
         } else {
-          const optionsStr = String(optionsValue)
+          const optionsStr = String(optionsValue);
 
           try {
-            const parsedJson = JSON.parse(optionsStr)
+            const parsedJson = JSON.parse(optionsStr);
             if (Array.isArray(parsedJson)) {
-              options = parsedJson.map((opt) => String(opt).trim()).filter((opt) => opt.length > 0)
-            } else if (typeof parsedJson === "string" && parsedJson.includes(",")) {
+              options = parsedJson
+                .map((opt) => String(opt).trim())
+                .filter((opt) => opt.length > 0);
+            } else if (
+              typeof parsedJson === "string" &&
+              parsedJson.includes(",")
+            ) {
               options = parsedJson
                 .split(",")
                 .map((opt) => opt.trim())
-                .filter((opt) => opt.length > 0)
-            } else if (typeof parsedJson === "string" && parsedJson.length > 0) {
-              options = [parsedJson.trim()]
+                .filter((opt) => opt.length > 0);
+            } else if (
+              typeof parsedJson === "string" &&
+              parsedJson.length > 0
+            ) {
+              options = [parsedJson.trim()];
             }
           } catch {
             if (optionsStr.includes(",")) {
               options = optionsStr
                 .split(",")
                 .map((opt) => opt.trim())
-                .filter((opt) => opt.length > 0)
+                .filter((opt) => opt.length > 0);
             } else if (optionsStr.length > 0) {
-              options = [optionsStr.trim()]
+              options = [optionsStr.trim()];
             }
           }
         }
@@ -570,17 +628,17 @@ export class DatabaseGet {
       return {
         ...q,
         options,
-      }
-    })
+      };
+    });
 
-    return { ...form, questions: parsedQuestions }
+    return { ...form, questions: parsedQuestions };
   }
 
   async getFormSubmissions(formId: number): Promise<FormSubmission[]> {
     const submissions = await this.client.query<FormSubmission[]>(
       `SELECT * FROM form_submissions WHERE form_id = ? ORDER BY submitted_at DESC`,
-      [formId],
-    )
+      [formId]
+    );
 
     for (const submission of submissions) {
       const answers = await this.client.query<FormSubmissionAnswer[]>(
@@ -589,16 +647,18 @@ export class DatabaseGet {
                   JOIN form_questions fq ON fsa.question_id = fq.id
          WHERE fsa.submission_id = ?
          ORDER BY fq.order_index ASC`,
-        [submission.id],
-      )
+        [submission.id]
+      );
 
       submission.answers = answers.map((a) => ({
         ...a,
-        answer_json: a.answer_json ? JSON.parse(a.answer_json as string) : undefined,
-      }))
+        answer_json: a.answer_json
+          ? JSON.parse(a.answer_json as string)
+          : undefined,
+      }));
     }
 
-    return submissions
+    return submissions;
   }
 
   async getDocumentAccessLogs(limit = 100): Promise<DocumentAccessLog[]> {
@@ -606,10 +666,10 @@ export class DatabaseGet {
       `SELECT * FROM document_access_logs 
        ORDER BY accessed_at DESC 
        LIMIT ?`,
-      [limit],
-    )
+      [limit]
+    );
 
-    return logs
+    return logs;
   }
 
   async getUserFormSubmissions(userId: string): Promise<FormSubmission[]> {
@@ -652,7 +712,7 @@ export class DatabaseGet {
           ORDER BY
               fs.submitted_at DESC, fq.order_index ASC
       `,
-      [userId],
+      [userId]
     );
 
     const submissionsMap = new Map<number, FormSubmission>();
@@ -681,22 +741,34 @@ export class DatabaseGet {
 
       if (row.question_id !== null) {
         let parsedOptions: string[] | undefined;
-        if (row.options !== null && typeof row.options !== 'undefined') {
-          if (typeof row.options === 'string') {
+        if (row.options !== null && typeof row.options !== "undefined") {
+          if (typeof row.options === "string") {
             try {
               let optionsString = row.options.trim();
-              if (optionsString.startsWith('[') && optionsString.endsWith(']') && optionsString.includes("'")) {
+              if (
+                optionsString.startsWith("[") &&
+                optionsString.endsWith("]") &&
+                optionsString.includes("'")
+              ) {
                 optionsString = optionsString.replace(/'/g, '"');
               }
               parsedOptions = JSON.parse(optionsString);
             } catch (e) {
-              console.error(`Error parsing options for question ID ${row.question_id} (string format):`, row.options, e);
+              console.error(
+                `Error parsing options for question ID ${row.question_id} (string format):`,
+                row.options,
+                e
+              );
               parsedOptions = undefined;
             }
           } else if (Array.isArray(row.options)) {
             parsedOptions = row.options as string[];
           } else {
-            console.warn(`Unexpected type for options for question ID ${row.question_id}:`, typeof row.options, row.options);
+            console.warn(
+              `Unexpected type for options for question ID ${row.question_id}:`,
+              typeof row.options,
+              row.options
+            );
             parsedOptions = undefined;
           }
         }
@@ -707,7 +779,11 @@ export class DatabaseGet {
             parsedAnswerJson = JSON.parse(row.answer_json);
           }
         } catch (e) {
-          console.error(`Error parsing answer_json for answer ID ${row.answer_id}:`, row.answer_json, e);
+          console.error(
+            `Error parsing answer_json for answer ID ${row.answer_id}:`,
+            row.answer_json,
+            e
+          );
           parsedAnswerJson = undefined;
         }
 

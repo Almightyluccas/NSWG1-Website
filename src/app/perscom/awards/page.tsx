@@ -1,28 +1,43 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Award } from "@/types/api/perscomApi"
-import { UserRole } from "@/types/database"
-import ServerRoleGuard from "@/components/auth/server-role-guard"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import Image from "next/image"
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Award } from "@/types/api/perscomApi";
+import { UserRole } from "@/types/database";
+import ServerRoleGuard from "@/components/auth/server-role-guard";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import Image from "next/image";
 import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer";
 import { perscom } from "@/lib/perscom/api";
 
-const AWARDS_PER_PAGE = 9
+const AWARDS_PER_PAGE = 9;
 
 export default async function AwardsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const currentPage = Number((await searchParams).page) || 1
+  const currentPage = Number((await searchParams).page) || 1;
 
-  const allAwards: Award[] = await perscom.get.awards()
+  const allAwards: Award[] = await perscom.get.awards();
 
-  const totalAwards = allAwards.length
-  const totalPages = Math.ceil(totalAwards / AWARDS_PER_PAGE)
+  const totalAwards = allAwards.length;
+  const totalPages = Math.ceil(totalAwards / AWARDS_PER_PAGE);
 
-  const startIndex = (currentPage - 1) * AWARDS_PER_PAGE
-  const paginatedAwards = allAwards.slice(startIndex, startIndex + AWARDS_PER_PAGE)
+  const startIndex = (currentPage - 1) * AWARDS_PER_PAGE;
+  const paginatedAwards = allAwards.slice(
+    startIndex,
+    startIndex + AWARDS_PER_PAGE
+  );
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.member]}>
@@ -30,7 +45,8 @@ export default async function AwardsPage({
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">PERSCOM Awards</h1>
           <p className="text-gray-500 dark:text-zinc-400">
-            Recognitions and decorations awarded to members of Naval Special Warfare Group One
+            Recognitions and decorations awarded to members of Naval Special
+            Warfare Group One
           </p>
         </div>
 
@@ -48,7 +64,9 @@ export default async function AwardsPage({
               </div>
               <CardHeader>
                 <CardTitle>{award.name}</CardTitle>
-                <CardDescription>{sanitizeHtmlServer(award.description)}</CardDescription>
+                <CardDescription>
+                  {sanitizeHtmlServer(award.description)}
+                </CardDescription>
               </CardHeader>
             </Card>
           ))}
@@ -60,24 +78,30 @@ export default async function AwardsPage({
             <PaginationContent>
               {currentPage > 1 && (
                 <PaginationItem>
-                  <PaginationPrevious href={`/perscom/awards?page=${currentPage - 1}`} />
+                  <PaginationPrevious
+                    href={`/perscom/awards?page=${currentPage - 1}`}
+                  />
                 </PaginationItem>
               )}
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href={`/perscom/awards?page=${page}`}
-                    isActive={page === currentPage}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href={`/perscom/awards?page=${page}`}
+                      isActive={page === currentPage}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
               {currentPage < totalPages && (
                 <PaginationItem>
-                  <PaginationNext href={`/perscom/awards?page=${currentPage + 1}`} />
+                  <PaginationNext
+                    href={`/perscom/awards?page=${currentPage + 1}`}
+                  />
                 </PaginationItem>
               )}
             </PaginationContent>
@@ -85,5 +109,5 @@ export default async function AwardsPage({
         )}
       </div>
     </ServerRoleGuard>
-  )
+  );
 }

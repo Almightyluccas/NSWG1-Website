@@ -6,7 +6,7 @@ export const ThemeInitializer = async ({ theme }: { theme: CustomTheme }) => {
       --accent-color: ${theme.accent};
       --accent-color-darker: ${theme.accentDarker};
     }
-  `
+  `;
 
-  return <style dangerouslySetInnerHTML={{ __html: cssVariables }} />
-}
+  return <style dangerouslySetInnerHTML={{ __html: cssVariables }} />;
+};

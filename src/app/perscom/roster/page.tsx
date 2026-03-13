@@ -1,4 +1,4 @@
-import {RosterTable} from "@/app/perscom/roster/roster-table.client";
+import { RosterTable } from "@/app/perscom/roster/roster-table.client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { UserRole } from "@/types/database";
 import { perscom } from "@/lib/perscom/api";
@@ -20,5 +20,5 @@ export default async function RosterPage() {
         <RosterTable members={members} ranks={ranks} />
       </div>
     </ServerRoleGuard>
-  )
+  );
 }

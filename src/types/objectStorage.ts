@@ -6,4 +6,15 @@ export interface GalleryItem {
   unit: string;
   display_order?: number;
 }
-export type UploadType = "profile" | "background" | "document" | "gallery"
+
+export interface DocumentMetaData {
+  title: string;
+  authorizedRoles: string[];
+  description?: string;
+  uploadedBy?: string;
+  uploadDate?: string;
+  unit: string;
+  category: string;
+}
+
+export type UploadType = "profile" | "background" | "document" | "gallery";

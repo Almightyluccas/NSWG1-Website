@@ -1,18 +1,9 @@
+import { MetadataRoute } from "next";
 
-import { MetadataRoute } from 'next';
-
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://nswg1.org';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nswg1.org";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const publicPages = [
-    '/',
-    '/about',
-    '/gallery',
-    '/tf160th',
-    '/tacdevron2'
-  ];
-
-
+  const publicPages = ["/", "/about", "/gallery", "/tf160th", "/tacdevron2"];
 
   return publicPages.map((route) => ({
     url: `${baseUrl}${route}`,

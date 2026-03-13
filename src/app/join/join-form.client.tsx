@@ -1,27 +1,39 @@
-"use client"
+"use client";
 
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {AlertCircle, CheckCircle2, Loader2} from "lucide-react";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Textarea} from "@/components/ui/textarea";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Button} from "@/components/ui/button";
-import React, {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
-import {useSession} from "next-auth/react";
-import {FadeIn} from "@/components/ui/fade-in";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { FadeIn } from "@/components/ui/fade-in";
 import { submitApplication } from "./action";
 
 const unitOptions = [
   { value: "160th SOAR(A) Aviator", label: "160th SOAR(A) Aviator" },
-  { value: "SO Special Warfare Operator", label: "SO Special Warfare Operator" },
-]
+  {
+    value: "SO Special Warfare Operator",
+    label: "SO Special Warfare Operator",
+  },
+];
 
 const timezoneOptions = [
   { value: "aft", label: "Afghanistan Time (AFT) (UTC+04:30)" },
-  { value: "acst", label: "Australian Central Standard Time (ACST) (UTC+09:30)" },
+  {
+    value: "acst",
+    label: "Australian Central Standard Time (ACST) (UTC+09:30)",
+  },
   { value: "aest", label: "Australian Eastern Standard Time (AEST) (UTC+10)" },
   { value: "akst", label: "Alaska Standard Time (AKST) (UTC-09)" },
   { value: "utc-12", label: "Anywhere on Earth (UTC-12)" },
@@ -58,9 +70,15 @@ const timezoneOptions = [
   { value: "mmt", label: "Myanmar Time (MMT) (UTC+06:30)" },
   { value: "msk", label: "Moscow Standard Time (MSK) (UTC+03)" },
   { value: "mst", label: "Mountain Time (MST/MDT) (UTC-07/-06)" },
-  { value: "nst", label: "Newfoundland Standard Time (NST/NDT) (UTC-03:30/-02:30)" },
+  {
+    value: "nst",
+    label: "Newfoundland Standard Time (NST/NDT) (UTC-03:30/-02:30)",
+  },
   { value: "npt", label: "Nepal Time (NPT) (UTC+05:45)" },
-  { value: "nzst", label: "New Zealand Standard Time (NZST/NZDT) (UTC+12/+13)" },
+  {
+    value: "nzst",
+    label: "New Zealand Standard Time (NZST/NZDT) (UTC+12/+13)",
+  },
   { value: "pst", label: "Pacific Time (PST/PDT) (UTC-08/-07)" },
   { value: "pet", label: "Peru Time (PET) (UTC-05)" },
   { value: "pkt", label: "Pakistan Standard Time (PKT) (UTC+05)" },
@@ -70,13 +88,13 @@ const timezoneOptions = [
   { value: "vet", label: "Venezuelan Standard Time (VET) (UTC-04:30)" },
   { value: "wat", label: "West Africa Time (WAT) (UTC+01)" },
   { value: "wet", label: "Western European Time (WET) (UTC+00)" },
-]
+];
 
-const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>
+const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>;
 
 export default function JoinFormClient() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     discordName: "",
@@ -91,108 +109,114 @@ export default function JoinFormClient() {
     armaExperience: "",
     capabilities: "",
     confirmRequirements: false,
-  })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  const [submissionError, setSubmissionError] = useState<string | null>(null)
-  const router = useRouter()
-  const { data: session } = useSession()
-  console.log(session)
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const router = useRouter();
+  const { data: session } = useSession();
+  console.log(session);
 
   useEffect(() => {
     if (session) {
       setFormData((prev) => ({
         ...prev,
         discordName: `${session.user.discordName}`,
-        email: `${session.user.email}`
-      }))
+        email: `${session.user.email}`,
+      }));
     }
-  }, [session])
+  }, [session]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (formErrors[name]) {
       setFormErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
-  }
+  };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (formErrors[name]) {
       setFormErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
-  }
+  };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
-    setFormData((prev) => ({ ...prev, [name]: checked }))
+    setFormData((prev) => ({ ...prev, [name]: checked }));
 
     if (formErrors[name]) {
       setFormErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
-  }
+  };
 
   const validateForm = (data: typeof formData) => {
-    const errors: Record<string, string> = {}
+    const errors: Record<string, string> = {};
 
     if (!data.name) {
-      errors.name = "Name is required"
+      errors.name = "Name is required";
     } else {
-      const nameRegex = /^[A-Z]\.\s.+$/
+      const nameRegex = /^[A-Z]\.\s.+$/;
       if (!nameRegex.test(data.name)) {
         errors.name =
-          "Invalid format. Name must be your first initial, a period, a space, and your last name (e.g., J. Doe)."
+          "Invalid format. Name must be your first initial, a period, a space, and your last name (e.g., J. Doe).";
       }
     }
-    if (!data.discordName) errors.discordName = "Discord name is required"
-    if (!data.email) errors.email = "Email address is required"
-    if (!data.email.includes("@")) errors.email = "Please enter a valid email address"
-    if (!data.dateOfBirth) errors.dateOfBirth = "Date of birth is required"
-    if (!data.steamId) errors.steamId = "Steam ID is required"
-    if (!data.mos) errors.mos = "Please select a unit/role you want to join"
+    if (!data.discordName) errors.discordName = "Discord name is required";
+    if (!data.email) errors.email = "Email address is required";
+    if (!data.email.includes("@"))
+      errors.email = "Please enter a valid email address";
+    if (!data.dateOfBirth) errors.dateOfBirth = "Date of birth is required";
+    if (!data.steamId) errors.steamId = "Steam ID is required";
+    if (!data.mos) errors.mos = "Please select a unit/role you want to join";
     if (data.hasPreviousExperience === "yes" && !data.previousUnits) {
-      errors.previousUnits = "Please provide details of your previous units"
+      errors.previousUnits = "Please provide details of your previous units";
     }
-    if (!data.reason) errors.reason = "Please tell us why you want to join"
-    if (!data.timezone) errors.timezone = "Please select your timezone"
-    if (!data.armaExperience) errors.armaExperience = "Please enter your Arma experience in hours"
-    if (!data.capabilities) errors.capabilities = "Please tell us what makes you capable"
+    if (!data.reason) errors.reason = "Please tell us why you want to join";
+    if (!data.timezone) errors.timezone = "Please select your timezone";
+    if (!data.armaExperience)
+      errors.armaExperience = "Please enter your Arma experience in hours";
+    if (!data.capabilities)
+      errors.capabilities = "Please tell us what makes you capable";
     if (!data.confirmRequirements) {
-      errors.confirmRequirements = "You must confirm that you have read the requirements"
+      errors.confirmRequirements =
+        "You must confirm that you have read the requirements";
     }
 
-    return errors
-  }
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmissionError(null);
 
-    const correctedData = { ...formData }
-    const nameValue = correctedData.name.trim()
-    const missingSpaceRegex = /^[A-Z]\.[^\s]/
+    const correctedData = { ...formData };
+    const nameValue = correctedData.name.trim();
+    const missingSpaceRegex = /^[A-Z]\.[^\s]/;
     if (missingSpaceRegex.test(nameValue)) {
-      correctedData.name = nameValue.replace(".", ". ")
+      correctedData.name = nameValue.replace(".", ". ");
     }
 
-    const errors = validateForm(correctedData)
+    const errors = validateForm(correctedData);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       if (correctedData.name !== formData.name) {
-        setFormData(correctedData)
+        setFormData(correctedData);
       }
       const firstErrorField = document.querySelector(
         `[name="${Object.keys(errors)[0]}"]`
@@ -200,42 +224,57 @@ export default function JoinFormClient() {
       firstErrorField?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    setIsSubmitting(true)
-    setFormData(correctedData)
+    setIsSubmitting(true);
+    setFormData(correctedData);
 
-    const formDataForAction = new FormData()
+    const formDataForAction = new FormData();
     Object.entries(correctedData).forEach(([key, value]) => {
       if (key === "mos") {
-        formDataForAction.append("preferredPosition", value.toString())
+        formDataForAction.append("preferredPosition", value.toString());
       } else {
-        formDataForAction.append(key, value.toString())
+        formDataForAction.append(key, value.toString());
       }
-    })
+    });
 
     try {
-      await submitApplication(formDataForAction, session!.user.id!, session!.user.discordName!)
+      await submitApplication(
+        formDataForAction,
+        session!.user.id!,
+        session!.user.discordName!
+      );
       setIsSubmitted(true);
     } catch (error) {
       setIsSubmitting(false);
       console.error("Application Submission Failed:", error);
       if (error instanceof Error) {
-        if (error.message.includes("PERSCOM_REPLACE_FAILED") || error.message.includes("PERSCOM_REPLACE_NOT_FOUND")) {
-          setSubmissionError("This email is already in use. We tried to fix this automatically but failed. Please contact support.");
-        }
-        else if (error.message.includes("PERSCOM_CREATE_FAILED")) {
-          setSubmissionError("There was a problem creating your user profile. Please check your details and try again.");
-        }
-        else if (error.message.includes("PERSCOM")) {
-          setSubmissionError("There was a problem with our recruitment service. Please try again later or contact support.");
-        }
-        else if (error.message.includes("database")) {
-          setSubmissionError("There was a problem updating our records. Please contact us.");
-        }
-        else {
-          setSubmissionError("An unknown error occurred. Please try again later.");
+        if (
+          error.message.includes("PERSCOM_REPLACE_FAILED") ||
+          error.message.includes("PERSCOM_REPLACE_NOT_FOUND")
+        ) {
+          setSubmissionError(
+            "This email is already in use. We tried to fix this automatically but failed. Please contact support."
+          );
+        } else if (error.message.includes("PERSCOM_CREATE_FAILED")) {
+          setSubmissionError(
+            "There was a problem creating your user profile. Please check your details and try again."
+          );
+        } else if (error.message.includes("PERSCOM")) {
+          setSubmissionError(
+            "There was a problem with our recruitment service. Please try again later or contact support."
+          );
+        } else if (error.message.includes("database")) {
+          setSubmissionError(
+            "There was a problem updating our records. Please contact us."
+          );
+        } else {
+          setSubmissionError(
+            "An unknown error occurred. Please try again later."
+          );
         }
       } else {
-        setSubmissionError("An unexpected error occurred. Please try again later.");
+        setSubmissionError(
+          "An unexpected error occurred. Please try again later."
+        );
       }
     }
   };
@@ -249,10 +288,13 @@ export default function JoinFormClient() {
           </div>
           <h3 className="text-2xl font-medium mb-2">Application Submitted</h3>
           <p className="text-gray-500 dark:text-zinc-400 mb-6">
-            Thank you for your interest in joining NSWG1. We&apos;ll review your application and get back to you
-            soon.
+            Thank you for your interest in joining NSWG1. We&apos;ll review your
+            application and get back to you soon.
           </p>
-          <Button onClick={() => router.push("/")} className="bg-accent hover:bg-accent-darker text-black">
+          <Button
+            onClick={() => router.push("/")}
+            className="bg-accent hover:bg-accent-darker text-black"
+          >
             Return to Home
           </Button>
         </div>
@@ -260,7 +302,8 @@ export default function JoinFormClient() {
         <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-8">
           <h2 className="text-2xl font-bold mb-2">Application Form</h2>
           <p className="text-gray-500 dark:text-zinc-400 mb-6">
-            All fields marked with <span className="text-red-500">*</span> are required.
+            All fields marked with <span className="text-red-500">*</span> are
+            required.
           </p>
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Personal Information Section */}
@@ -305,7 +348,8 @@ export default function JoinFormClient() {
                 />
                 {formErrors.discordName && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.discordName}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.discordName}
                   </p>
                 )}
               </div>
@@ -347,7 +391,8 @@ export default function JoinFormClient() {
                 />
                 {formErrors.dateOfBirth && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.dateOfBirth}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.dateOfBirth}
                   </p>
                 )}
               </div>
@@ -367,7 +412,8 @@ export default function JoinFormClient() {
                 />
                 {formErrors.steamId && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.steamId}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.steamId}
                   </p>
                 )}
               </div>
@@ -377,8 +423,13 @@ export default function JoinFormClient() {
                   Which unit/role would you like to join?
                   <RequiredIndicator />
                 </Label>
-                <Select value={formData.mos} onValueChange={(value) => handleSelectChange("mos", value)}>
-                  <SelectTrigger className={formErrors.mos ? "border-red-500" : ""}>
+                <Select
+                  value={formData.mos}
+                  onValueChange={(value) => handleSelectChange("mos", value)}
+                >
+                  <SelectTrigger
+                    className={formErrors.mos ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select your preferred role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -389,7 +440,11 @@ export default function JoinFormClient() {
                     ))}
                   </SelectContent>
                 </Select>
-                <input type="hidden" name="preferredPosition" value={formData.mos} />
+                <input
+                  type="hidden"
+                  name="preferredPosition"
+                  value={formData.mos}
+                />
                 {formErrors.mos && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
                     <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.mos}
@@ -404,7 +459,9 @@ export default function JoinFormClient() {
                 </Label>
                 <RadioGroup
                   value={formData.hasPreviousExperience}
-                  onValueChange={(value) => handleSelectChange("hasPreviousExperience", value)}
+                  onValueChange={(value) =>
+                    handleSelectChange("hasPreviousExperience", value)
+                  }
                   className="flex space-x-4"
                 >
                   <div className="flex items-center space-x-2">
@@ -420,7 +477,11 @@ export default function JoinFormClient() {
                     </Label>
                   </div>
                 </RadioGroup>
-                <input type="hidden" name="hasPreviousExperience" value={formData.hasPreviousExperience} />
+                <input
+                  type="hidden"
+                  name="hasPreviousExperience"
+                  value={formData.hasPreviousExperience}
+                />
               </div>
 
               {formData.hasPreviousExperience === "yes" && (
@@ -440,7 +501,8 @@ export default function JoinFormClient() {
                   />
                   {formErrors.previousUnits && (
                     <p className="text-red-500 text-sm flex items-center mt-1">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.previousUnits}
+                      <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                      {formErrors.previousUnits}
                     </p>
                   )}
                 </div>
@@ -479,8 +541,15 @@ export default function JoinFormClient() {
                   What is your time zone?
                   <RequiredIndicator />
                 </Label>
-                <Select value={formData.timezone} onValueChange={(value) => handleSelectChange("timezone", value)}>
-                  <SelectTrigger className={formErrors.timezone ? "border-red-500" : ""}>
+                <Select
+                  value={formData.timezone}
+                  onValueChange={(value) =>
+                    handleSelectChange("timezone", value)
+                  }
+                >
+                  <SelectTrigger
+                    className={formErrors.timezone ? "border-red-500" : ""}
+                  >
                     <SelectValue placeholder="Select your time zone" />
                   </SelectTrigger>
                   <SelectContent>
@@ -491,10 +560,15 @@ export default function JoinFormClient() {
                     ))}
                   </SelectContent>
                 </Select>
-                <input type="hidden" name="timezone" value={formData.timezone} />
+                <input
+                  type="hidden"
+                  name="timezone"
+                  value={formData.timezone}
+                />
                 {formErrors.timezone && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.timezone}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.timezone}
                   </p>
                 )}
               </div>
@@ -516,7 +590,8 @@ export default function JoinFormClient() {
                 />
                 {formErrors.armaExperience && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.armaExperience}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.armaExperience}
                   </p>
                 )}
               </div>
@@ -537,7 +612,8 @@ export default function JoinFormClient() {
                 />
                 {formErrors.capabilities && (
                   <p className="text-red-500 text-sm flex items-center mt-1">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.capabilities}
+                    <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                    {formErrors.capabilities}
                   </p>
                 )}
               </div>
@@ -549,17 +625,29 @@ export default function JoinFormClient() {
                 <Checkbox
                   id="confirmRequirements"
                   checked={formData.confirmRequirements}
-                  onCheckedChange={(checked) => handleCheckboxChange("confirmRequirements", checked === true)}
-                  className={formErrors.confirmRequirements ? "border-red-500" : ""}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange(
+                      "confirmRequirements",
+                      checked === true
+                    )
+                  }
+                  className={
+                    formErrors.confirmRequirements ? "border-red-500" : ""
+                  }
                 />
                 <div className="space-y-1">
-                  <Label htmlFor="confirmRequirements" className="cursor-pointer">
-                    I confirm that I have read and understand the recruitment requirements on the website
+                  <Label
+                    htmlFor="confirmRequirements"
+                    className="cursor-pointer"
+                  >
+                    I confirm that I have read and understand the recruitment
+                    requirements on the website
                     <RequiredIndicator />
                   </Label>
                   {formErrors.confirmRequirements && (
                     <p className="text-red-500 text-sm flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {formErrors.confirmRequirements}
+                      <AlertCircle className="h-4 w-4 mr-1" />{" "}
+                      {formErrors.confirmRequirements}
                     </p>
                   )}
                 </div>
@@ -567,7 +655,8 @@ export default function JoinFormClient() {
 
               {submissionError && (
                 <p className="text-red-500 text-sm flex items-center mt-1 p-2 bg-red-500/10 rounded-md">
-                  <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" /> {submissionError}
+                  <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />{" "}
+                  {submissionError}
                 </p>
               )}
 
@@ -587,11 +676,8 @@ export default function JoinFormClient() {
               </Button>
             </div>
           </form>
-
-
         </div>
       )}
     </FadeIn>
-
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import { Suspense } from "react"
-import Link from "next/link"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
-import { FormsClient } from "./forms-client"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
-import { ListChecks } from "lucide-react"
+import { Suspense } from "react";
+import Link from "next/link";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { FormsClient } from "./forms-client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ListChecks } from "lucide-react";
 
 export default function FormsPage() {
   return (
@@ -16,7 +16,9 @@ export default function FormsPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-4">Forms</h1>
-              <p className="text-muted-foreground text-lg">Access and fill out available forms</p>
+              <p className="text-muted-foreground text-lg">
+                Access and fill out available forms
+              </p>
             </div>
 
             <div className="flex justify-center mb-8">
@@ -49,5 +51,5 @@ export default function FormsPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

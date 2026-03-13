@@ -1,5 +1,5 @@
 import { DefaultSession } from "next-auth";
-import { CustomTheme, Preferences} from "@/types/database";
+import { CustomTheme, Preferences } from "@/types/database";
 
 export interface SessionUser {
   roles: string[];
@@ -15,8 +15,8 @@ export interface SessionUser {
 
 declare module "next-auth" {
   interface Session {
-    user: SessionUser & DefaultSession["user"],
-    error?: string
+    user: SessionUser & DefaultSession["user"];
+    error?: string;
   }
 }
 

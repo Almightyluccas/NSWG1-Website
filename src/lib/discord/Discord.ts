@@ -1,7 +1,7 @@
 import { DiscordWebhookPayload } from "@/types/api/discord";
 
 export class DiscordWebhook {
-  url: string
+  url: string;
 
   constructor(url: string) {
     this.url = url;
@@ -9,8 +9,8 @@ export class DiscordWebhook {
 
   async send(payload: DiscordWebhookPayload) {
     const response = await fetch(this.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 

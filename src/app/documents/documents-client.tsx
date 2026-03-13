@@ -1,56 +1,66 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Search, FileText, Download, Clock, ExternalLink } from "lucide-react"
-import { getDocuments } from "@/app/documents/action"
-import type { DocumentInfo } from "@/types/forms"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Search, FileText, Download, Clock, ExternalLink } from "lucide-react";
+import { getDocuments } from "@/app/documents/action";
+import type { DocumentInfo } from "@/types/forms";
+import Link from "next/link";
 
 export function DocumentsClient() {
-  const [documents, setDocuments] = useState<DocumentInfo[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
+  const [documents, setDocuments] = useState<DocumentInfo[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadDocuments() {
       try {
-        const documentsData = await getDocuments()
-        setDocuments(documentsData)
+        const documentsData = await getDocuments();
+        setDocuments(documentsData);
       } catch (error) {
-        console.error("Error loading documents:", error)
+        console.error("Error loading documents:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadDocuments()
-  }, [])
+    loadDocuments();
+  }, []);
 
-  const filteredDocuments = documents.filter((doc) => doc.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredDocuments = documents.filter((doc) =>
+    doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (
+      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+    );
+  };
 
   const getFileTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case "pdf":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "doc":
       case "docx":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -59,7 +69,7 @@ export function DocumentsClient() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,7 +98,9 @@ export function DocumentsClient() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="truncate">{doc.name}</span>
-                  <Badge className={getFileTypeColor(doc.type)}>{doc.type.toUpperCase()}</Badge>
+                  <Badge className={getFileTypeColor(doc.type)}>
+                    {doc.type.toUpperCase()}
+                  </Badge>
                 </CardTitle>
                 <CardDescription className="flex items-center gap-4 text-sm">
                   {doc.size && <span>{formatFileSize(doc.size)}</span>}
@@ -121,7 +133,10 @@ export function DocumentsClient() {
             <div className="col-span-full text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No documents available</p>
-              <p className="text-sm">Documents will appear here when added to the public/documents folder</p>
+              <p className="text-sm">
+                Documents will appear here when added to the public/documents
+                folder
+              </p>
             </div>
           )}
 
@@ -133,5 +148,5 @@ export function DocumentsClient() {
         </div>
       </section>
     </div>
-  )
+  );
 }

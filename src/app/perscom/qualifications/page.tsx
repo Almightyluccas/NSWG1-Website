@@ -1,28 +1,43 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import ServerRoleGuard from "@/components/auth/server-role-guard"
-import { UserRole } from "@/types/database"
-import { Qualification } from "@/types/api/perscomApi"
-import Image from "next/image"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer"
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import ServerRoleGuard from "@/components/auth/server-role-guard";
+import { UserRole } from "@/types/database";
+import { Qualification } from "@/types/api/perscomApi";
+import Image from "next/image";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { sanitizeHtmlServer } from "@/lib/sanitize/sanitizeHtmlServer";
 import { perscom } from "@/lib/perscom/api";
 
-const QUALIFICATIONS_PER_PAGE = 18
+const QUALIFICATIONS_PER_PAGE = 18;
 
 export default async function QualificationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const currentPage = Number((await searchParams).page) || 1
+  const currentPage = Number((await searchParams).page) || 1;
 
-  const qualifications: Qualification[] = await perscom.get.qualifications()
+  const qualifications: Qualification[] = await perscom.get.qualifications();
 
-  const totalQualifications = qualifications.length
-  const totalPages = Math.ceil(totalQualifications / QUALIFICATIONS_PER_PAGE)
+  const totalQualifications = qualifications.length;
+  const totalPages = Math.ceil(totalQualifications / QUALIFICATIONS_PER_PAGE);
 
-  const startIndex = (currentPage - 1) * QUALIFICATIONS_PER_PAGE
-  const paginatedQualifications = qualifications.slice(startIndex, startIndex + QUALIFICATIONS_PER_PAGE)
+  const startIndex = (currentPage - 1) * QUALIFICATIONS_PER_PAGE;
+  const paginatedQualifications = qualifications.slice(
+    startIndex,
+    startIndex + QUALIFICATIONS_PER_PAGE
+  );
 
   return (
     <ServerRoleGuard allowedRoles={[UserRole.member]}>
@@ -30,7 +45,8 @@ export default async function QualificationsPage({
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">PERSCOM Qualifications</h1>
           <p className="text-gray-500 dark:text-zinc-400">
-            Specialized training and certifications for Naval Special Warfare Group One personnel
+            Specialized training and certifications for Naval Special Warfare
+            Group One personnel
           </p>
         </div>
 
@@ -66,24 +82,30 @@ export default async function QualificationsPage({
             <PaginationContent>
               {currentPage > 1 && (
                 <PaginationItem>
-                  <PaginationPrevious href={`/perscom/qualifications?page=${currentPage - 1}`} />
+                  <PaginationPrevious
+                    href={`/perscom/qualifications?page=${currentPage - 1}`}
+                  />
                 </PaginationItem>
               )}
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href={`/perscom/qualifications?page=${page}`}
-                    isActive={page === currentPage}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href={`/perscom/qualifications?page=${page}`}
+                      isActive={page === currentPage}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
               {currentPage < totalPages && (
                 <PaginationItem>
-                  <PaginationNext href={`/perscom/qualifications?page=${currentPage + 1}`} />
+                  <PaginationNext
+                    href={`/perscom/qualifications?page=${currentPage + 1}`}
+                  />
                 </PaginationItem>
               )}
             </PaginationContent>
@@ -91,5 +113,5 @@ export default async function QualificationsPage({
         )}
       </div>
     </ServerRoleGuard>
-  )
+  );
 }

@@ -1,63 +1,63 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, FileText, AlertCircle } from "lucide-react"
-import { logDocumentAccess } from "@/app/documents/action"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Download, FileText, AlertCircle } from "lucide-react";
+import { logDocumentAccess } from "@/app/documents/action";
 
 interface DocumentViewerProps {
-  documentPath: string
+  documentPath: string;
 }
 
 export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
-  const [documentExists, setDocumentExists] = useState<boolean | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [documentExists, setDocumentExists] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fullPath = `/${documentPath}`
-  const fileName = documentPath.split("/").pop() || ""
-  const fileExtension = fileName.split(".").pop()?.toLowerCase()
+  const fullPath = `/${documentPath}`;
+  const fileName = documentPath.split("/").pop() || "";
+  const fileExtension = fileName.split(".").pop()?.toLowerCase();
 
   useEffect(() => {
     const checkDocument = async () => {
       try {
-        const response = await fetch(fullPath, { method: "HEAD" })
-        setDocumentExists(response.ok)
+        const response = await fetch(fullPath, { method: "HEAD" });
+        setDocumentExists(response.ok);
 
         if (response.ok) {
-          await logDocumentAccess(fullPath, fileName, "view")
+          await logDocumentAccess(fullPath, fileName, "view");
         }
       } catch (error) {
-        console.error("Error checking document:", error)
-        setDocumentExists(false)
+        console.error("Error checking document:", error);
+        setDocumentExists(false);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    checkDocument()
-  }, [fullPath, fileName])
+    checkDocument();
+  }, [fullPath, fileName]);
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(fullPath)
-      if (!response.ok) throw new Error("Download failed")
+      const response = await fetch(fullPath);
+      if (!response.ok) throw new Error("Download failed");
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
 
-      await logDocumentAccess(fullPath, fileName, "download")
+      await logDocumentAccess(fullPath, fileName, "download");
     } catch (error) {
-      console.error("Error downloading document:", error)
+      console.error("Error downloading document:", error);
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -71,7 +71,7 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!documentExists) {
@@ -86,15 +86,20 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              The document "{fileName}" could not be found or is no longer available.
+              The document "{fileName}" could not be found or is no longer
+              available.
             </p>
-            <Button variant="outline" onClick={() => window.history.back()} className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => window.history.back()}
+              className="mt-4"
+            >
               Go Back
             </Button>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -106,7 +111,10 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
               <FileText className="h-5 w-5" />
               {fileName}
             </CardTitle>
-            <Button onClick={handleDownload} className="flex items-center gap-2">
+            <Button
+              onClick={handleDownload}
+              className="flex items-center gap-2"
+            >
               <Download className="h-4 w-4" />
               Download
             </Button>
@@ -120,17 +128,24 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
                 className="w-full h-full"
                 title={fileName}
                 onError={() => {
-                  console.error("Failed to load PDF")
-                  setDocumentExists(false)
+                  console.error("Failed to load PDF");
+                  setDocumentExists(false);
                 }}
               />
             </div>
           ) : (
             <div className="text-center py-12">
               <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Preview Not Available</h3>
-              <p className="text-muted-foreground mb-4">This document type cannot be previewed in the browser.</p>
-              <Button onClick={handleDownload} className="flex items-center gap-2 mx-auto">
+              <h3 className="text-lg font-semibold mb-2">
+                Preview Not Available
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                This document type cannot be previewed in the browser.
+              </p>
+              <Button
+                onClick={handleDownload}
+                className="flex items-center gap-2 mx-auto"
+              >
                 <Download className="h-4 w-4" />
                 Download to View
               </Button>
@@ -139,5 +154,5 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

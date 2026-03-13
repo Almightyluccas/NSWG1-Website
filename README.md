@@ -28,11 +28,11 @@
   - End-to-end full-stack application
   - Secure OAuth2 workflows and session management
   - Scalable real-time features and microservices-style APIs
-  - CI/CD-ready deployment pipeline 
+  - CI/CD-ready deployment pipeline
 
 ## Key Features
 
-- OAuth2 login via Discord 
+- OAuth2 login via Discord
 - Role-based access control with admin dashboard
 - Join forms, attendance tracking, galleries, Perscom API integration
 - Planned: Integrated ticketing system with live chat powered by WebSockets
@@ -62,5 +62,3 @@
    npm run dev
    ```
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-

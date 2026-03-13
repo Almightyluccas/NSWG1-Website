@@ -1,16 +1,16 @@
-import mysql, { Pool } from 'mysql2/promise'
-import { DatabaseGet } from "./DatabaseGet"
-import { DatabasePost } from "./DatabasePost"
-import { DatabasePut } from "./DatabasePut"
-import { DatabaseDelete } from "./DatabaseDelete"
+import mysql, { Pool } from "mysql2/promise";
+import { DatabaseGet } from "./DatabaseGet";
+import { DatabasePost } from "./DatabasePost";
+import { DatabasePut } from "./DatabasePut";
+import { DatabaseDelete } from "./DatabaseDelete";
 
 export class DatabaseClient {
-  private static instance: DatabaseClient
-  private readonly pool: Pool
-  readonly get: DatabaseGet
-  readonly post: DatabasePost
-  readonly put: DatabasePut
-  readonly delete: DatabaseDelete
+  private static instance: DatabaseClient;
+  private readonly pool: Pool;
+  readonly get: DatabaseGet;
+  readonly post: DatabasePost;
+  readonly put: DatabasePut;
+  readonly delete: DatabaseDelete;
 
   private constructor() {
     this.pool = mysql.createPool({
@@ -21,28 +21,28 @@ export class DatabaseClient {
       waitForConnections: true,
       connectionLimit: 2,
       queueLimit: 0,
-    })
+    });
 
-    this.get = new DatabaseGet(this)
-    this.post = new DatabasePost(this)
-    this.put = new DatabasePut(this)
-    this.delete = new DatabaseDelete(this)
+    this.get = new DatabaseGet(this);
+    this.post = new DatabasePost(this);
+    this.put = new DatabasePut(this);
+    this.delete = new DatabaseDelete(this);
   }
 
   static getInstance(): DatabaseClient {
     if (!DatabaseClient.instance) {
-      DatabaseClient.instance = new DatabaseClient()
+      DatabaseClient.instance = new DatabaseClient();
     }
-    return DatabaseClient.instance
+    return DatabaseClient.instance;
   }
 
   async query<T>(sql: string, values?: any[]): Promise<T> {
-    const connection = await this.pool.getConnection()
+    const connection = await this.pool.getConnection();
     try {
-      const [result] = await connection.query(sql, values)
-      return result as T
+      const [result] = await connection.query(sql, values);
+      return result as T;
     } finally {
-      connection.release()
+      connection.release();
     }
   }
 }

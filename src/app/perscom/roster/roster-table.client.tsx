@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import {useEffect, useState} from "react";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Card, CardContent, CardTitle} from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import {PerscomUserResponse, Rank} from "@/types/api/perscomApi";
+import { PerscomUserResponse, Rank } from "@/types/api/perscomApi";
 import Image from "next/image";
 
 interface Personnel {
@@ -29,8 +29,8 @@ interface MainUnit {
 }
 
 interface RosterTableProps {
-  members: PerscomUserResponse[]
-  ranks: Rank[]
+  members: PerscomUserResponse[];
+  ranks: Rank[];
 }
 
 //TODO: tests if comparison if faster in backend or frontend
@@ -42,31 +42,51 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
     const tacdevronUnit: MainUnit = {
       id: "tacdevron",
       name: "Tacdevron 2 A Troop",
-      sections: []
+      sections: [],
     };
 
     const soarUnit: MainUnit = {
       id: "160th",
       name: "1st Battalion 160th SOAR",
-      sections: []
+      sections: [],
+    };
+
+    const dischargedUnit: MainUnit = {
+      id: "discharged",
+      name: "Personnel On Leave",
+      sections: [],
     };
 
     const tacdevronSections = new Map<number, Section>();
     const soarSections = new Map<number, Section>();
+    const dischargedSections = new Map<number, Section>();
 
-    members?.forEach(member => {
+    members?.forEach((member) => {
       if (!member.unit?.id || !member.unit?.name) return;
 
       const unitId = member.unit.id;
       const unitName = member.unit.name;
 
       let targetSectionsMap: Map<number, Section>;
+      // TODO: check types to improve the if statements especially memebr.status.name .. .shoudl be equal to perscom.user.status.leave somethign like this
 
-      if (unitName.toLowerCase().includes("tacdevron") || unitName.toLowerCase().includes('green team')) {
+      if (
+        unitName.toLowerCase().includes("tacdevron") ||
+        unitName.toLowerCase().includes("green team")
+      ) {
         targetSectionsMap = tacdevronSections;
       } else if (unitName.toLowerCase().includes("160th")) {
         targetSectionsMap = soarSections;
+      } else if (
+        unitName.toLowerCase().includes("discharge") &&
+        member.status?.name.toLowerCase() === "leave of absence"
+      ) {
+        console.log(member);
+        targetSectionsMap = dischargedSections;
       } else {
+        console.log(
+          `Skipping member ${member.name} with unit ${unitName} - does not belong to Tacdevron or 160th`
+        );
         return;
       }
 
@@ -74,7 +94,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         targetSectionsMap.set(unitId, {
           id: unitId,
           name: unitName,
-          personnel: []
+          personnel: [],
         });
       }
 
@@ -85,10 +105,11 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         name: member.name,
         rank: member.rank?.name || "Unknown",
         rankImage: member.rank?.id
-          ? ranks.find(r => r.id === member.rank?.id)?.image?.image_url || `/ranks/${member.rank.abbreviation}.svg`
+          ? ranks.find((r) => r.id === member.rank?.id)?.image?.image_url ||
+            `/ranks/${member.rank.abbreviation}.svg`
           : undefined,
         position: member.position?.name || "Unknown",
-        status: member.status?.name || "Unknown"
+        status: member.status?.name || "Unknown",
       });
     });
 
@@ -99,7 +120,6 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
         const aIsGreenTeam = aName.includes("green team");
         const bIsGreenTeam = bName.includes("green team");
-
 
         const aHasCommand = aName.includes("command");
         const bHasCommand = bName.includes("command");
@@ -120,21 +140,34 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       });
     };
 
-    tacdevronUnit.sections = sortSections(Array.from(tacdevronSections.values()));
+    tacdevronUnit.sections = sortSections(
+      Array.from(tacdevronSections.values())
+    );
     soarUnit.sections = sortSections(Array.from(soarSections.values()));
+    dischargedUnit.sections = sortSections(
+      Array.from(dischargedSections.values())
+    );
 
     const unitsWithPersonnel: MainUnit[] = [];
-    if (tacdevronUnit.sections.length > 0) unitsWithPersonnel.push(tacdevronUnit);
+    if (tacdevronUnit.sections.length > 0)
+      unitsWithPersonnel.push(tacdevronUnit);
     if (soarUnit.sections.length > 0) unitsWithPersonnel.push(soarUnit);
+    if (dischargedUnit.sections.length > 0)
+      unitsWithPersonnel.push(dischargedUnit);
 
     setMainUnits(unitsWithPersonnel);
 
-    if (unitsWithPersonnel.length > 0 && !unitsWithPersonnel.some(unit => unit.id === selectedMainUnit)) {
+    if (
+      unitsWithPersonnel.length > 0 &&
+      !unitsWithPersonnel.some((unit) => unit.id === selectedMainUnit)
+    ) {
       setSelectedMainUnit(unitsWithPersonnel[0].id);
     }
   }, [members, ranks, selectedMainUnit]);
 
-  const currentMainUnit = mainUnits.find((unit) => unit.id === selectedMainUnit);
+  const currentMainUnit = mainUnits.find(
+    (unit) => unit.id === selectedMainUnit
+  );
 
   return (
     <>
@@ -154,12 +187,20 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       <div className="space-y-6">
         {currentMainUnit?.sections.map((section) => (
           <Card key={section.id} className="overflow-hidden">
-            <CardTitle className="p-4 bg-accent/10 border-b border-border">{section.name}</CardTitle>
+            <CardTitle className="p-4 bg-accent/10 border-b border-border">
+              {section.name}
+            </CardTitle>
             <CardContent className="p-0">
               <ul className="divide-y divide-border">
                 {section.personnel.map((person) => (
-                  <li key={person.id} className="hover:bg-accent/5 transition-colors">
-                    <Link href={`/perscom/user/${person.id}`} className="block p-4">
+                  <li
+                    key={person.id}
+                    className="hover:bg-accent/5 transition-colors"
+                  >
+                    <Link
+                      href={`/perscom/user/${person.id}`}
+                      className="block p-4"
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <div className="flex-shrink-0">
@@ -169,9 +210,12 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
                               width={24}
                               height={24}
                               className="h-6 w-6 rounded-full"
-                            />                          </div>
+                            />
+                          </div>
                           <div className="flex flex-col sm:flex-row sm:items-center">
-                            <span className="font-medium mr-2">{person.name}</span>
+                            <span className="font-medium mr-2">
+                              {person.name}
+                            </span>
                             <span className="text-sm text-gray-500 dark:text-zinc-400 hidden md:inline">
                               {person.rank}
                             </span>
@@ -195,5 +239,5 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         ))}
       </div>
     </>
-  )
-}
+  );
+};

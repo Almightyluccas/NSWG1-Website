@@ -1,13 +1,14 @@
-import type { Metadata } from "next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
+import type { Metadata } from "next";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Naval Special Warfare Group One",
-  description: "Privacy policy and data protection information for NSWG1 Arma 3 milsim unit website.",
-}
+  description:
+    "Privacy policy and data protection information for NSWG1 Arma 3 milsim unit website.",
+};
 
 export default function PrivacyPage() {
   return (
@@ -21,20 +22,30 @@ export default function PrivacyPage() {
                 Privacy <span className="text-accent">Policy</span>
               </h1>
               <p className="text-zinc-400 text-lg">
-                Your privacy is important to us. This policy explains how we collect, use, and protect your information.
+                Your privacy is important to us. This policy explains how we
+                collect, use, and protect your information.
               </p>
-              <p className="text-zinc-500 text-sm mt-2">Last updated: {new Date().toLocaleDateString()}</p>
+              <p className="text-zinc-500 text-sm mt-2">
+                Last updated: {new Date().toLocaleDateString()}
+              </p>
             </div>
 
             <div className="space-y-8">
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-accent">Information We Collect</CardTitle>
+                  <CardTitle className="text-accent">
+                    Information We Collect
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="font-semibold text-white mb-2">Personal Information</h3>
-                    <p className="text-zinc-300">When you join our unit or use our services, we may collect:</p>
+                    <h3 className="font-semibold text-white mb-2">
+                      Personal Information
+                    </h3>
+                    <p className="text-zinc-300">
+                      When you join our unit or use our services, we may
+                      collect:
+                    </p>
                     <ul className="list-disc list-inside text-zinc-300 mt-2 space-y-1">
                       <li>Discord username and ID</li>
                       <li>Steam profile information</li>
@@ -46,7 +57,9 @@ export default function PrivacyPage() {
                   <Separator className="bg-zinc-800" />
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">Automatically Collected Information</h3>
+                    <h3 className="font-semibold text-white mb-2">
+                      Automatically Collected Information
+                    </h3>
                     <ul className="list-disc list-inside text-zinc-300 space-y-1">
                       <li>IP address and location data</li>
                       <li>Browser type and version</li>
@@ -59,7 +72,9 @@ export default function PrivacyPage() {
 
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-accent">How We Use Your Information</CardTitle>
+                  <CardTitle className="text-accent">
+                    How We Use Your Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside text-zinc-300 space-y-2">
@@ -74,28 +89,38 @@ export default function PrivacyPage() {
 
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-accent">Cookies and Tracking</CardTitle>
+                  <CardTitle className="text-accent">
+                    Cookies and Tracking
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="font-semibold text-white mb-2">Essential Cookies</h3>
+                    <h3 className="font-semibold text-white mb-2">
+                      Essential Cookies
+                    </h3>
                     <p className="text-zinc-300">
-                      Required for basic website functionality, including authentication and security.
+                      Required for basic website functionality, including
+                      authentication and security.
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">Analytics Cookies</h3>
+                    <h3 className="font-semibold text-white mb-2">
+                      Analytics Cookies
+                    </h3>
                     <p className="text-zinc-300">
-                      Help us understand how visitors use our site to improve user experience. We use Vercel Analytics for
-                      this purpose.
+                      Help us understand how visitors use our site to improve
+                      user experience. We use Vercel Analytics for this purpose.
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">Managing Cookies</h3>
+                    <h3 className="font-semibold text-white mb-2">
+                      Managing Cookies
+                    </h3>
                     <p className="text-zinc-300">
-                      You can control cookies through your browser settings or our cookie consent banner.
+                      You can control cookies through your browser settings or
+                      our cookie consent banner.
                     </p>
                   </div>
                 </CardContent>
@@ -103,22 +128,30 @@ export default function PrivacyPage() {
 
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-accent">Data Sharing and Third Parties</CardTitle>
+                  <CardTitle className="text-accent">
+                    Data Sharing and Third Parties
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-zinc-300 mb-4">We do not sell your personal information. We may share data with:</p>
+                  <p className="text-zinc-300 mb-4">
+                    We do not sell your personal information. We may share data
+                    with:
+                  </p>
                   <ul className="list-disc list-inside text-zinc-300 space-y-2">
                     <li>
-                      <strong>Discord:</strong> For authentication and communication
+                      <strong>Discord:</strong> For authentication and
+                      communication
                     </li>
                     <li>
-                      <strong>Steam:</strong> For game integration and verification
+                      <strong>Steam:</strong> For game integration and
+                      verification
                     </li>
                     <li>
                       <strong>Vercel:</strong> For hosting and analytics
                     </li>
                     <li>
-                      <strong>PERSCOM:</strong> For military simulation management
+                      <strong>PERSCOM:</strong> For military simulation
+                      management
                     </li>
                   </ul>
                 </CardContent>
@@ -146,7 +179,8 @@ export default function PrivacyPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-zinc-300">
-                    We implement appropriate security measures to protect your information, including:
+                    We implement appropriate security measures to protect your
+                    information, including:
                   </p>
                   <ul className="list-disc list-inside text-zinc-300 mt-2 space-y-1">
                     <li>Encrypted data transmission (HTTPS)</li>
@@ -163,15 +197,20 @@ export default function PrivacyPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-zinc-300 mb-4">
-                    If you have questions about this privacy policy or your data, contact us:
+                    If you have questions about this privacy policy or your
+                    data, contact us:
                   </p>
                   <div className="space-y-2 text-zinc-300">
                     <p>
-                      <strong>Discord:</strong> Join our server for immediate assistance
+                      <strong>Discord:</strong> Join our server for immediate
+                      assistance
                     </p>
                     <p>
                       <strong>Website:</strong>{" "}
-                      <Link href="/join" className="text-accent hover:underline">
+                      <Link
+                        href="/join"
+                        className="text-accent hover:underline"
+                      >
                         Visit our join page
                       </Link>
                     </p>
@@ -181,19 +220,25 @@ export default function PrivacyPage() {
 
               <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
-                  <CardTitle className="text-accent">Changes to This Policy</CardTitle>
+                  <CardTitle className="text-accent">
+                    Changes to This Policy
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-zinc-300">
-                    We may update this privacy policy from time to time. We will notify you of any significant changes by
-                    posting the new policy on this page and updating the "last updated" date.
+                    We may update this privacy policy from time to time. We will
+                    notify you of any significant changes by posting the new
+                    policy on this page and updating the "last updated" date.
                   </p>
                 </CardContent>
               </Card>
             </div>
 
             <div className="text-center mt-12">
-              <Link href="/" className="inline-flex items-center text-accent hover:text-accent/80 transition-colors">
+              <Link
+                href="/"
+                className="inline-flex items-center text-accent hover:text-accent/80 transition-colors"
+              >
                 ← Back to Home
               </Link>
             </div>
@@ -201,6 +246,5 @@ export default function PrivacyPage() {
         </div>
       </div>
     </>
-
-  )
+  );
 }
