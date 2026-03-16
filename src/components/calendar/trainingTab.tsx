@@ -401,7 +401,7 @@ function DeleteTrainingModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Training</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{training?.name}"? This will also
+            Are you sure you want to delete &quot;{training?.name}&quot;? This will also
             delete all RSVPs for this training session. Attendance records will
             be preserved. This action cannot be undone.
           </AlertDialogDescription>
@@ -481,6 +481,7 @@ export function TrainingTab() {
 
   useEffect(() => {
     filterUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, roleFilter, searchTerm]);
 
   useEffect(() => {
@@ -1312,7 +1313,7 @@ export function TrainingTab() {
                                     ) : (
                                       <XCircle className="h-4 w-4 mr-1" />
                                     )}
-                                    Can't Attend
+                                    Can&apos;t Attend
                                   </Button>
                                 </>
                               );
@@ -1433,7 +1434,7 @@ export function TrainingTab() {
                                       <div className="flex items-center gap-2 mb-2">
                                         <XCircle className="h-4 w-4 text-red-500" />
                                         <span className="text-sm font-medium">
-                                          Can't Attend (
+                                          Can&apos;t Attend (
                                           {notAttendingRSVPs.length})
                                         </span>
                                       </div>

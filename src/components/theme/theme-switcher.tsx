@@ -83,11 +83,10 @@ export function ThemeSwitcher() {
                 <button
                   key={theme.name}
                   onClick={() => changeTheme(theme)}
-                  className={`flex items-center w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors ${
-                    currentAccent.name === theme.name
+                  className={`flex items-center w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors ${currentAccent.name === theme.name
                       ? "bg-gray-100 dark:bg-zinc-700"
                       : ""
-                  }`}
+                    }`}
                 >
                   <div
                     className="w-6 h-6 rounded-full mr-3"

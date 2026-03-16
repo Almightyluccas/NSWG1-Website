@@ -135,6 +135,7 @@ export function RecurringTrainingManager() {
     if (!isCollapsed) {
       handleProcessTrainings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-process when expanding the section
@@ -290,8 +291,8 @@ export function RecurringTrainingManager() {
                                     Delete Recurring Training
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete "
-                                    {training.name}"? This will also delete all
+                                    Are you sure you want to delete &quot;
+                                    {training.name}&quot;? This will also delete all
                                     associated training instances. This action
                                     cannot be undone.
                                   </AlertDialogDescription>
@@ -335,7 +336,7 @@ export function RecurringTrainingManager() {
                         sessions
                       </li>
                       <li>
-                        • Click "Process Now" to manually check for new sessions
+                        • Click &quot;Process Now&quot; to manually check for new sessions
                         to create
                       </li>
                     </ul>

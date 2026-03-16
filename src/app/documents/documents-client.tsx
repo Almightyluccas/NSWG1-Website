@@ -142,7 +142,7 @@ export function DocumentsClient() {
 
           {filteredDocuments.length === 0 && searchTerm && (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              No documents found matching "{searchTerm}"
+              No documents found matching &quot;{searchTerm}&quot;
             </div>
           )}
         </div>

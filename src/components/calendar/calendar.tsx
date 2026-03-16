@@ -148,6 +148,7 @@ export function AttendanceCalendar({
     };
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth, session]);
 
   const getAttendanceForDate = (date: Date) => {
@@ -605,7 +606,7 @@ export function AttendanceCalendar({
                                     }
                                   >
                                     <XCircle className="h-3 w-3 mr-1" />
-                                    Can't Attend
+                                    Can&apos;t Attend
                                   </Button>
                                 </div>
                               </>
@@ -627,7 +628,7 @@ export function AttendanceCalendar({
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <XCircle className="h-3 w-3 text-red-500" />
-                                  <span>Can't Attend: {notAttendingCount}</span>
+                                  <span>Can&apos;t Attend: {notAttendingCount}</span>
                                 </div>
                               </div>
                             </div>
@@ -941,7 +942,7 @@ export function AttendanceCalendar({
                                     }
                                   >
                                     <XCircle className="h-3 w-3 mr-1" />
-                                    Can't Attend
+                                    Can&apos;t Attend
                                   </Button>
                                 </div>
                               </>
@@ -963,7 +964,7 @@ export function AttendanceCalendar({
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <XCircle className="h-3 w-3 text-red-500" />
-                                  <span>Can't Attend: {notAttendingCount}</span>
+                                  <span>Can&apos;t Attend: {notAttendingCount}</span>
                                 </div>
                               </div>
                             </div>

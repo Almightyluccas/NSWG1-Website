@@ -2,8 +2,10 @@
 @import "tw-animate-css";
 
 [cmdk-item][data-disabled="false"] {
-  opacity: 1 !important; /* Ensures it's fully visible */
-  pointer-events: auto !important; /* Ensures it's clickable */
+  opacity: 1 !important;
+  /* Ensures it's fully visible */
+  pointer-events: auto !important;
+  /* Ensures it's clickable */
 }
 
 @layer base {
@@ -31,8 +33,10 @@
     --radius: 0.5rem;
 
     /* Theme colors - Change these to update the entire site's color scheme */
-    --accent-color: 223, 192, 105; /* Default: Amber/Gold (RGB values) */
-    --accent-color-darker: 201, 168, 75; /* Darker shade for hover states */
+    --accent-color: 223, 192, 105;
+    /* Default: Amber/Gold (RGB values) */
+    --accent-color-darker: 201, 168, 75;
+    /* Darker shade for hover states */
 
     /* Light mode specific */
     --foreground-rgb: 0, 0, 0;
@@ -108,13 +112,61 @@ body {
   background-color: rgb(var(--accent-color-darker));
 }
 
-/* Card styles that adapt to theme */
 .theme-card {
   background-color: rgb(var(--card-bg));
   border-color: rgb(var(--card-border));
 }
 
-/* Grain overlay effect */
+.section-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-color));
+  opacity: 0.7;
+}
+
+.scan-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.accent-border-top {
+  border-top: 2px solid rgb(var(--accent-color));
+}
+
+.stencil-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.section-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(to right,
+      transparent,
+      rgb(var(--accent-color) / 0.3),
+      transparent);
+}
+
+.section-transition-dark {
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(24, 24, 27, 1) 100%);
+}
+
 .grain-overlay {
   position: absolute;
   top: 0;
@@ -129,28 +181,33 @@ body {
 }
 
 @keyframes grain {
+
   0%,
   100% {
     transform: translate(0, 0);
   }
+
   10% {
     transform: translate(-5%, -10%);
   }
+
   30% {
     transform: translate(3%, -15%);
   }
+
   50% {
     transform: translate(12%, 9%);
   }
+
   70% {
     transform: translate(9%, 4%);
   }
+
   90% {
     transform: translate(-1%, 7%);
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -283,6 +340,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

@@ -366,7 +366,7 @@ function DeleteCampaignModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{campaign?.name}"? This will also
+            Are you sure you want to delete &quot;{campaign?.name}&quot;? This will also
             delete all missions and RSVPs associated with this campaign.
             Attendance records will be preserved. This action cannot be undone.
           </AlertDialogDescription>
@@ -637,7 +637,7 @@ function DeleteMissionModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Mission</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{mission?.name}"? This will also
+            Are you sure you want to delete &quot;{mission?.name}&quot;? This will also
             delete all RSVPs for this mission. Attendance records will be
             preserved. This action cannot be undone.
           </AlertDialogDescription>
@@ -724,10 +724,12 @@ export function CampaignsTab() {
     if (isAdmin) {
       loadUsers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, isAdmin]);
 
   useEffect(() => {
     filterUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, roleFilter, searchTerm]);
 
   useEffect(() => {
@@ -1677,7 +1679,7 @@ export function CampaignsTab() {
                                           ) : (
                                             <XCircle className="h-4 w-4 mr-1" />
                                           )}
-                                          Can't Attend
+                                          Can&apos;t Attend
                                         </Button>
                                       </>
                                     )}
@@ -1777,7 +1779,7 @@ export function CampaignsTab() {
                                           <div className="flex items-center gap-2 mb-2">
                                             <XCircle className="h-4 w-4 text-red-500" />
                                             <span className="text-sm font-medium">
-                                              Can't Attend (
+                                              Can&apos;t Attend (
                                               {notAttendingRSVPs.length})
                                             </span>
                                           </div>

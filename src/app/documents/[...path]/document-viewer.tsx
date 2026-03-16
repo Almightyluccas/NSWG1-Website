@@ -86,7 +86,7 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              The document "{fileName}" could not be found or is no longer
+              The document &quot;{fileName}&quot; could not be found or is no longer
               available.
             </p>
             <Button

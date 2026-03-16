@@ -109,7 +109,7 @@ export function FormsClient() {
 
           {filteredForms.length === 0 && searchTerm && (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              No forms found matching "{searchTerm}"
+              No forms found matching &quot;{searchTerm}&quot;
             </div>
           )}
         </div>

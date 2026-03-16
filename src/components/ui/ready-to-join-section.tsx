@@ -12,7 +12,7 @@ export function ReadyToJoinSection() {
 
   const openRequirementsModal = (): void => setIsModalOpen(true);
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-24 relative overflow-hidden bg-zinc-900">
       <div className="absolute inset-0 z-0">
         {/*<Image src="/images/join-background.png" alt="Join NSWG1" fill className="object-cover opacity-40" />*/}
         {/* bg-gradient-to-b from-zinc-900/90 via-zinc-900/80 to-zinc-900*/}
@@ -22,13 +22,14 @@ export function ReadyToJoinSection() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto">
           <FadeIn>
-            <div className="bg-zinc-800/50 backdrop-blur-sm p-10 rounded-lg border border-zinc-700">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center">
+            <div className="bg-zinc-800/60 backdrop-blur-sm p-10 rounded-lg border border-zinc-700/50 accent-border-top">
+              <p className="section-label text-center mb-4">{"// Enlistment"}</p>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center uppercase tracking-wide">
                 Are <span className="text-accent">you</span> ready to join{" "}
                 <span className="text-accent">NSWG1</span>?
               </h2>
               <div className="h-1 w-24 bg-accent mx-auto mb-8"></div>
-              <p className="text-lg text-zinc-300 mb-8 text-center">
+              <p className="text-lg text-zinc-300 mb-8 text-center leading-relaxed">
                 Whether you&apos;re a seasoned MILSIM veteran or brand new to
                 the scene, experience military realism at its finest with Naval
                 Special Warfare Group One. Join an elite tactical team in Arma
@@ -40,7 +41,7 @@ export function ReadyToJoinSection() {
                 <Link href={"/join"}>
                   <Button
                     size="lg"
-                    className="bg-accent hover:bg-accent-darker text-black"
+                    className="bg-accent hover:bg-accent-darker text-black font-semibold uppercase tracking-wider"
                   >
                     Enlist Today
                   </Button>
@@ -49,7 +50,7 @@ export function ReadyToJoinSection() {
                   onClick={openRequirementsModal}
                   size="lg"
                   variant="outline"
-                  className="border-zinc-600 hover:bg-zinc-700"
+                  className="border-zinc-600 hover:bg-zinc-700 uppercase tracking-wider"
                 >
                   View Requirements
                 </Button>

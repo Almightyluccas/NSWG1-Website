@@ -18,12 +18,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType>({
   themes: defaultThemes,
-  currentAccent: defaultThemes[3],
-  setCurrentAccent: () => {},
-  addCustomTheme: () => {},
+  currentAccent: defaultThemes[1],
+  setCurrentAccent: () => { },
+  addCustomTheme: () => { },
   mode: "dark",
-  setMode: () => {},
-  toggleMode: () => {},
+  setMode: () => { },
+  toggleMode: () => { },
 });
 
 export const useTheme = () => useContext(ThemeContext);

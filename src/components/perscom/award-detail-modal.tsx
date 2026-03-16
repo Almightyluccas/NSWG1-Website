@@ -44,6 +44,7 @@ export function AwardDetailModal({
         </DialogHeader>
         <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 mb-4">
           <div className="flex-shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={award.imageUrl || "/placeholder.svg"}
               alt={award.name}

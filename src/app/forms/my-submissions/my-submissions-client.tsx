@@ -148,7 +148,7 @@ export function MySubmissionsClient({ userId }: MySubmissionsClientProps) {
           <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">No Submissions Found</h3>
           <p className="text-muted-foreground">
-            You haven't submitted any forms yet.
+            You haven&apos;t submitted any forms yet.
           </p>
         </div>
       ) : (

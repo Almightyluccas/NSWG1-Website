@@ -228,7 +228,7 @@ export default function PrivacyPage() {
                   <p className="text-zinc-300">
                     We may update this privacy policy from time to time. We will
                     notify you of any significant changes by posting the new
-                    policy on this page and updating the "last updated" date.
+                    policy on this page and updating the &quot;last updated&quot; date.
                   </p>
                 </CardContent>
               </Card>
