@@ -23,7 +23,7 @@ export function ReadyToJoinSection() {
         <div className="max-w-3xl mx-auto">
           <FadeIn>
             <div className="bg-zinc-800/60 backdrop-blur-sm p-10 rounded-lg border border-zinc-700/50 accent-border-top">
-              <p className="section-label text-center mb-4">{"// Enlistment"}</p>
+              <p className="section-label text-center mb-4">{"Enlistment"}</p>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center uppercase tracking-wide">
                 Are <span className="text-accent">you</span> ready to join{" "}
                 <span className="text-accent">NSWG1</span>?

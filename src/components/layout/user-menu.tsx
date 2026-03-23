@@ -9,8 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, UserPlus, ShieldUser } from "lucide-react";
-import Image from "next/image";
+import { User, LogOut, Settings, UserPlus, ShieldUser, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 
@@ -42,15 +41,11 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
         {session ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                  <Image
-                    src={session.user?.image || "/placeholder.svg"}
-                    alt={session.user?.name || "empty"}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-sm border border-transparent hover:border-zinc-700/60 hover:bg-zinc-800/50 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-accent">
+                <span className="font-mono text-xs text-zinc-300 uppercase tracking-widest">
+                  {session.user?.name || "UNKNOWN_USER"}
+                </span>
+                <ChevronDown className="h-3 w-3 text-zinc-500" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

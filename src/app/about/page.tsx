@@ -37,7 +37,7 @@ export default async function AboutPage() {
         <div className="container mx-auto px-4 z-10 pt-20">
           <div className="max-w-4xl mx-auto text-center">
             <FadeIn>
-              <p className="section-label mb-4">{"// About"}</p>
+              <p className="section-label mb-4">{"About"}</p>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-2 uppercase tracking-wide">
                 About <span className="text-accent">NSWG1</span>
               </h1>
@@ -74,7 +74,7 @@ export default async function AboutPage() {
             {/* Text Floating Box */}
             <FadeIn>
               <div className="h-full bg-zinc-900/70 backdrop-blur-md border-2 border-accent/60 rounded-lg p-10 shadow-[0_0_30px_rgba(var(--accent-color),0.08)] hover:shadow-[0_0_40px_rgba(var(--accent-color),0.15)] transition-all duration-500">
-                <p className="section-label mb-4">{"// Our Mission"}</p>
+                <p className="section-label mb-4">{"Our Mission"}</p>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">
                   Our Mission
                 </h2>
@@ -104,7 +104,7 @@ export default async function AboutPage() {
             <FadeIn delay={200}>
               <div className="h-full bg-zinc-900/70 backdrop-blur-md border-2 border-accent/60 rounded-lg overflow-hidden shadow-[0_0_30px_rgba(var(--accent-color),0.08)] hover:shadow-[0_0_40px_rgba(var(--accent-color),0.15)] transition-all duration-500 flex flex-col">
                 <p className="section-label mb-3 px-6 pt-6">
-                  {"// Elite Training"}
+                  {"Elite Training"}
                 </p>
                 <div className="flex-1 relative min-h-[400px]">
                   <Image
@@ -147,7 +147,7 @@ export default async function AboutPage() {
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40"></div>
-                <p className="section-label">{"// Core Values"}</p>
+                <p className="section-label">{"Core Values"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40"></div>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">
@@ -221,7 +221,7 @@ export default async function AboutPage() {
             <div className="text-center mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40"></div>
-                <p className="section-label">{"// Enlistment Requirements"}</p>
+                <p className="section-label">{"Enlistment Requirements"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40"></div>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-wide">
@@ -273,7 +273,7 @@ export default async function AboutPage() {
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40"></div>
-                <p className="section-label">{"// Command Staff"}</p>
+                <p className="section-label">{"Command Staff"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40"></div>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">

@@ -13,9 +13,15 @@ import { ReadyToJoinSection } from "@/components/ui/ready-to-join-section";
 import Link from "next/link";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
+
+  // Redirect members to their dashboard
+  if (session?.user?.roles?.includes("member")) {
+    redirect("/dashboard");
+  }
   const defaultImage = "https://objectstorage.us-ashburn-1.oraclecloud.com/p/iLmoMrwA0_K72E-4Zhpr0pHNkbV06LFu10NzW8ZrDKj7gUS5by1WoD8eZpCSP4Xe/n/id8volxantwo/b/nswg1-bucket/o/backgrounds/home-backgroundArma3_x64_2025-12-06_12-24-53_6102.png";
   let heroImageSrc =
     session?.user?.preferences?.homepageImageUrl || defaultImage;
@@ -79,7 +85,7 @@ export default async function Home() {
 
                 {/* Hero Content */}
                 <div className="flex-1">
-                  <p className="section-label mb-4">{"// Naval Special Warfare"}</p>
+                  <p className="section-label mb-4">{"Naval Special Warfare"}</p>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-2 leading-[1.1] text-white uppercase tracking-wide">
                     <span className="text-accent">NAVAL</span> SPECIAL
                     <br />
@@ -182,7 +188,7 @@ export default async function Home() {
             {/* Text Floating Box */}
             <FadeIn>
               <div className="h-full bg-zinc-900/70 backdrop-blur-md border-2 border-accent/60 rounded-lg p-10 shadow-[0_0_30px_rgba(var(--accent-color),0.08)] hover:shadow-[0_0_40px_rgba(var(--accent-color),0.15)] transition-all duration-500">
-                <p className="section-label mb-4">{"// About"}</p>
+                <p className="section-label mb-4">{"About"}</p>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">
                   About us
                 </h2>
@@ -203,7 +209,7 @@ export default async function Home() {
             {/* Video Floating Box */}
             <FadeIn delay={200}>
               <div className="h-full bg-zinc-900/70 backdrop-blur-md border-2 border-accent/60 rounded-lg p-4 shadow-[0_0_30px_rgba(var(--accent-color),0.08)] hover:shadow-[0_0_40px_rgba(var(--accent-color),0.15)] transition-all duration-500 flex flex-col">
-                <p className="section-label mb-3 px-2">{"// Operations Overview"}</p>
+                <p className="section-label mb-3 px-2">{"Operations Overview"}</p>
                 <div className="flex-1">
                   <YouTubePlayer
                     videoId="LyKKQ4Ocowg"
@@ -237,7 +243,7 @@ export default async function Home() {
               {/* Flanking lines around label */}
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40"></div>
-                <p className="section-label">{"// Career Paths"}</p>
+                <p className="section-label">{"Career Paths"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40"></div>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">

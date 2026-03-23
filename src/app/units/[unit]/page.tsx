@@ -5,15 +5,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { InfoCard } from "@/components/ui/info-card";
-import { Compass, GlobeIcon, GraduationCap, ChevronRight } from "lucide-react";
 import { getUnit, getAllUnitSlugs } from "@/data/unit-data";
-
-const iconMap = {
-  compass: <Compass className="h-10 w-10 text-accent" />,
-  globe: <GlobeIcon className="h-10 w-10 text-accent" />,
-  "graduation-cap": <GraduationCap className="h-10 w-10 text-accent" />,
-};
-
 export function generateStaticParams() {
   return getAllUnitSlugs().map((slug) => ({ unit: slug }));
 }
@@ -95,7 +87,7 @@ export default async function UnitPage({
             <div className="text-center mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40" />
-                <p className="section-label">{"// Specializations"}</p>
+                <p className="section-label">{"Specializations"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
               </div>
               <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-wide">
@@ -145,7 +137,7 @@ export default async function UnitPage({
             <div className="text-center mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40" />
-                <p className="section-label">{"// Selection Process"}</p>
+                <p className="section-label">{"Selection Process"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
               </div>
               <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-wide">
@@ -155,79 +147,147 @@ export default async function UnitPage({
             </div>
           </FadeIn>
 
-          <div className="max-w-3xl mx-auto relative">
-            {/* Vertical connector line */}
-            <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-accent via-accent/50 to-accent" />
+          <div className="max-w-5xl mx-auto relative">
+            {/* Center vertical connector line (hidden on mobile, visible on md+) */}
+            <div className="hidden md:block absolute left-1/2 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent transform -translate-x-1/2" />
 
-            <div className="space-y-0">
+            <div className="space-y-6 md:space-y-12">
               {/* START marker */}
-              <FadeIn direction="left">
-                <div className="flex items-center gap-6 md:gap-8 mb-8">
-                  <div className="flex-shrink-0 w-12 md:w-16 flex justify-center z-10">
-                    <div className="w-4 h-4 rounded-full bg-accent shadow-[0_0_14px_rgba(var(--accent-color),0.6)]" />
+              <FadeIn direction="up">
+                <div className="flex justify-center mb-8 relative z-10 hidden md:flex">
+                  <div className="bg-zinc-950 px-4 py-1 border border-accent/40 rounded-sm shadow-[0_0_15px_rgba(var(--accent-color),0.2)]">
+                    <span className="text-accent font-mono text-xs tracking-[0.3em] uppercase font-semibold">
+                      [ INITIATION ]
+                    </span>
                   </div>
-                  <span className="text-accent font-mono text-xs tracking-[0.3em] uppercase font-semibold">
-                    Start Here
-                  </span>
                 </div>
               </FadeIn>
 
               {unit.pipelineSteps.map((step, i) => {
                 const padded = String(i + 1).padStart(2, "0");
                 const isLast = i === unit.pipelineSteps.length - 1;
+                const isEven = i % 2 === 0; // true for left side, false for right side
+
                 return (
-                  <FadeIn key={step} delay={i * 150} direction="left">
-                    <div className="flex items-stretch gap-6 md:gap-8 group mb-8">
-                      {/* Node */}
-                      <div className="flex-shrink-0 flex flex-col items-center z-10">
+                  <FadeIn
+                    key={step}
+                    delay={i * 150}
+                    direction={isEven ? "right" : "left"} // Opposite direction to animate inwards
+                  >
+                    <div className="group relative z-10">
+                      {/* Mobile Layout (Stacked) */}
+                      <div className="md:hidden flex items-stretch gap-4 border-l-2 border-accent/40 pl-4 py-2 relative">
+                        {/* Connecting dot for mobile */}
+                        <div className="absolute left-[-5px] top-6 w-2 h-2 rounded-full bg-accent" />
+                        
                         <div
-                          className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
+                          className={`flex-1 rounded-sm p-5 border-l-4 transition-all duration-300 ${
                             isLast
-                              ? "bg-accent/20 border-2 border-accent shadow-[0_0_25px_rgba(var(--accent-color),0.4)]"
-                              : "bg-zinc-800 border-2 border-zinc-400 group-hover:border-accent group-hover:shadow-[0_0_18px_rgba(var(--accent-color),0.2)]"
+                              ? "bg-accent/10 border-accent shadow-[0_0_15px_rgba(var(--accent-color),0.1)]"
+                              : "bg-zinc-900 border-zinc-700 active:border-accent"
                           }`}
                         >
-                          <span
-                            className={`font-mono font-bold text-sm md:text-base transition-colors duration-300 ${
-                              isLast
-                                ? "text-accent"
-                                : "text-white group-hover:text-white"
+                          <span className="text-accent font-mono text-[10px] tracking-widest uppercase block mb-1">
+                            {`PHASE_${padded}`}
+                          </span>
+                          <h4
+                            className={`text-base font-bold uppercase tracking-wide ${
+                              isLast ? "text-accent" : "text-zinc-200"
                             }`}
                           >
-                            {padded}
-                          </span>
+                            {step}
+                          </h4>
                         </div>
                       </div>
 
-                      {/* Content card */}
-                      <div
-                        className={`flex-1 rounded-lg px-6 py-5 transition-all duration-500 ${
-                          isLast
-                            ? "bg-accent/10 border border-accent/50 shadow-[0_0_25px_rgba(var(--accent-color),0.12)]"
-                            : "bg-zinc-900/80 border border-zinc-700/60 group-hover:border-accent/40 group-hover:shadow-[0_0_18px_rgba(var(--accent-color),0.06)]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-accent font-mono text-xs tracking-widest uppercase">
-                              Phase {padded}
-                            </span>
-                            <h4
-                              className={`text-lg md:text-xl font-bold uppercase tracking-wide mt-1 ${
-                                isLast ? "text-accent" : "text-zinc-200"
+                      {/* Desktop Layout (Alternating) */}
+                      <div className="hidden md:flex items-center justify-center w-full relative">
+                        
+                        {/* Left Side Content */}
+                        <div className={`w-1/2 pr-12 flex ${isEven ? 'justify-end' : 'justify-end opacity-0 pointer-events-none'}`}>
+                          {isEven && (
+                            <div className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:-translate-x-2 ${
+                              isLast ? 'bg-accent/5' : 'bg-zinc-900/60'
+                            }`}>
+                              {/* Background scanline effect */}
+                              <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none" />
+                              
+                              {/* Content box with tech borders */}
+                              <div className={`relative p-6 border transition-colors duration-300 ${
+                                isLast ? 'border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]' : 'border-zinc-700/60 group-hover:border-accent/40'
                               }`}
-                            >
-                              {step}
-                            </h4>
-                          </div>
-                          <ChevronRight
-                            className={`h-5 w-5 transition-all duration-300 ${
-                              isLast
-                                ? "text-accent"
-                                : "text-zinc-600 group-hover:text-accent/60 group-hover:translate-x-1"
-                            }`}
-                          />
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}>
+                                
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="text-accent font-mono text-xs tracking-widest">
+                                    [ PHASE {padded} ]
+                                  </span>
+                                  {isLast ? (
+                                    <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                                  ) : (
+                                    <span className="text-zinc-600 font-mono text-[10px]">{'>>'}</span>
+                                  )}
+                                </div>
+                                <h4 className={`text-xl font-bold uppercase tracking-wide mt-2 ${
+                                  isLast ? 'text-accent' : 'text-zinc-100 group-hover:text-white'
+                                }`}>
+                                  {step}
+                                </h4>
+                              </div>
+                            </div>
+                          )}
                         </div>
+
+                        {/* Center Node (Diamond) */}
+                        <div className="absolute left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
+                          <div className={`w-8 h-8 rotate-45 border-2 flex items-center justify-center transition-all duration-500 ${
+                            isLast 
+                              ? 'bg-accent border-accent shadow-[0_0_20px_rgba(var(--accent-color),0.5)]' 
+                              : 'bg-zinc-900 border-zinc-500 group-hover:border-accent group-hover:bg-accent/20'
+                          }`}>
+                            <div className={`w-2 h-2 bg-zinc-900 transition-colors duration-500 ${isLast ? 'bg-zinc-950' : 'group-hover:bg-accent'}`} />
+                          </div>
+                          {/* Horizontal connector line to card */}
+                          <div className={`absolute top-1/2 w-12 h-px -z-10 bg-gradient-to-${isEven ? 'l' : 'r'} from-accent/50 to-transparent ${
+                            isEven ? 'right-full' : 'left-full'
+                          }`} />
+                        </div>
+
+                        {/* Right Side Content */}
+                        <div className={`w-1/2 pl-12 flex ${!isEven ? 'justify-start' : 'justify-start opacity-0 pointer-events-none'}`}>
+                          {!isEven && (
+                            <div className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:translate-x-2 ${
+                              isLast ? 'bg-accent/5' : 'bg-zinc-900/60'
+                            }`}>
+                              {/* Background scanline effect */}
+                              <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none" />
+                              
+                              {/* Content box with tech borders */}
+                              <div className={`relative p-6 border transition-colors duration-300 ${
+                                isLast ? 'border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]' : 'border-zinc-700/60 group-hover:border-accent/40'
+                              }`}
+                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}>
+                                
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="text-accent font-mono text-xs tracking-widest">
+                                    [ PHASE {padded} ]
+                                  </span>
+                                  {isLast ? (
+                                    <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                                  ) : (
+                                    <span className="text-zinc-600 font-mono text-[10px]">{'>>'}</span>
+                                  )}
+                                </div>
+                                <h4 className={`text-xl font-bold uppercase tracking-wide mt-2 ${
+                                  isLast ? 'text-accent' : 'text-zinc-100 group-hover:text-white'
+                                }`}>
+                                  {step}
+                                </h4>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                       </div>
                     </div>
                   </FadeIn>
@@ -235,14 +295,13 @@ export default async function UnitPage({
               })}
 
               {/* END marker */}
-              <FadeIn delay={unit.pipelineSteps.length * 150} direction="left">
-                <div className="flex items-center gap-6 md:gap-8">
-                  <div className="flex-shrink-0 w-12 md:w-16 flex justify-center z-10">
-                    <div className="w-4 h-4 rounded-full bg-accent shadow-[0_0_12px_rgba(var(--accent-color),0.5)]" />
+              <FadeIn delay={unit.pipelineSteps.length * 150} direction="up">
+                 <div className="flex justify-center mt-8 relative z-10 hidden md:flex">
+                  <div className="bg-zinc-950 px-6 py-2 border-x-2 border-accent shadow-[0_0_20px_rgba(var(--accent-color),0.3)] backdrop-blur-sm">
+                    <span className="text-accent font-mono text-xs tracking-[0.4em] uppercase font-bold">
+                      OPERATIONAL STATUS ACHIEVED 
+                    </span>
                   </div>
-                  <span className="text-accent font-mono text-xs tracking-[0.3em] uppercase font-bold">
-                    Operational
-                  </span>
                 </div>
               </FadeIn>
             </div>
@@ -259,7 +318,7 @@ export default async function UnitPage({
             <div className="text-center mb-12">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40" />
-                <p className="section-label">{"// Unit Overview"}</p>
+                <p className="section-label">{"Unit Overview"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
               </div>
             </div>
@@ -268,7 +327,6 @@ export default async function UnitPage({
             {unit.infoCards.map((card, i) => (
               <InfoCard
                 key={card.title}
-                icon={iconMap[card.iconName]}
                 title={card.title}
                 content={card.content}
                 image={card.image}
@@ -291,7 +349,7 @@ export default async function UnitPage({
             <div className="text-center mb-16">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40" />
-                <p className="section-label">{"// Enlistment"}</p>
+                <p className="section-label">{"Enlistment"}</p>
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
               </div>
               <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-wide">

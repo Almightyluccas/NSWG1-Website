@@ -1,5 +1,7 @@
 "use server";
 
+import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { Navbar } from "@/components/layout/navbar";
 import { SettingsClient } from "./settings-client";
 import { getServerSession } from "next-auth";
@@ -11,6 +13,8 @@ import { CustomHeroImages } from "@/types/database";
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
+
+  const isMember = session?.user?.roles?.includes("member");
 
   const customHeroImages: CustomHeroImages[] =
     await database.get.userCustomHeroImages(session.user.id!);
@@ -25,25 +29,36 @@ export default async function SettingsPage() {
     return image;
   });
 
+  const pageContent = (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-zinc-100">Settings</h1>
+        <p className="text-zinc-400 mt-2">
+          Manage your account settings and website preferences
+        </p>
+      </div>
+      <SettingsClient user={session.user} customHeroImages={customHeroImages} />
+    </div>
+  );
+
+  if (isMember) {
+    return (
+      <div className="flex h-screen bg-zinc-900 overflow-hidden">
+        <DashboardSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <DashboardHeader />
+          <main className="flex-1 overflow-y-auto p-6">{pageContent}</main>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900">
+    <div className="min-h-screen bg-zinc-900">
       <Navbar />
       <main className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Settings
-              </h1>
-              <p className="text-gray-600 dark:text-zinc-400 mt-2">
-                Manage your account settings and website preferences
-              </p>
-            </div>
-            <SettingsClient
-              user={session.user}
-              customHeroImages={customHeroImages}
-            />
-          </div>
+          <div className="max-w-6xl mx-auto">{pageContent}</div>
         </div>
       </main>
     </div>

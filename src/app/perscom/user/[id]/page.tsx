@@ -124,33 +124,17 @@ export default async function UserProfilePage({
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="mb-6">
-          <Link
-            href="/perscom/roster"
-            className="text-accent hover:text-accent-darker transition-colors flex items-center"
-          >
-            ← Back to Roster
-          </Link>
-        </div>
+      <div className="w-full px-4 md:px-8 pt-24 pb-12">
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold">User not found</h2>
-          <p className="mt-2">The requested user profile could not be found.</p>
+          <h2 className="text-xl font-semibold text-zinc-100">User not found</h2>
+          <p className="mt-2 text-zinc-400">The requested user profile could not be found.</p>
         </div>
       </div>
     );
   }
   return (
     <ServerRoleGuard allowedRoles={[UserRole.member]}>
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="mb-6">
-          <Link
-            href="/perscom/roster"
-            className="text-accent hover:text-accent-darker transition-colors flex items-center"
-          >
-            ← Back to Roster
-          </Link>
-        </div>
+      <div className="w-full px-4 md:px-8 py-6">
         <UserProfile
           user={user}
           awardImages={awardImages}
