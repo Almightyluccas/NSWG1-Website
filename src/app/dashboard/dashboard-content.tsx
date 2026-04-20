@@ -1,814 +1,251 @@
-"use client";
+// removed use client to make this a Server Component
 
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import PersonnelFileServerWidget from "@/components/dashboard/widgets/personnel-file-server-widget";
+import UpcomingOpsServerWidget from "@/components/dashboard/widgets/upcoming-ops-server-widget";
+import AttendanceServerWidget from "@/components/dashboard/widgets/attendance-server-widget";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import {
-  Info,
   Bell,
   Target,
   CalendarDays,
   FolderOpen,
+  BarChart3,
 } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { AwardDetailModal } from "@/components/perscom/award-detail-modal";
+import { Badge } from "@/components/ui/badge";
 import { PerscomUserResponse } from "@/types/api/perscomApi";
-import { useState } from "react";
 import Image from "next/image";
-import { sanitizeHtmlClient } from "@/lib/sanitize/sanitizeHtmlClient";
+import { differenceInMonths, differenceInYears } from "date-fns";
+
+import { type WidgetConfig } from "@/components/dashboard/widgets/widget-types";
+import { WidgetWrapper } from "@/components/dashboard/widgets/widget-wrapper";
+import { AlertCenterWidget } from "@/components/dashboard/widgets/alert-center-widget";
+import { DirectivesWidget } from "@/components/dashboard/widgets/directives-widget";
+import { UpcomingOpsWidget } from "@/components/dashboard/widgets/upcoming-ops-widget";
+import { AttendanceWidget } from "@/components/dashboard/widgets/attendance-widget";
+import { PersonnelFileWidget } from "@/components/dashboard/widgets/personnel-file-widget";
 
 interface DashboardContentProps {
   user: PerscomUserResponse;
-  awardImages: { id: number; imageUrl: string | null; name: string }[];
   rankImage: { id: number; imageUrl: string | null; name: string } | null;
-  qualificationData: { id: number; name: string; received: string }[];
-  rankHistory: {
-    id: number;
-    recordId: number;
-    imageUrl: string | null;
-    name: string;
-    date: string;
-    text: string;
-  }[];
-  assignmentHistory: {
-    id: number;
-    unitId: number;
-    positionId: number;
-    unitName: string;
-    positionName: string;
-    date: string;
-    text: string;
-    type: string;
-  }[];
-  combatHistory: {
-    id: number;
-    date: string;
-    text: string;
-    author: number;
-    documentParsed: string | null;
-  }[];
+  currentUserId: string;
 }
+
+function WidgetSkeleton() {
+  return (
+    <div className="space-y-3 p-3 pt-1">
+      <Skeleton className="h-10 w-full bg-zinc-200 dark:bg-zinc-900/60 rounded-lg" />
+      <Skeleton className="h-16 w-full bg-zinc-200 dark:bg-zinc-900/60 rounded-lg" />
+      <Skeleton className="h-16 w-full bg-zinc-200 dark:bg-zinc-900/60 rounded-lg" />
+    </div>
+  );
+}
+
+// ── Widget Layout Configuration ──
+// This array controls the order, visibility, and sizing of all dashboard widgets.
+// Future: users will override this with a saved layout from the database.
+const WIDGET_LAYOUT: WidgetConfig[] = [
+  { id: "alerts", title: "Alert Center", icon: Bell, size: "sm" },
+  { id: "directives", title: "Active Directives", icon: Target, size: "sm" },
+  { id: "upcoming-ops", title: "Upcoming Ops", icon: CalendarDays, size: "sm" },
+  { id: "attendance", title: "Attendance Summary", icon: BarChart3, size: "md" },
+  { id: "personnel-file", title: "Awards Rack", icon: FolderOpen, size: "sm" },
+];
 
 export function DashboardContent({
   user,
-  awardImages,
   rankImage,
-  qualificationData,
-  rankHistory,
-  assignmentHistory,
-  combatHistory,
+  currentUserId,
 }: DashboardContentProps) {
-  const [selectedAward, setSelectedAward] = useState<any>(null);
-  const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
-  const [awardsPage, setAwardsPage] = useState(1);
-  const [qualificationsPage, setQualificationsPage] = useState(1);
-  const [rankHistoryPage, setRankHistoryPage] = useState(1);
-  const [combatPage, setCombatPage] = useState(1);
-  const [assignmentPage, setAssignmentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const awardRecords = user.award_records || [];
-  const qualificationRecords = user.qualification_records || [];
-
-  const openAwardModal = (record: any) => {
-    const awardImage = awardImages.find((img) => img.id === record.award_id);
-    const awardDetails = {
-      ...record,
-      imageUrl: awardImage?.imageUrl || "/placeholder.svg",
-      name: awardImage?.name || "Unknown Award",
-      sanitizedText: sanitizeHtmlClient(record.text),
-      formattedDate: new Date(record.created_at).toLocaleDateString(),
-    };
-    setSelectedAward(awardDetails);
-    setIsAwardModalOpen(true);
+  // Map widget IDs to their rendered content
+  const widgetContent: Record<string, React.ReactNode> = {
+    alerts: <AlertCenterWidget />,
+    directives: <DirectivesWidget />,
+    "upcoming-ops": (
+      <Suspense fallback={<WidgetSkeleton />}>
+        <UpcomingOpsServerWidget currentUserId={currentUserId} />
+      </Suspense>
+    ),
+    attendance: (
+      <Suspense fallback={<WidgetSkeleton />}>
+        <AttendanceServerWidget userId={currentUserId} />
+      </Suspense>
+    ),
+    "personnel-file": (
+      <Suspense fallback={<WidgetSkeleton />}>
+        <PersonnelFileServerWidget user={user} />
+      </Suspense>
+    ),
   };
 
-  const closeAwardModal = () => {
-    setIsAwardModalOpen(false);
-  };
+  const createdDate = new Date(user.created_at);
+  const now = new Date();
+  
+  // Time in Service (TIS)
+  const tisMonthsTotal = differenceInMonths(now, createdDate);
+  const tisYears = Math.floor(tisMonthsTotal / 12);
+  const tisMonths = tisMonthsTotal % 12;
+  const tisString = `${tisYears}Y ${tisMonths}M`;
 
-  const paginateItems = (items: any[], page: number) => {
-    const startIndex = (page - 1) * itemsPerPage;
-    return items?.slice(startIndex, startIndex + itemsPerPage) || [];
-  };
+  // Time in Position (TIP)
+  const assignmentDate = user.last_assignment_change_date 
+    ? new Date(user.last_assignment_change_date) 
+    : createdDate;
+  const tipMonthsTotal = differenceInMonths(now, assignmentDate);
+  const tipYears = Math.floor(tipMonthsTotal / 12);
+  const tipMonths = tipMonthsTotal % 12;
+  const tipString = `${tipYears}Y ${tipMonths}M`;
 
-  const totalAwardsPages = Math.ceil(awardRecords.length / itemsPerPage) || 1;
-  const totalQualificationsPages =
-    Math.ceil(qualificationRecords.length / itemsPerPage) || 1;
-  const totalRankHistoryPages =
-    Math.ceil(rankHistory.length / itemsPerPage) || 1;
-  const totalAssignmentPages =
-    Math.ceil(assignmentHistory.length / itemsPerPage) || 1;
-  const totalCombatPages =
-    Math.ceil((combatHistory?.length || 0) / itemsPerPage) || 1;
+  // Time in Grade (TIG)
+  const rankDate = user.last_rank_change_date
+    ? new Date(user.last_rank_change_date)
+    : createdDate;
+  const tigMonthsTotal = differenceInMonths(now, rankDate);
+  const tigYears = Math.floor(tigMonthsTotal / 12);
+  const tigMonths = tigMonthsTotal % 12;
+  const tigString = `${tigYears}Y ${tigMonths}M`;
+
+  const paygrade = user.rank?.paygrade || "N/A";
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Header Card */}
-        <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-700/60 rounded-sm p-6 flex flex-col md:flex-row items-center gap-8 shadow-[0_0_40px_rgba(0,0,0,0.8)] relative overflow-hidden">
-          <div
-            className="absolute inset-0 z-0 opacity-10 mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)",
-              backgroundSize: "30px 30px",
-            }}
-          />
-
-          {/* Profile Picture */}
-          <div className="relative z-10 w-24 h-24 rounded-sm border-2 border-accent overflow-hidden shrink-0">
-            <Image
-              src={user.profile_photo_url || "/placeholder.svg"}
-              alt={user.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          {/* User Info */}
-          <div className="relative z-10 flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <div className="text-accent text-xs font-mono tracking-widest uppercase mb-1 flex items-center gap-2">
-              <span>
-                OP-ID // {user.id.toString().padStart(6, "0")}
-              </span>
-              <div className="h-1.5 w-1.5 bg-accent/80 rounded-full animate-pulse" />
-            </div>
-
-            <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wide text-white mb-3">
-              {user.name}
-            </h1>
-            <div className="flex flex-wrap gap-3 items-center justify-center md:justify-start">
-              <div className="flex items-center gap-2 bg-zinc-800/80 px-3 py-1.5 rounded-sm border border-zinc-700/60">
-                <Image
-                  src={rankImage?.imageUrl || "/placeholder.svg"}
-                  alt={rankImage?.name || "UNASSIGNED"}
-                  width={20}
-                  height={20}
-                  className="object-contain"
-                />
-                <span className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-                  {user.rank?.name || "UNASSIGNED"}
-                </span>
-              </div>
-              <div className="bg-zinc-800/80 px-3 py-1.5 rounded-sm border border-zinc-700/60">
-                <span className="text-xs text-zinc-300 tracking-wide uppercase">
-                  <span className="text-accent font-semibold">
-                    {user.unit?.name || "UNASSIGNED"}
-                  </span>{" "}
-                  // {user.position?.name || "UNASSIGNED"}
-                </span>
-              </div>
-              <Badge className="bg-green-600/10 text-green-400 border border-green-500/30 px-2 py-1 font-mono uppercase tracking-widest text-[10px]">
-                {user.status?.name || "ACTIVE"}
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Alert Center */}
-          <Card className="bg-zinc-900/60 border-zinc-700/50 backdrop-blur-md shadow-lg rounded-sm">
-            <CardHeader className="border-b border-zinc-800/80 pb-3 p-4">
-              <CardTitle className="flex items-center gap-2 text-sm font-mono text-zinc-100 uppercase tracking-widest">
-                <Bell className="h-4 w-4 text-accent" />
-                Alert Center
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <div className="bg-red-950/20 border-l-2 border-red-500/80 p-3 rounded-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-8 h-8 bg-red-500/10 rounded-bl-full" />
-                <p className="text-[10px] font-mono text-red-400 mb-1 opacity-80">
-                  PRIORITY MESSAGE
-                </p>
-                <p className="text-sm text-zinc-300">
-                  Mandatory FTX briefing at 2000 EST this Saturday.
-                </p>
-              </div>
-              <div className="bg-zinc-800/40 border-l-2 border-accent/80 p-3 rounded-sm">
-                <p className="text-[10px] font-mono text-accent mb-1 opacity-80">
-                  SYSTEM UPDATE
-                </p>
-                <p className="text-sm text-zinc-300">
-                  New qualifications matrix published. Validate records.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Active Directives */}
-          <Card className="bg-zinc-900/60 border-zinc-700/50 backdrop-blur-md shadow-lg rounded-sm">
-            <CardHeader className="border-b border-zinc-800/80 pb-3 p-4">
-              <CardTitle className="flex items-center gap-2 text-sm font-mono text-zinc-100 uppercase tracking-widest">
-                <Target className="h-4 w-4 text-accent" />
-                Active Directives
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-800/40 p-3 border border-zinc-700/50 rounded-sm gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                  <span className="text-sm text-zinc-200">
-                    Complete Basic Flight Training (BFT)
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-mono border-zinc-600 text-zinc-400 w-fit"
-                >
-                  PENDING
-                </Badge>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-zinc-800/40 p-3 border border-zinc-700/50 rounded-sm gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-zinc-600" />
-                  <span className="text-sm text-zinc-400 line-through">
-                    Submit Enlistment Application
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-mono border-green-900/50 text-green-500 w-fit"
-                >
-                  COMPLETED
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Ops */}
-          <Card className="bg-zinc-900/60 border-zinc-700/50 backdrop-blur-md shadow-lg rounded-sm">
-            <CardHeader className="border-b border-zinc-800/80 pb-3 p-4">
-              <CardTitle className="flex items-center gap-2 text-sm font-mono text-zinc-100 uppercase tracking-widest">
-                <CalendarDays className="h-4 w-4 text-accent" />
-                Upcoming Ops
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <div className="border border-zinc-700/50 rounded-sm bg-zinc-800/30 p-3 hover:bg-zinc-800/60 transition-colors group">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-semibold text-zinc-100 group-hover:text-accent transition-colors text-sm">
-                      Operation Red Dawn
-                    </h4>
-                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
-                      2026-03-21 @ 2000 EST
-                    </p>
-                  </div>
-                  <Badge className="bg-accent/10 hover:bg-accent/20 text-accent border-accent/20 text-[10px] px-1.5 py-0">
-                    MANDATORY
-                  </Badge>
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full bg-zinc-800 border border-zinc-700 hover:bg-accent hover:border-accent text-zinc-100 hover:text-black font-mono text-xs mt-2 h-7 transition-all"
-                >
-                  RSVP PENDING
-                </Button>
-              </div>
-              <div className="border border-zinc-700/50 rounded-sm bg-zinc-800/30 p-3 hover:bg-zinc-800/60 transition-colors group">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-semibold text-zinc-100 group-hover:text-accent transition-colors text-sm">
-                      Squad Training
-                    </h4>
-                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
-                      2026-03-24 @ 1900 EST
-                    </p>
-                  </div>
-                  <Badge className="bg-zinc-800 text-zinc-400 border-zinc-700 text-[10px] px-1.5 py-0">
-                    OPTIONAL
-                  </Badge>
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full bg-zinc-800 border border-zinc-700 hover:bg-accent hover:border-accent text-zinc-100 hover:text-black font-mono text-xs mt-2 h-7 transition-all"
-                >
-                  RSVP PENDING
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Personnel File */}
-        <div>
-          <h3 className="text-lg font-bold uppercase tracking-wider text-white mb-4 flex items-center gap-3 border-b border-zinc-800/80 pb-3">
-            <FolderOpen className="h-5 w-5 text-accent" />
-            Personnel File
-          </h3>
-          <div className="bg-zinc-900/40 p-1 rounded-sm border border-zinc-800/50">
-            <Tabs defaultValue="awards" className="w-full">
-              <TabsList className="w-full">
-                <TabsTrigger value="awards">Award Record</TabsTrigger>
-                <TabsTrigger value="combat">Combat Record</TabsTrigger>
-                <TabsTrigger value="rank">Rank History</TabsTrigger>
-                <TabsTrigger value="assignments">Assignment History</TabsTrigger>
-                <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="awards" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Award Record</CardTitle>
-                    <CardDescription>
-                      Detailed history of decorations and recognitions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {awardRecords.length > 0 ? (
-                      <div className="space-y-4">
-                        {paginateItems(awardRecords, awardsPage).map(
-                          (record, index) => {
-                            const awardImage = awardImages.find(
-                              (img) => img.id === record.award_id
-                            );
-                            return (
-                              <div
-                                key={index}
-                                className="border-b border-zinc-700 pb-4 last:border-0 last:pb-0"
-                              >
-                                <div className="flex items-center gap-4 mb-2">
-                                  <Image
-                                    src={
-                                      awardImage?.imageUrl ||
-                                      "/placeholder.svg"
-                                    }
-                                    alt="Award"
-                                    className="h-16 w-16 object-contain"
-                                    width={64}
-                                    height={64}
-                                  />
-                                  <div className="flex-1">
-                                    <div className="flex justify-between items-center">
-                                      <h4 className="font-semibold text-zinc-100">
-                                        {awardImage?.name}
-                                      </h4>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 px-2 text-xs"
-                                        onClick={() =>
-                                          openAwardModal(record)
-                                        }
-                                      >
-                                        <Info className="h-4 w-4 mr-1" />{" "}
-                                        Details
-                                      </Button>
-                                    </div>
-                                    <span className="text-sm text-zinc-400">
-                                      Awarded on{" "}
-                                      {new Date(
-                                        record.created_at
-                                      ).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                </div>
-                                <p className="text-sm text-zinc-300 line-clamp-2">
-                                  {sanitizeHtmlClient(record.text) ||
-                                    "No description available."}
-                                </p>
-                              </div>
-                            );
-                          }
-                        )}
-
-                        {totalAwardsPages > 1 && (
-                          <Pagination className="mt-6">
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (awardsPage > 1)
-                                      setAwardsPage(awardsPage - 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                              {Array.from({ length: totalAwardsPages }).map(
-                                (_, i) => (
-                                  <PaginationItem key={i}>
-                                    <PaginationLink
-                                      href="#"
-                                      isActive={awardsPage === i + 1}
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        setAwardsPage(i + 1);
-                                      }}
-                                    >
-                                      {i + 1}
-                                    </PaginationLink>
-                                  </PaginationItem>
-                                )
-                              )}
-                              <PaginationItem>
-                                <PaginationNext
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (awardsPage < totalAwardsPages)
-                                      setAwardsPage(awardsPage + 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-zinc-400">No awards recorded.</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="combat" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Combat Records</CardTitle>
-                    <CardDescription>
-                      Record of combat deployments and actions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {combatHistory && combatHistory.length > 0 ? (
-                      <div className="relative border-l-2 border-accent pl-6 ml-2 space-y-6">
-                        {paginateItems(combatHistory, combatPage).map(
-                          (record, index) => (
-                            <div key={index} className="relative">
-                              <div className="absolute -left-8 mt-1.5 h-4 w-4 rounded-full bg-accent"></div>
-                              <div className="mb-1">
-                                <h4 className="font-semibold text-zinc-100">
-                                  Combat Record
-                                </h4>
-                              </div>
-                              <p className="text-sm text-zinc-400">
-                                Recorded on {record.date}
-                              </p>
-                              {record.text && (
-                                <p className="text-sm text-zinc-300 mt-1">
-                                  {sanitizeHtmlClient(record.text)}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        )}
-
-                        {totalCombatPages > 1 && (
-                          <Pagination className="mt-6">
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (combatPage > 1)
-                                      setCombatPage(combatPage - 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                              {Array.from({ length: totalCombatPages }).map(
-                                (_, i) => (
-                                  <PaginationItem key={i}>
-                                    <PaginationLink
-                                      href="#"
-                                      isActive={combatPage === i + 1}
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        setCombatPage(i + 1);
-                                      }}
-                                    >
-                                      {i + 1}
-                                    </PaginationLink>
-                                  </PaginationItem>
-                                )
-                              )}
-                              <PaginationItem>
-                                <PaginationNext
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (combatPage < totalCombatPages)
-                                      setCombatPage(combatPage + 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-zinc-400">
-                        No combat records recorded.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="rank" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Rank History</CardTitle>
-                    <CardDescription>
-                      Progression through military ranks
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {rankHistory && rankHistory.length > 0 ? (
-                      <div className="relative border-l-2 border-accent pl-6 ml-2 space-y-6">
-                        {paginateItems(rankHistory, rankHistoryPage).map(
-                          (record, index) => (
-                            <div key={index} className="relative">
-                              <div className="absolute -left-8 mt-1.5 h-4 w-4 rounded-full bg-accent"></div>
-                              <div className="flex items-center mb-1">
-                                <Image
-                                  src={record.imageUrl || "/placeholder.svg"}
-                                  alt={record.name}
-                                  className="h-12 w-12 mr-4 object-contain"
-                                  width={48}
-                                  height={48}
-                                />
-                                <div>
-                                  <h4 className="font-semibold text-zinc-100">
-                                    {record.name}
-                                  </h4>
-                                </div>
-                              </div>
-                              <p className="text-sm text-zinc-400">
-                                Promoted on {record.date}
-                              </p>
-                              {record.text && (
-                                <p className="text-sm text-zinc-300 mt-1">
-                                  {sanitizeHtmlClient(record.text)}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        )}
-
-                        {totalRankHistoryPages > 1 && (
-                          <Pagination className="mt-6">
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (rankHistoryPage > 1)
-                                      setRankHistoryPage(rankHistoryPage - 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                              {Array.from({
-                                length: totalRankHistoryPages,
-                              }).map((_, i) => (
-                                <PaginationItem key={i}>
-                                  <PaginationLink
-                                    href="#"
-                                    isActive={rankHistoryPage === i + 1}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setRankHistoryPage(i + 1);
-                                    }}
-                                  >
-                                    {i + 1}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              ))}
-                              <PaginationItem>
-                                <PaginationNext
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (rankHistoryPage < totalRankHistoryPages)
-                                      setRankHistoryPage(rankHistoryPage + 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-zinc-400">
-                        No rank history recorded.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="assignments" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Assignment History</CardTitle>
-                    <CardDescription>
-                      Previous and current duty assignments
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {assignmentHistory && assignmentHistory.length > 0 ? (
-                      <div className="relative border-l-2 border-accent pl-6 ml-2 space-y-6">
-                        {paginateItems(assignmentHistory, assignmentPage).map(
-                          (record, index) => (
-                            <div key={index} className="relative">
-                              <div className="absolute -left-8 mt-1.5 h-4 w-4 rounded-full bg-accent"></div>
-                              <div className="mb-1">
-                                <h4 className="font-semibold text-zinc-100">
-                                  {record.positionName}
-                                </h4>
-                                <p className="text-sm text-zinc-300">
-                                  {record.unitName}
-                                </p>
-                              </div>
-                              <p className="text-sm text-zinc-400">
-                                Assigned on {record.date}
-                              </p>
-                              {record.text && (
-                                <p className="text-sm text-zinc-300 mt-1">
-                                  {sanitizeHtmlClient(record.text)}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        )}
-
-                        {totalAssignmentPages > 1 && (
-                          <Pagination className="mt-6">
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (assignmentPage > 1)
-                                      setAssignmentPage(assignmentPage - 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                              {Array.from({
-                                length: totalAssignmentPages,
-                              }).map((_, i) => (
-                                <PaginationItem key={i}>
-                                  <PaginationLink
-                                    href="#"
-                                    isActive={assignmentPage === i + 1}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setAssignmentPage(i + 1);
-                                    }}
-                                  >
-                                    {i + 1}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              ))}
-                              <PaginationItem>
-                                <PaginationNext
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (assignmentPage < totalAssignmentPages)
-                                      setAssignmentPage(assignmentPage + 1);
-                                  }}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-zinc-400">
-                        No assignment history recorded.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="qualifications" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Qualifications</CardTitle>
-                    <CardDescription>
-                      Specialized training and certifications
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {qualificationRecords &&
-                    qualificationRecords.length > 0 ? (
-                      <>
-                        <div className="divide-y divide-zinc-700">
-                          {paginateItems(
-                            qualificationRecords,
-                            qualificationsPage
-                          ).map((record, index) => {
-                            const qualification = qualificationData.find(
-                              (q) => q.id === record.qualification_id
-                            );
-                            return (
-                              <div
-                                key={index}
-                                className="py-3 flex justify-between items-center"
-                              >
-                                <span className="font-medium text-zinc-100">
-                                  {qualification?.name ||
-                                    `Qualification ID: ${record.qualification_id}`}
-                                </span>
-                                <span className="text-sm text-zinc-400">
-                                  Received on{" "}
-                                  {new Date(
-                                    record.created_at
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {totalQualificationsPages > 1 && (
-                          <Pagination className="mt-6 pt-4">
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (qualificationsPage > 1)
-                                      setQualificationsPage(
-                                        qualificationsPage - 1
-                                      );
-                                  }}
-                                />
-                              </PaginationItem>
-                              {Array.from({
-                                length: totalQualificationsPages,
-                              }).map((_, i) => (
-                                <PaginationItem key={i}>
-                                  <PaginationLink
-                                    href="#"
-                                    isActive={qualificationsPage === i + 1}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setQualificationsPage(i + 1);
-                                    }}
-                                  >
-                                    {i + 1}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              ))}
-                              <PaginationItem>
-                                <PaginationNext
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (
-                                      qualificationsPage <
-                                      totalQualificationsPages
-                                    )
-                                      setQualificationsPage(
-                                        qualificationsPage + 1
-                                      );
-                                  }}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-zinc-400">
-                        No qualifications recorded.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+      {/* Background Animated Grid Overlay */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none opacity-[0.02]">
+        <div
+          className="absolute inset-0 animate-grid-scroll"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255, 255, 255, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 1) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+            height: "200%",
+            top: "-100%",
+          }}
+        />
       </div>
 
-      <AwardDetailModal
-        isOpen={isAwardModalOpen}
-        onClose={closeAwardModal}
-        award={selectedAward}
-      />
+      <div className="space-y-5 w-full">
+        {/* Header Card — Military ID Style */}
+        <div className="relative overflow-hidden rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/60 backdrop-blur-md">
+          <div className="dashboard-id-card-diagonal-stripes" aria-hidden />
+
+          <div className="p-5 md:p-6 flex flex-col md:flex-row items-center md:items-stretch gap-6 relative z-10 w-full">
+            <div className="flex items-center gap-6 shrink-0 z-20">
+              <div className="relative w-32 h-40 border-2 border-zinc-300 dark:border-zinc-500 shadow-xl bg-zinc-100 dark:bg-zinc-950 shrink-0 rounded-lg overflow-hidden">
+                <Image
+                  src={"https://cdn.discordapp.com/attachments/985651457040732341/1490535861144780982/image.png?ex=69d46932&is=69d317b2&hm=17ce629c79399202f0f2b8dd1840292eff29b3cee11ce32396e39716707043bb&"}
+                  alt={user.name}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-accent/10 mix-blend-overlay pointer-events-none"></div>
+              </div>
+
+              <div className="hidden lg:flex flex-col items-center justify-center bg-zinc-100/80 dark:bg-black/50 border border-zinc-200 dark:border-zinc-800/80 p-2 rounded-lg shadow-inner h-full w-24">
+                <div className="h-16 w-16 relative flex items-center justify-center mb-1">
+                  <Image
+                    src={rankImage?.imageUrl || "/placeholder.svg"}
+                    alt={rankImage?.name || "Rank"}
+                    fill
+                    className="object-contain dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                  />
+                </div>
+                <div className="mt-2 text-[10px] font-mono tracking-widest text-zinc-500 dark:text-zinc-400 text-center uppercase border-t border-zinc-200 dark:border-zinc-800/80 pt-1 w-full relative">
+                  <span className="bg-zinc-100 dark:bg-zinc-950 px-1 relative -top-[10px]">GRADE</span>
+                  <br />
+                  <span className="text-zinc-800 dark:text-zinc-200 font-bold relative -top-1">{paygrade}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col justify-between w-full z-10">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4 border-b border-zinc-200 dark:border-zinc-800/50 pb-4">
+                <div>
+                  <div className="text-zinc-400 dark:text-zinc-500 text-[9px] font-mono tracking-widest uppercase mb-1 flex items-center gap-2">
+                    <span className="text-accent">IDENTIFICATION CARD</span>
+                    <span className="hidden sm:inline">{"// ARMED FORCES OF THE UNITED STATES"}</span>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                    {user.name}
+                  </h1>
+                </div>
+
+                <div className="text-left md:text-right">
+                  <div className="text-zinc-400 dark:text-zinc-500 text-[9px] font-mono tracking-widest uppercase mb-1">
+                    OPERATOR ID
+                  </div>
+                  <div className="font-mono text-sm tracking-widest text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-black/60 px-3 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700/60 inline-block shadow-inner">
+                    {(currentUserId || user.id.toString()).slice(0, 10).padStart(10, "0")}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 bg-zinc-50 dark:bg-black/30 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800/50 shadow-inner w-full flex-1">
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-0.5">Status</span>
+                  <Badge variant="outline" className="w-fit bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30 px-2 py-0.5 font-mono uppercase tracking-widest text-[10px] rounded-md">
+                    {user.status?.name || "ACTIVE"}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Rank</span>
+                  <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 uppercase tracking-widest truncate">
+                    {user.rank?.name || "UNASSIGNED"}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Unit</span>
+                  <span className="text-xs font-mono text-accent italic tracking-widest uppercase truncate break-words">
+                    {user.unit?.name || "UNASSIGNED"}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Position</span>
+                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 tracking-widest uppercase truncate">
+                    {user.position?.name || "UNASSIGNED"}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Service</span>
+                  <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
+                    {tisString}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Position</span>
+                  <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
+                    {tipString}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Grade</span>
+                  <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
+                    {tigString}
+                  </span>
+                </div>
+
+                <div className="flex flex-col col-span-1 items-end justify-center opacity-70 mt-1">
+                  <div className="dashboard-id-barcode-line" aria-hidden />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Widget Grid — full width, 3 cols on lg */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {WIDGET_LAYOUT.map((widget) => (
+            <WidgetWrapper key={widget.id} config={widget}>
+              {widgetContent[widget.id]}
+            </WidgetWrapper>
+          ))}
+        </div>
+      </div>
     </>
   );
 }

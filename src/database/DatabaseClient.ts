@@ -37,12 +37,7 @@ export class DatabaseClient {
   }
 
   async query<T>(sql: string, values?: any[]): Promise<T> {
-    const connection = await this.pool.getConnection();
-    try {
-      const [result] = await connection.query(sql, values);
-      return result as T;
-    } finally {
-      connection.release();
-    }
+    const [result] = await this.pool.query(sql, values);
+    return result as T;
   }
 }

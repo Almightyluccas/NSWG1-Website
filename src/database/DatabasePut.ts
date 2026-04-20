@@ -355,4 +355,177 @@ export class DatabasePut {
       [isActive, formId]
     );
   }
+
+  // ── Alerts ──
+
+  async alertStatus(alertId: number, isActive: boolean): Promise<void> {
+    await this.client.query(
+      `UPDATE alerts SET is_active = ? WHERE id = ?`,
+      [isActive, alertId]
+    );
+  }
+
+  // ── SSE Items ──
+
+  async sseItemStatus(sseItemId: number, status: string): Promise<void> {
+    await this.client.query(
+      `UPDATE sse_items SET status = ?, updated_at = NOW() WHERE id = ?`,
+      [status, sseItemId]
+    );
+  }
+
+  // ── Directives ──
+
+  async directiveStatus(directiveId: number, status: string): Promise<void> {
+    const completedAt = status === "done" ? "NOW()" : "NULL";
+    await this.client.query(
+      `UPDATE directives SET status = ?, completed_at = ${completedAt} WHERE id = ?`,
+      [status, directiveId]
+    );
+  }
+
+  // ── Campaign Operation Fields ──
+
+  async campaignOperationFields(
+    campaignId: string,
+    data: {
+      codename?: string;
+      minimumRole?: string;
+      ao?: string;
+      brief?: string;
+      commander?: string;
+      forceComp?: string;
+      missionType?: string;
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.codename !== undefined) {
+      updates.push("codename = ?");
+      values.push(data.codename || null);
+    }
+    if (data.minimumRole !== undefined) {
+      updates.push("minimum_role = ?");
+      values.push(data.minimumRole);
+    }
+    if (data.ao !== undefined) {
+      updates.push("ao = ?");
+      values.push(data.ao || null);
+    }
+    if (data.brief !== undefined) {
+      updates.push("brief = ?");
+      values.push(data.brief || null);
+    }
+    if (data.commander !== undefined) {
+      updates.push("commander = ?");
+      values.push(data.commander || null);
+    }
+    if (data.forceComp !== undefined) {
+      updates.push("force_comp = ?");
+      values.push(data.forceComp || null);
+    }
+    if (data.missionType !== undefined) {
+      updates.push("mission_type = ?");
+      values.push(data.missionType || null);
+    }
+
+    if (updates.length === 0) return;
+
+    updates.push("updated_at = NOW()");
+    values.push(campaignId);
+
+    await this.client.query(
+      `UPDATE campaigns SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
+  }
+
+  // ── Operation Documents ──
+
+  async operationDocument(
+    docId: number,
+    data: {
+      name?: string;
+      description?: string;
+      minimumRole?: string;
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.name !== undefined) {
+      updates.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.minimumRole !== undefined) {
+      updates.push("minimum_role = ?");
+      values.push(data.minimumRole);
+    }
+
+    if (updates.length === 0) return;
+    values.push(docId);
+
+    await this.client.query(
+      `UPDATE operation_documents SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
+  }
+
+  // ── Operation Intel ──
+
+  async operationIntel(
+    intelId: number,
+    data: {
+      title?: string;
+      description?: string;
+      imageUrl?: string;
+      minimumRole?: string;
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.title !== undefined) {
+      updates.push("title = ?");
+      values.push(data.title);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.imageUrl !== undefined) {
+      updates.push("image_url = ?");
+      values.push(data.imageUrl || null);
+    }
+    if (data.minimumRole !== undefined) {
+      updates.push("minimum_role = ?");
+      values.push(data.minimumRole);
+    }
+
+    if (updates.length === 0) return;
+    values.push(intelId);
+
+    await this.client.query(
+      `UPDATE operation_intel SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
+  }
+
+  // ── After Action Reports ──
+
+  async afterActionReportStatus(
+    aarId: number,
+    status: string,
+    reviewedBy: string
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE after_action_reports SET status = ?, reviewed_by = ?, reviewed_at = NOW(), updated_at = NOW() WHERE id = ?`,
+      [status, reviewedBy, aarId]
+    );
+  }
 }

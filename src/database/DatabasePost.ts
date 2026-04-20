@@ -1,7 +1,7 @@
 import type { DatabaseClient } from "./DatabaseClient";
 import type { CreateRecurringTrainingData } from "@/types/recurring-training";
 import type { FormQuestion } from "@/types/forms";
-import { CustomTheme } from "@/types/database";
+import { CustomTheme, UserRole } from "@/types/database";
 import { GalleryItem } from "@/types/objectStorage";
 
 export class DatabasePost {
@@ -456,5 +456,222 @@ export class DatabasePost {
        VALUES (?, ?, ?)`,
       [userId, "Red", "/images/tacdev/default.png"]
     );
+  }
+
+  // ── Alerts ──
+
+  async alert(data: {
+    type: string;
+    label: string;
+    message: string;
+    targetRoles?: string;
+    expiresAt?: string;
+    createdBy: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO alerts (type, label, message, target_roles, expires_at, created_by)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        data.type,
+        data.label,
+        data.message,
+        data.targetRoles || null,
+        data.expiresAt || null,
+        data.createdBy,
+      ]
+    );
+    return result.insertId;
+  }
+
+  async perscomNotification(data: {
+    targetPerscomId: number;
+    event: string;
+    type: string;
+    label: string;
+    message: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO perscom_notifications (target_perscom_id, event, type, label, message)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        data.targetPerscomId,
+        data.event,
+        data.type,
+        data.label,
+        data.message,
+      ]
+    );
+    return result.insertId;
+  }
+
+  async perscomNotificationDismissal(
+    notificationId: number,
+    userId: string
+  ): Promise<void> {
+    await this.client.query(
+      `INSERT IGNORE INTO perscom_notification_dismissals (notification_id, user_id)
+       VALUES (?, ?)`,
+      [notificationId, userId]
+    );
+  }
+
+  // ── SSE Items ──
+
+  async sseItem(data: {
+    campaignId: string;
+    type: string;
+    name: string;
+    description: string;
+    status?: string;
+    minimumRole?: string;
+    imageUrl?: string;
+    uploadedBy: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO sse_items (campaign_id, type, name, description, status, minimum_role, image_url, uploaded_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.campaignId,
+        data.type,
+        data.name,
+        data.description,
+        data.status || "LOGGED",
+        data.minimumRole || UserRole.member,
+        data.imageUrl || null,
+        data.uploadedBy,
+      ]
+    );
+    return result.insertId;
+  }
+
+  // ── Directives ──
+
+  async directive(data: {
+    label: string;
+    description?: string;
+    userId: string;
+    assignedBy: string;
+    dueDate?: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO directives (label, description, user_id, assigned_by, due_date)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        data.label,
+        data.description || null,
+        data.userId,
+        data.assignedBy,
+        data.dueDate || null,
+      ]
+    );
+    return result.insertId;
+  }
+
+  async bulkDirectives(
+    data: { label: string; description?: string; assignedBy: string; dueDate?: string },
+    userIds: string[]
+  ): Promise<void> {
+    const values = userIds.map(() => "(?, ?, ?, ?, ?)").join(", ");
+    const params: any[] = [];
+    for (const userId of userIds) {
+      params.push(
+        data.label,
+        data.description || null,
+        userId,
+        data.assignedBy,
+        data.dueDate || null
+      );
+    }
+    await this.client.query(
+      `INSERT INTO directives (label, description, user_id, assigned_by, due_date) VALUES ${values}`,
+      params
+    );
+  }
+
+  // ── Operation Documents ──
+
+  async operationDocument(data: {
+    campaignId: string;
+    missionId?: string;
+    name: string;
+    description?: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize?: string;
+    minimumRole?: string;
+    uploadedBy: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO operation_documents (campaign_id, mission_id, name, description, file_url, file_type, file_size, minimum_role, uploaded_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.campaignId,
+        data.missionId || null,
+        data.name,
+        data.description || null,
+        data.fileUrl,
+        data.fileType,
+        data.fileSize || null,
+        data.minimumRole || "member",
+        data.uploadedBy,
+      ]
+    );
+    return result.insertId;
+  }
+
+  // ── Operation Intel ──
+
+  async operationIntel(data: {
+    campaignId: string;
+    type: string;
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    minimumRole?: string;
+    createdBy: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO operation_intel (campaign_id, type, title, description, image_url, minimum_role, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.campaignId,
+        data.type,
+        data.title,
+        data.description || null,
+        data.imageUrl || null,
+        data.minimumRole || "member",
+        data.createdBy,
+      ]
+    );
+    return result.insertId;
+  }
+
+  // ── After Action Reports ──
+
+  async afterActionReport(data: {
+    campaignId: string;
+    missionId?: string;
+    title: string;
+    summary: string;
+    keyOutcomes?: string;
+    lessonsLearned?: string;
+    submittedBy: string;
+    status?: string;
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO after_action_reports (campaign_id, mission_id, title, summary, key_outcomes, lessons_learned, submitted_by, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.campaignId,
+        data.missionId || null,
+        data.title,
+        data.summary,
+        data.keyOutcomes || null,
+        data.lessonsLearned || null,
+        data.submittedBy,
+        data.status || "submitted",
+      ]
+    );
+    return result.insertId;
   }
 }

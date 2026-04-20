@@ -10,27 +10,59 @@ import {
   AssignmentRecord,
   Qualification,
 } from "@/types/api/perscomApi";
+import { PERSCOM_DATA_TAG } from "@/lib/perscom/cache-tags";
 import type { PerscomClient } from "./PerscomClient";
+
+/** Laravel-style pagination; higher page size = fewer HTTP round-trips for roster-style loads. */
+const PERSCOM_PAGE_SIZE = 100;
+
+/** Default Perscom list cache (Next.js Data Cache / ISR). */
+const PERSCOM_DEFAULT_REVALIDATE_SEC = 1800;
+
+/** Enlistment submissions change more often; shorter TTL on `/submissions`. */
+const PERSCOM_SUBMISSIONS_REVALIDATE_SEC = 300;
 
 export class PerscomGet {
   constructor(private client: PerscomClient) { }
+
   private async fetchPaginated<T>(
     endpoint: string,
     includes?: string[],
-    options?: RequestInit
+    options?: RequestInit & { next?: NextFetchRequestConfig }
   ): Promise<T[]> {
     try {
-      const includeQuery = includes?.length
-        ? `?include=${includes.join(",")}`
-        : "";
       const timeBucket = Math.floor(Date.now() / (1000 * 1800));
-      const cacheBuster = `&_t=${timeBucket}`;
 
-      const finalOptions = options || { next: { revalidate: 1800 } };
+      const buildQuery = (page?: number) => {
+        const params = new URLSearchParams();
+        if (includes?.length) params.set("include", includes.join(","));
+        params.set("per_page", String(PERSCOM_PAGE_SIZE));
+        params.set("_t", String(timeBucket));
+        if (page != null && page > 1) params.set("page", String(page));
+        return `?${params.toString()}`;
+      };
+
+      const mergedOptions =
+        options ?? {
+          cache: "force-cache",
+          next: {
+            revalidate: PERSCOM_DEFAULT_REVALIDATE_SEC,
+            tags: [PERSCOM_DATA_TAG],
+          },
+        };
+
+      const finalOptions: RequestInit & { next?: NextFetchRequestConfig } = {
+        method: "GET",
+        ...mergedOptions,
+        next: {
+          tags: [PERSCOM_DATA_TAG],
+          ...mergedOptions.next,
+        },
+      };
 
       const response = await this.client.fetch<PaginatedResponse<T>>(
-        `${endpoint}${includeQuery}${cacheBuster}`,
-        { method: "GET", ...finalOptions }
+        `${endpoint}${buildQuery()}`,
+        finalOptions
       );
 
       if (!response?.meta?.last_page) {
@@ -41,10 +73,9 @@ export class PerscomGet {
         Array.from({ length: response.meta.last_page }, (_, i) => i + 1).map(
           async (page) => {
             if (page === 1) return { data: [] };
-            const pageParam = includeQuery ? `&page=${page}` : `?page=${page}`;
             return await this.client.fetch<PaginatedResponse<T>>(
-              `${endpoint}${includeQuery}${pageParam}${cacheBuster}`,
-              { method: "GET", ...options }
+              `${endpoint}${buildQuery(page)}`,
+              finalOptions
             );
           }
         )
@@ -70,7 +101,8 @@ export class PerscomGet {
 
   async applications(): Promise<ApplicationData[]> {
     return this.fetchPaginated<ApplicationData>("/submissions", ["statuses"], {
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: PERSCOM_SUBMISSIONS_REVALIDATE_SEC },
     });
   }
 

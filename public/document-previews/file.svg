@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420" role="img" aria-labelledby="title desc">
+  <title id="title">Generic File Preview Placeholder</title>
+  <desc id="desc">Fallback preview thumbnail for unknown document type.</desc>
+  <rect width="320" height="420" rx="20" fill="#18181B" />
+  <rect x="24" y="24" width="272" height="372" rx="12" fill="#FAFAFA" />
+  <rect x="40" y="48" width="95" height="30" rx="6" fill="#52525B" />
+  <text x="87" y="69" text-anchor="middle" fill="#ffffff" font-size="16" font-family="Arial, sans-serif" font-weight="700">FILE</text>
+  <rect x="40" y="106" width="240" height="10" rx="5" fill="#D4D4D8" />
+  <rect x="40" y="130" width="228" height="10" rx="5" fill="#D4D4D8" />
+  <rect x="40" y="154" width="202" height="10" rx="5" fill="#D4D4D8" />
+</svg>

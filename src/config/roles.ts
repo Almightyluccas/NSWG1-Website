@@ -8,8 +8,9 @@ interface RoutePermission {
 export const routePermissions: Record<string, RoutePermission> = {
   "/admin": { minimumRole: UserRole.admin },
 
-  "/perscom": { minimumRole: UserRole.member },
-  "/calendar": { minimumRole: UserRole.member },
-  "/forms": { minimumRole: UserRole.member },
-  "/documents": { minimumRole: UserRole.member },
+  "/dashboard": { minimumRole: UserRole.member },
+  "/dashboard/perscom": { minimumRole: UserRole.member },
+  "/dashboard/calendar": { minimumRole: UserRole.member },
+  "/dashboard/forms": { minimumRole: UserRole.member },
+  "/dashboard/documents": { minimumRole: UserRole.member },
 };

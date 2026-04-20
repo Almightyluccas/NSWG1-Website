@@ -43,7 +43,7 @@ export async function createForm(formData: {
     }
 
     revalidatePath("/admin/forms");
-    revalidatePath("/forms");
+    revalidatePath("/dashboard/forms");
 
     return { success: true, formId };
   } catch (error) {
@@ -67,7 +67,7 @@ export async function deleteForm(formId: number) {
     await database.put.updateFormActiveStatus(formId, false);
 
     revalidatePath("/admin/forms");
-    revalidatePath("/forms");
+    revalidatePath("/dashboard/forms");
 
     return { success: true };
   } catch (error) {

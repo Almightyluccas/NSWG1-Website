@@ -1,4 +1,7 @@
 "use server";
+
+import { revalidatePath } from "next/cache";
+import { revalidatePerscomDataCache } from "@/lib/perscom/revalidate-data-cache";
 import { perscom } from "@/lib/perscom/api";
 import {
   Award,
@@ -71,5 +74,13 @@ export async function updateMember(
       //TODO: Implement unit update.
 
       break;
+  }
+
+  if (payload.type !== "unit") {
+    revalidatePerscomDataCache();
+    revalidatePath("/admin/perscom/members");
+    revalidatePath("/admin");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/perscom/roster");
   }
 }

@@ -12,6 +12,7 @@ import {
 import { User, LogOut, Settings, UserPlus, ShieldUser, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import { UserRole } from "@/types/database";
 
 interface UserMenuProps {
   onJoinClickAction: () => void;
@@ -29,7 +30,7 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   return (
     <>
       <div className="flex items-center gap-4">
-        {(!session || session?.user?.roles.includes("guest")) && (
+        {(!session || session?.user?.roles.includes(UserRole.guest)) && (
           <Button
             onClick={onJoinClickAction}
             className="bg-accent hover:bg-accent-darker text-black hidden md:flex"
@@ -56,7 +57,7 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <Link
-                href={`/perscom/user/${session.user.perscomId}`}
+                href={`/dashboard/perscom/user/${session.user.perscomId}`}
                 className="w-full"
               >
                 <DropdownMenuItem>
@@ -65,9 +66,11 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 </DropdownMenuItem>
               </Link>
 
-              {["admin", "superAdmin", "instructor"].some((role) =>
-                session.user.roles.includes(role)
-              ) && (
+              {[
+                UserRole.admin,
+                UserRole.superAdmin,
+                UserRole.instructor,
+              ].some((role) => session.user.roles.includes(role)) && (
                 <Link href="/admin" className="w-full">
                   <DropdownMenuItem>
                     <ShieldUser className="mr-2 h-4 w-4" />
@@ -75,13 +78,13 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                   </DropdownMenuItem>
                 </Link>
               )}
-              <Link href="/settings" className="w-full">
+              <Link href="/dashboard/settings" className="w-full">
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
               </Link>
-              {session.user.roles.includes("guest") && (
+              {session.user.roles.includes(UserRole.guest) && (
                 <DropdownMenuItem onClick={onJoinClickAction}>
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Apply to Join</span>

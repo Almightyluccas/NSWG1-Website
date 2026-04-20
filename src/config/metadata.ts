@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://nswg1.org";
+
 export const siteMetadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   verification: {
     google: "EnWMu1qqVWr54rRvXV-fpgiSRg1U-f0S7npdZ4Oti8o",
   },

@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePerscomDataCache } from "@/lib/perscom/revalidate-data-cache";
 import { perscom } from "@/lib/perscom/api";
 import { database } from "@/database";
 import { CandidateWebhook } from "@/lib/discord/CandidateWebhook";
 import { ReasonKey, Units } from "@/types/api/discord";
+import { UserRole } from "@/types/database";
 
 export async function acceptApplication(
   submissionId: number,
@@ -15,9 +17,11 @@ export async function acceptApplication(
   unit: Units
 ): Promise<void> {
   await perscom.post.submissionStatus(submissionId, "Accepted");
-  await database.put.userRoleByPerscomId("candidate", perscomId);
+  await database.put.userRoleByPerscomId(UserRole.candidate, perscomId);
   await perscom.patch.userApproval(perscomId, true, name);
   await perscom.post.clearPerscomCache();
+  revalidatePerscomDataCache();
+  revalidatePath("/admin");
   revalidatePath("/admin/perscom/submissions/enlistment");
 
   const discordId = await database.get.discordIdByPerscomId(perscomId);
@@ -42,8 +46,10 @@ export async function rejectApplication(
   customReason?: string
 ): Promise<void> {
   await perscom.post.submissionStatus(submissionId, "Denied");
-  await database.put.userRoleByPerscomId("guest", perscomId);
+  await database.put.userRoleByPerscomId(UserRole.guest, perscomId);
   await perscom.post.clearPerscomCache();
+  revalidatePerscomDataCache();
+  revalidatePath("/admin");
   revalidatePath("/admin/perscom/submissions/enlistment");
 
   const discordId = await database.get.discordIdByPerscomId(perscomId);

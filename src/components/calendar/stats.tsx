@@ -70,7 +70,7 @@ import { cn } from "@/lib/utils";
 import {
   getAttendanceStats,
   getUsersForSelection,
-} from "@/app/calendar/action";
+} from "@/app/dashboard/calendar/action";
 
 interface AttendanceStatsProps {
   isAdmin?: boolean;

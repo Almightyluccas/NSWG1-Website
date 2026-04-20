@@ -49,4 +49,48 @@ export class DatabaseDelete {
       formId,
     ]);
   }
+
+  // ── Alerts ──
+
+  async alert(alertId: number): Promise<void> {
+    await this.client.query(`DELETE FROM alerts WHERE id = ?`, [alertId]);
+  }
+
+  // ── SSE Items ──
+
+  async sseItem(sseItemId: number): Promise<void> {
+    await this.client.query(`DELETE FROM sse_items WHERE id = ?`, [sseItemId]);
+  }
+
+  // ── Directives ──
+
+  async directive(directiveId: number): Promise<void> {
+    await this.client.query(`DELETE FROM directives WHERE id = ?`, [
+      directiveId,
+    ]);
+  }
+
+  // ── Operation Documents ──
+
+  async operationDocument(docId: number): Promise<void> {
+    await this.client.query(`DELETE FROM operation_documents WHERE id = ?`, [
+      docId,
+    ]);
+  }
+
+  // ── Operation Intel ──
+
+  async operationIntel(intelId: number): Promise<void> {
+    await this.client.query(`DELETE FROM operation_intel WHERE id = ?`, [
+      intelId,
+    ]);
+  }
+
+  // ── After Action Reports ──
+
+  async afterActionReport(aarId: number): Promise<void> {
+    await this.client.query(`DELETE FROM after_action_reports WHERE id = ?`, [
+      aarId,
+    ]);
+  }
 }

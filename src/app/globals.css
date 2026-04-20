@@ -76,11 +76,16 @@
 }
 
 body {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   font-feature-settings:
     "rlig" 1,
     "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Theme utility classes */
@@ -115,6 +120,43 @@ body {
 .theme-card {
   background-color: rgb(var(--card-bg));
   border-color: rgb(var(--card-border));
+}
+
+/* Dashboard ID card — static CSS avoids server/client inline style serialization mismatches */
+.dashboard-id-card-diagonal-stripes {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #000 0,
+    #000 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 8px 8px;
+}
+
+.dashboard-id-barcode-line {
+  height: 1.5rem;
+  width: 100%;
+  max-width: 160px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 2px,
+    transparent 2px,
+    transparent 4px,
+    currentColor 4px,
+    currentColor 5px,
+    transparent 5px,
+    transparent 8px,
+    currentColor 8px,
+    currentColor 12px,
+    transparent 12px,
+    transparent 14px
+  );
 }
 
 .section-label {
@@ -344,4 +386,61 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* --- Military Dashboard Animations --- */
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar {
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0%, rgba(var(--accent-color), 0.05) 10%, transparent 40%);
+  animation: radar-sweep 8s linear infinite;
+  border-radius: 50%;
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes grid-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(24px); /* Match background size */
+  }
+}
+
+.animate-grid-scroll {
+  animation: grid-scroll 3s linear infinite;
+}
+
+.glass-panel {
+  @apply bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-700/50 shadow-lg;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+  z-index: 10;
+}
+
+.dark .glass-panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }

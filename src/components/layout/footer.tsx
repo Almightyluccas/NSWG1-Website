@@ -79,7 +79,7 @@ export function Footer() {
             </h4>
             <div className="flex flex-col space-y-2">
               <Link
-                href="/operations"
+                href="/dashboard/operations"
                 className="text-zinc-500 hover:text-accent transition-colors text-sm"
               >
                 Operations

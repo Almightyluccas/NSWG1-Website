@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   format,
   startOfMonth,
@@ -30,6 +30,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -38,7 +45,7 @@ import {
   getTrainingByDateRange,
   createOrUpdateMissionRSVP,
   createOrUpdateTrainingRSVP,
-} from "@/app/calendar/action";
+} from "@/app/dashboard/calendar/action";
 
 interface AttendanceRecord {
   date: string;
@@ -104,6 +111,39 @@ interface Training {
   }>;
 }
 
+type AttendanceUser = {
+  id: string;
+  primaryRole?: string;
+};
+
+type RSVPStatus = "attending" | "not-attending" | "maybe";
+
+type EventRecord = {
+  id: string;
+  name: string;
+  description: string;
+  time: string;
+  location: string;
+  status: string;
+  max_personnel?: number;
+  campaign_name?: string;
+  instructor?: string;
+  rsvps: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    status: string;
+    notes?: string;
+  }>;
+  attendance: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    status: string;
+    notes?: string;
+  }>;
+};
+
 export function AttendanceCalendar({
   attendanceData,
   isAdmin = false,
@@ -113,6 +153,7 @@ export function AttendanceCalendar({
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [missions, setMissions] = useState<Mission[]>([]);
   const [trainingRecords, setTrainingRecords] = useState<Training[]>([]);
+  const [userRoleMap, setUserRoleMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
@@ -150,6 +191,29 @@ export function AttendanceCalendar({
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth, session]);
+
+  useEffect(() => {
+    const loadUserRoles = async () => {
+      try {
+        const res = await fetch("/api/users/attendance");
+        if (!res.ok) return;
+        const users = (await res.json()) as AttendanceUser[];
+        if (!Array.isArray(users)) return;
+
+        const roleMap = users.reduce<Record<string, string>>((acc, user) => {
+          if (user.id) {
+            acc[user.id] = user.primaryRole || "member";
+          }
+          return acc;
+        }, {});
+        setUserRoleMap(roleMap);
+      } catch {
+        setUserRoleMap({});
+      }
+    };
+
+    loadUserRoles();
+  }, []);
 
   const getAttendanceForDate = (date: Date) => {
     const dateString = format(date, "yyyy-MM-dd");
@@ -313,6 +377,331 @@ export function AttendanceCalendar({
     return checkDate < today;
   };
 
+  const getUnitLabelFromRole = (role?: string) => {
+    if (role === "tacdevron") return "TACDEVRON";
+    if (role === "160th") return "160TH";
+    return "GENERAL";
+  };
+
+  const getGroupedRsvps = (
+    rsvps: Array<{ id: string; userId: string; userName: string; status: string }>
+  ) => {
+    const grouped = new Map<
+      string,
+      Array<{ id: string; userId: string; userName: string; status: string }>
+    >();
+
+    for (const rsvp of rsvps) {
+      const role = userRoleMap[rsvp.userId] || "member";
+      const unitLabel = getUnitLabelFromRole(role);
+      if (!grouped.has(unitLabel)) {
+        grouped.set(unitLabel, []);
+      }
+      grouped.get(unitLabel)!.push(rsvp);
+    }
+
+    return Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+  };
+
+  const renderEventTrigger = ({
+    icon,
+    iconColorClass,
+    borderClass,
+    bgClass,
+    name,
+    time,
+    userRSVP,
+    userAttendance,
+  }: {
+    icon: ReactNode;
+    iconColorClass: string;
+    borderClass: string;
+    bgClass: string;
+    name: string;
+    time: string;
+    userRSVP: string | null;
+    userAttendance: string | null;
+  }) => (
+    <div
+      className={cn(
+        "cursor-pointer rounded border p-1 hover:bg-gray-100 dark:hover:bg-zinc-800",
+        borderClass,
+        bgClass
+      )}
+    >
+      <div className="mb-1 flex items-center gap-1">
+        <span className={iconColorClass}>{icon}</span>
+        <span className={cn("truncate text-xs font-medium", iconColorClass)}>
+          {name}
+        </span>
+      </div>
+      <div className="flex items-center gap-1 text-xs text-gray-500">
+        <Clock className="h-2 w-2" />
+        <span>{time}</span>
+        {userRSVP && <div className="ml-1">{getRSVPIcon(userRSVP)}</div>}
+        {userAttendance && (
+          <Badge
+            variant="outline"
+            className={cn(
+              "ml-1 h-4 px-1 py-0 text-xs",
+              getAttendanceBadgeColor(userAttendance)
+            )}
+          >
+            {userAttendance.charAt(0).toUpperCase()}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderEventDetailsContent = ({
+    event,
+    variant,
+    isPast,
+    userRSVP,
+    userAttendance,
+    onRSVP,
+  }: {
+    event: EventRecord;
+    variant: "mission" | "training";
+    isPast: boolean;
+    userRSVP: string | null;
+    userAttendance: string | null;
+    onRSVP: (status: RSVPStatus) => void;
+  }) => {
+    const attendingCount = event.rsvps.filter((r) => r.status === "attending").length;
+    const maybeCount = event.rsvps.filter((r) => r.status === "maybe").length;
+    const notAttendingCount = event.rsvps.filter(
+      (r) => r.status === "not-attending"
+    ).length;
+    const presentCount = event.attendance.filter((a) => a.status === "present").length;
+    const absentCount = event.attendance.filter((a) => a.status === "absent").length;
+    const lateCount = event.attendance.filter((a) => a.status === "late").length;
+    const excusedCount = event.attendance.filter((a) => a.status === "excused").length;
+    const groupedRsvps = getGroupedRsvps(event.rsvps);
+    const eventIcon =
+      variant === "mission" ? (
+        <CalendarIcon className="h-4 w-4 text-purple-500" />
+      ) : (
+        <GraduationCap className="h-4 w-4 text-blue-500" />
+      );
+
+    return (
+      <div className="max-h-[80vh] space-y-3 overflow-y-auto p-4">
+        <div>
+          <h4 className="flex items-center gap-2 font-medium">
+            {eventIcon}
+            {event.name}
+          </h4>
+          <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
+            {event.description}
+          </p>
+          {event.campaign_name && (
+            <p className="mt-1 text-xs text-gray-400 dark:text-zinc-500">
+              Campaign: {event.campaign_name}
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span className="font-medium">Time:</span>
+            <span>{event.time}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">Status:</span>
+            <Badge variant="outline">{event.status}</Badge>
+          </div>
+          <div className="flex items-center gap-1 sm:col-span-2">
+            <MapPin className="h-3 w-3" />
+            <span className="font-medium">Location:</span>
+            <span>{event.location}</span>
+          </div>
+          {event.instructor && (
+            <div className="sm:col-span-2">
+              <span className="font-medium">Instructor:</span> {event.instructor}
+            </div>
+          )}
+          {event.max_personnel && (
+            <div className="flex items-center gap-1 sm:col-span-2">
+              <Users className="h-3 w-3" />
+              <span className="font-medium">Max Personnel:</span>
+              <span>{event.max_personnel}</span>
+            </div>
+          )}
+        </div>
+
+        {!userAttendance && !isPast && (
+          <>
+            <Separator />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={userRSVP === "attending" ? "default" : "outline"}
+                onClick={() => onRSVP("attending")}
+                className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
+              >
+                <CheckCircle className="mr-1 h-3 w-3" />
+                Attending
+              </Button>
+              <Button
+                size="sm"
+                variant={userRSVP === "maybe" ? "default" : "outline"}
+                onClick={() => onRSVP("maybe")}
+                className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+              >
+                <AlertCircle className="mr-1 h-3 w-3" />
+                Maybe
+              </Button>
+              <Button
+                size="sm"
+                variant={userRSVP === "not-attending" ? "default" : "outline"}
+                onClick={() => onRSVP("not-attending")}
+                className={
+                  userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""
+                }
+              >
+                <XCircle className="mr-1 h-3 w-3" />
+                Can&apos;t Attend
+              </Button>
+            </div>
+          </>
+        )}
+
+        <div className="space-y-2">
+          <h5 className="text-sm font-medium">RSVP Summary</h5>
+          <div className="grid grid-cols-2 gap-2 text-xs lg:grid-cols-3">
+            <div className="flex items-center gap-1 rounded border p-2">
+              <CheckCircle className="h-3 w-3 text-green-500" />
+              <span>Attending: {attendingCount}</span>
+            </div>
+            <div className="flex items-center gap-1 rounded border p-2">
+              <AlertCircle className="h-3 w-3 text-yellow-500" />
+              <span>Maybe: {maybeCount}</span>
+            </div>
+            <div className="flex items-center gap-1 rounded border p-2">
+              <XCircle className="h-3 w-3 text-red-500" />
+              <span>Can&apos;t Attend: {notAttendingCount}</span>
+            </div>
+          </div>
+        </div>
+
+        {isPast && event.attendance.length > 0 && (
+          <div className="space-y-2">
+            <h5 className="text-sm font-medium">Attendance Summary</h5>
+            <div className="grid grid-cols-2 gap-2 text-xs lg:grid-cols-4">
+              <div className="flex items-center gap-1 rounded border p-2">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                <span>Present: {presentCount}</span>
+              </div>
+              <div className="flex items-center gap-1 rounded border p-2">
+                <div className="h-2 w-2 rounded-full bg-red-500" />
+                <span>Absent: {absentCount}</span>
+              </div>
+              <div className="flex items-center gap-1 rounded border p-2">
+                <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                <span>Late: {lateCount}</span>
+              </div>
+              <div className="flex items-center gap-1 rounded border p-2">
+                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                <span>Excused: {excusedCount}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {event.rsvps.length > 0 && (
+          <div className="space-y-2">
+            <h5 className="text-sm font-medium">RSVPs by Group</h5>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {groupedRsvps.map(([unitLabel, unitRsvps]) => (
+                <div key={`${event.id}-${unitLabel}`} className="rounded border p-2">
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                    {unitLabel}
+                  </p>
+                  <div className="space-y-1">
+                    {unitRsvps.map((rsvp) => {
+                      const attendanceRecord = event.attendance.find(
+                        (a) => a.userId === rsvp.userId
+                      );
+                      return (
+                        <div key={rsvp.id} className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs">{rsvp.userName}</span>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[10px]", getRSVPBadgeColor(rsvp.status))}
+                            >
+                              {rsvp.status.replace("-", " ")}
+                            </Badge>
+                            {attendanceRecord && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-[10px]",
+                                  getAttendanceBadgeColor(attendanceRecord.status)
+                                )}
+                              >
+                                {attendanceRecord.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {isPast && event.attendance.length > 0 && (
+          <div className="space-y-2">
+            <h5 className="text-sm font-medium">Attendance Records</h5>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {event.attendance.map((attendance) => (
+                <div
+                  key={attendance.id}
+                  className="flex items-center justify-between rounded border p-2 text-xs"
+                >
+                  <span className="truncate">{attendance.userName}</span>
+                  <Badge
+                    variant="outline"
+                    className={cn("text-[10px]", getAttendanceBadgeColor(attendance.status))}
+                  >
+                    {attendance.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(userRSVP || userAttendance) && <Separator />}
+
+        {userRSVP && (
+          <div className="text-sm">
+            <span className="font-medium">Your RSVP:</span>{" "}
+            <Badge variant="outline" className={cn(getRSVPBadgeColor(userRSVP))}>
+              {userRSVP.replace("-", " ")}
+            </Badge>
+          </div>
+        )}
+
+        {userAttendance && (
+          <div className="text-sm">
+            <span className="font-medium">Your Attendance:</span>{" "}
+            <Badge variant="outline" className={cn(getAttendanceBadgeColor(userAttendance))}>
+              {userAttendance}
+            </Badge>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -442,331 +831,70 @@ export function AttendanceCalendar({
                   {dayMissions.map((mission, idx) => {
                     const userRSVP = getUserRSVPStatus(mission);
                     const userAttendance = getUserAttendanceStatus(mission);
-                    const attendingCount = mission.rsvps.filter(
-                      (r) => r.status === "attending"
-                    ).length;
-                    const maybeCount = mission.rsvps.filter(
-                      (r) => r.status === "maybe"
-                    ).length;
-                    const notAttendingCount = mission.rsvps.filter(
-                      (r) => r.status === "not-attending"
-                    ).length;
-                    const presentCount = mission.attendance.filter(
-                      (a) => a.status === "present"
-                    ).length;
-                    const absentCount = mission.attendance.filter(
-                      (a) => a.status === "absent"
-                    ).length;
-                    const lateCount = mission.attendance.filter(
-                      (a) => a.status === "late"
-                    ).length;
-                    const excusedCount = mission.attendance.filter(
-                      (a) => a.status === "excused"
-                    ).length;
 
                     return (
-                      <Popover key={`mission-${idx}`}>
-                        <PopoverTrigger asChild>
-                          <div className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 p-1 rounded border border-purple-500/20 bg-purple-500/5">
-                            <div className="flex items-center gap-1 mb-1">
-                              <CalendarIcon className="w-3 h-3 text-purple-500" />
-                              <span className="text-xs font-medium truncate text-purple-500">
-                                {mission.name}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Clock className="w-2 h-2" />
-                              <span>{mission.time}</span>
-                              {userRSVP && (
-                                <div className="ml-1">
-                                  {getRSVPIcon(userRSVP)}
-                                </div>
-                              )}
-                              {userAttendance && (
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "text-xs px-1 py-0 h-4 ml-1",
-                                    getAttendanceBadgeColor(userAttendance)
-                                  )}
-                                >
-                                  {userAttendance.charAt(0).toUpperCase()}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[500px]" align="start">
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="font-medium flex items-center gap-2">
-                                <CalendarIcon className="h-4 w-4 text-purple-500" />
-                                {mission.name}
-                              </h4>
-                              <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-                                {mission.description}
-                              </p>
-                              {mission.campaign_name && (
-                                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
-                                  Campaign: {mission.campaign_name}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span className="font-medium">Time:</span>{" "}
-                                {mission.time}
-                              </div>
-                              <div>
-                                <span className="font-medium">Status:</span>{" "}
-                                <Badge variant="outline" className="ml-1">
-                                  {mission.status}
-                                </Badge>
-                              </div>
-                              <div className="col-span-2 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                <span className="font-medium">
-                                  Location:
-                                </span>{" "}
-                                {mission.location}
-                              </div>
-                              {mission.max_personnel && (
-                                <div className="col-span-2 flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    Max Personnel:
-                                  </span>{" "}
-                                  {mission.max_personnel}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* RSVP buttons for missions (not viewing someone else and not already attended and not past date) */}
-                            {!userAttendance && !isPast && (
-                              <>
-                                <Separator />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "attending"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleMissionRSVP(mission, "attending")
-                                    }
-                                    className={
-                                      userRSVP === "attending"
-                                        ? "bg-green-500 hover:bg-green-600"
-                                        : ""
-                                    }
-                                  >
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Attending
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "maybe"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleMissionRSVP(mission, "maybe")
-                                    }
-                                    className={
-                                      userRSVP === "maybe"
-                                        ? "bg-yellow-500 hover:bg-yellow-600"
-                                        : ""
-                                    }
-                                  >
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    Maybe
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "not-attending"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleMissionRSVP(
-                                        mission,
-                                        "not-attending"
-                                      )
-                                    }
-                                    className={
-                                      userRSVP === "not-attending"
-                                        ? "bg-red-500 hover:bg-red-600"
-                                        : ""
-                                    }
-                                  >
-                                    <XCircle className="h-3 w-3 mr-1" />
-                                    Can&apos;t Attend
-                                  </Button>
-                                </div>
-                              </>
-                            )}
-
-                            {/* RSVP Summary */}
-                            <div className="space-y-2">
-                              <h5 className="font-medium text-sm">
-                                RSVP Summary
-                              </h5>
-                              <div className="flex gap-4 text-sm">
-                                <div className="flex items-center gap-1">
-                                  <CheckCircle className="h-3 w-3 text-green-500" />
-                                  <span>Attending: {attendingCount}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <AlertCircle className="h-3 w-3 text-yellow-500" />
-                                  <span>Maybe: {maybeCount}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <XCircle className="h-3 w-3 text-red-500" />
-                                  <span>Can&apos;t Attend: {notAttendingCount}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Attendance Summary (for past events) */}
-                            {isPast && mission.attendance.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">
-                                  Attendance Summary
-                                </h5>
-                                <div className="flex gap-4 text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                                    <span>Present: {presentCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                                    <span>Absent: {absentCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                    <span>Late: {lateCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                    <span>Excused: {excusedCount}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* START: ADDED RSVP/ATTENDANCE DETAILS FOR MISSIONS */}
-                            {mission.rsvps.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">RSVPs</h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {mission.rsvps.map((rsvp) => {
-                                    const attendanceRecord =
-                                      mission.attendance.find(
-                                        (a) => a.userId === rsvp.userId
-                                      );
-                                    return (
-                                      <div
-                                        key={rsvp.id}
-                                        className="flex items-center justify-between text-sm"
-                                      >
-                                        <span>{rsvp.userName}</span>
-                                        <div className="flex items-center gap-2">
-                                          <Badge
-                                            variant="outline"
-                                            className={cn(
-                                              "text-xs",
-                                              getRSVPBadgeColor(rsvp.status)
-                                            )}
-                                          >
-                                            {rsvp.status.replace("-", " ")}
-                                          </Badge>
-                                          {attendanceRecord && (
-                                            <Badge
-                                              variant="outline"
-                                              className={cn(
-                                                "text-xs",
-                                                getAttendanceBadgeColor(
-                                                  attendanceRecord.status
-                                                )
-                                              )}
-                                            >
-                                              {attendanceRecord.status}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-
-                            {isPast && mission.attendance.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">
-                                  Attendance Records
-                                </h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {mission.attendance.map((attendance) => (
-                                    <div
-                                      key={attendance.id}
-                                      className="flex items-center justify-between text-sm"
-                                    >
-                                      <span>{attendance.userName}</span>
-                                      <Badge
-                                        variant="outline"
-                                        className={cn(
-                                          "text-xs",
-                                          getAttendanceBadgeColor(
-                                            attendance.status
-                                          )
-                                        )}
-                                      >
-                                        {attendance.status}
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {/* END: ADDED RSVP/ATTENDANCE DETAILS FOR MISSIONS */}
-
-                            {userRSVP && (
-                              <div className="text-sm">
-                                <span className="font-medium">Your RSVP:</span>{" "}
-                                <Badge
-                                  variant="outline"
-                                  className={cn(getRSVPBadgeColor(userRSVP))}
-                                >
-                                  {userRSVP.replace("-", " ")}
-                                </Badge>
-                              </div>
-                            )}
-
-                            {userAttendance && (
-                              <div className="text-sm">
-                                <span className="font-medium">
-                                  Your Attendance:
-                                </span>{" "}
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    getAttendanceBadgeColor(userAttendance)
-                                  )}
-                                >
-                                  {userAttendance}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      <div key={`mission-${idx}`}>
+                        <div className="md:hidden">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              {renderEventTrigger({
+                                icon: <CalendarIcon className="h-3 w-3" />,
+                                iconColorClass: "text-purple-500",
+                                borderClass: "border-purple-500/20",
+                                bgClass: "bg-purple-500/5",
+                                name: mission.name,
+                                time: mission.time,
+                                userRSVP,
+                                userAttendance,
+                              })}
+                            </DialogTrigger>
+                            <DialogContent className="max-h-[90vh] w-[95vw] max-w-5xl overflow-y-auto p-0">
+                              <DialogHeader className="px-4 pt-4 pb-0">
+                                <DialogTitle className="text-left">
+                                  Mission Details
+                                </DialogTitle>
+                              </DialogHeader>
+                              {renderEventDetailsContent({
+                                event: mission,
+                                variant: "mission",
+                                isPast,
+                                userRSVP,
+                                userAttendance,
+                                onRSVP: (status) => handleMissionRSVP(mission, status),
+                              })}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <div className="hidden md:block">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              {renderEventTrigger({
+                                icon: <CalendarIcon className="h-3 w-3" />,
+                                iconColorClass: "text-purple-500",
+                                borderClass: "border-purple-500/20",
+                                bgClass: "bg-purple-500/5",
+                                name: mission.name,
+                                time: mission.time,
+                                userRSVP,
+                                userAttendance,
+                              })}
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-[min(96vw,980px)] p-0"
+                              align="start"
+                            >
+                              {renderEventDetailsContent({
+                                event: mission,
+                                variant: "mission",
+                                isPast,
+                                userRSVP,
+                                userAttendance,
+                                onRSVP: (status) => handleMissionRSVP(mission, status),
+                              })}
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
                     );
                   })}
 
@@ -775,334 +903,70 @@ export function AttendanceCalendar({
                     const userRSVP = getUserTrainingRSVPStatus(training);
                     const userAttendance =
                       getUserTrainingAttendanceStatus(training);
-                    const attendingCount = training.rsvps.filter(
-                      (r) => r.status === "attending"
-                    ).length;
-                    const maybeCount = training.rsvps.filter(
-                      (r) => r.status === "maybe"
-                    ).length;
-                    const notAttendingCount = training.rsvps.filter(
-                      (r) => r.status === "not-attending"
-                    ).length;
-                    const presentCount = training.attendance.filter(
-                      (a) => a.status === "present"
-                    ).length;
-                    const absentCount = training.attendance.filter(
-                      (a) => a.status === "absent"
-                    ).length;
-                    const lateCount = training.attendance.filter(
-                      (a) => a.status === "late"
-                    ).length;
-                    const excusedCount = training.attendance.filter(
-                      (a) => a.status === "excused"
-                    ).length;
 
                     return (
-                      <Popover key={`training-${idx}`}>
-                        <PopoverTrigger asChild>
-                          <div className="cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800 p-1 rounded border border-blue-500/20 bg-blue-500/5">
-                            <div className="flex items-center gap-1 mb-1">
-                              <GraduationCap className="w-3 h-3 text-blue-500" />
-                              <span className="text-xs font-medium truncate text-blue-500">
-                                {training.name}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Clock className="w-2 h-2" />
-                              <span>{training.time}</span>
-                              {userRSVP && (
-                                <div className="ml-1">
-                                  {getRSVPIcon(userRSVP)}
-                                </div>
-                              )}
-                              {userAttendance && (
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "text-xs px-1 py-0 h-4 ml-1",
-                                    getAttendanceBadgeColor(userAttendance)
-                                  )}
-                                >
-                                  {userAttendance.charAt(0).toUpperCase()}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[500px]" align="start">
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="font-medium flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4 text-blue-500" />
-                                {training.name}
-                              </h4>
-                              <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-                                {training.description}
-                              </p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span className="font-medium">Time:</span>{" "}
-                                {training.time}
-                              </div>
-                              <div>
-                                <span className="font-medium">Status:</span>{" "}
-                                <Badge variant="outline" className="ml-1">
-                                  {training.status}
-                                </Badge>
-                              </div>
-                              <div className="col-span-2 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                <span className="font-medium">
-                                  Location:
-                                </span>{" "}
-                                {training.location}
-                              </div>
-                              {training.instructor && (
-                                <div className="col-span-2">
-                                  <span className="font-medium">
-                                    Instructor:
-                                  </span>{" "}
-                                  {training.instructor}
-                                </div>
-                              )}
-                              {training.max_personnel && (
-                                <div className="col-span-2 flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    Max Personnel:
-                                  </span>{" "}
-                                  {training.max_personnel}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* RSVP buttons for training (not viewing someone else and not already attended and not past date) */}
-                            {!userAttendance && !isPast && (
-                              <>
-                                <Separator />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "attending"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleTrainingRSVP(training, "attending")
-                                    }
-                                    className={
-                                      userRSVP === "attending"
-                                        ? "bg-green-500 hover:bg-green-600"
-                                        : ""
-                                    }
-                                  >
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Attending
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "maybe"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleTrainingRSVP(training, "maybe")
-                                    }
-                                    className={
-                                      userRSVP === "maybe"
-                                        ? "bg-yellow-500 hover:bg-yellow-600"
-                                        : ""
-                                    }
-                                  >
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    Maybe
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      userRSVP === "not-attending"
-                                        ? "default"
-                                        : "outline"
-                                    }
-                                    onClick={() =>
-                                      handleTrainingRSVP(
-                                        training,
-                                        "not-attending"
-                                      )
-                                    }
-                                    className={
-                                      userRSVP === "not-attending"
-                                        ? "bg-red-500 hover:bg-red-600"
-                                        : ""
-                                    }
-                                  >
-                                    <XCircle className="h-3 w-3 mr-1" />
-                                    Can&apos;t Attend
-                                  </Button>
-                                </div>
-                              </>
-                            )}
-
-                            {/* RSVP Summary */}
-                            <div className="space-y-2">
-                              <h5 className="font-medium text-sm">
-                                RSVP Summary
-                              </h5>
-                              <div className="flex gap-4 text-sm">
-                                <div className="flex items-center gap-1">
-                                  <CheckCircle className="h-3 w-3 text-green-500" />
-                                  <span>Attending: {attendingCount}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <AlertCircle className="h-3 w-3 text-yellow-500" />
-                                  <span>Maybe: {maybeCount}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <XCircle className="h-3 w-3 text-red-500" />
-                                  <span>Can&apos;t Attend: {notAttendingCount}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Attendance Summary (for past events) */}
-                            {isPast && training.attendance.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">
-                                  Attendance Summary
-                                </h5>
-                                <div className="flex gap-4 text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                                    <span>Present: {presentCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-red-500" />
-                                    <span>Absent: {absentCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                    <span>Late: {lateCount}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                    <span>Excused: {excusedCount}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* RSVP Details */}
-                            {training.rsvps.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">RSVPs</h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {training.rsvps.map((rsvp) => {
-                                    const attendanceRecord =
-                                      training.attendance.find(
-                                        (a) => a.userId === rsvp.userId
-                                      );
-                                    return (
-                                      <div
-                                        key={rsvp.id}
-                                        className="flex items-center justify-between text-sm"
-                                      >
-                                        <span>{rsvp.userName}</span>
-                                        <div className="flex items-center gap-2">
-                                          <Badge
-                                            variant="outline"
-                                            className={cn(
-                                              "text-xs",
-                                              getRSVPBadgeColor(rsvp.status)
-                                            )}
-                                          >
-                                            {rsvp.status.replace("-", " ")}
-                                          </Badge>
-                                          {attendanceRecord && (
-                                            <Badge
-                                              variant="outline"
-                                              className={cn(
-                                                "text-xs",
-                                                getAttendanceBadgeColor(
-                                                  attendanceRecord.status
-                                                )
-                                              )}
-                                            >
-                                              {attendanceRecord.status}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Attendance Details (for past events) */}
-                            {isPast && training.attendance.length > 0 && (
-                              <div className="space-y-2">
-                                <h5 className="font-medium text-sm">
-                                  Attendance Records
-                                </h5>
-                                <div className="max-h-32 overflow-y-auto space-y-1">
-                                  {training.attendance.map((attendance) => (
-                                    <div
-                                      key={attendance.id}
-                                      className="flex items-center justify-between text-sm"
-                                    >
-                                      <span>{attendance.userName}</span>
-                                      <Badge
-                                        variant="outline"
-                                        className={cn(
-                                          "text-xs",
-                                          getAttendanceBadgeColor(
-                                            attendance.status
-                                          )
-                                        )}
-                                      >
-                                        {attendance.status}
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {userRSVP && (
-                              <div className="text-sm">
-                                <span className="font-medium">Your RSVP:</span>{" "}
-                                <Badge
-                                  variant="outline"
-                                  className={cn(getRSVPBadgeColor(userRSVP))}
-                                >
-                                  {userRSVP.replace("-", " ")}
-                                </Badge>
-                              </div>
-                            )}
-
-                            {userAttendance && (
-                              <div className="text-sm">
-                                <span className="font-medium">
-                                  Your Attendance:
-                                </span>{" "}
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    getAttendanceBadgeColor(userAttendance)
-                                  )}
-                                >
-                                  {userAttendance}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      <div key={`training-${idx}`}>
+                        <div className="md:hidden">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              {renderEventTrigger({
+                                icon: <GraduationCap className="h-3 w-3" />,
+                                iconColorClass: "text-blue-500",
+                                borderClass: "border-blue-500/20",
+                                bgClass: "bg-blue-500/5",
+                                name: training.name,
+                                time: training.time,
+                                userRSVP,
+                                userAttendance,
+                              })}
+                            </DialogTrigger>
+                            <DialogContent className="max-h-[90vh] w-[95vw] max-w-5xl overflow-y-auto p-0">
+                              <DialogHeader className="px-4 pt-4 pb-0">
+                                <DialogTitle className="text-left">
+                                  Training Details
+                                </DialogTitle>
+                              </DialogHeader>
+                              {renderEventDetailsContent({
+                                event: training,
+                                variant: "training",
+                                isPast,
+                                userRSVP,
+                                userAttendance,
+                                onRSVP: (status) => handleTrainingRSVP(training, status),
+                              })}
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <div className="hidden md:block">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              {renderEventTrigger({
+                                icon: <GraduationCap className="h-3 w-3" />,
+                                iconColorClass: "text-blue-500",
+                                borderClass: "border-blue-500/20",
+                                bgClass: "bg-blue-500/5",
+                                name: training.name,
+                                time: training.time,
+                                userRSVP,
+                                userAttendance,
+                              })}
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-[min(96vw,980px)] p-0"
+                              align="start"
+                            >
+                              {renderEventDetailsContent({
+                                event: training,
+                                variant: "training",
+                                isPast,
+                                userRSVP,
+                                userAttendance,
+                                onRSVP: (status) => handleTrainingRSVP(training, status),
+                              })}
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
                     );
                   })}
 

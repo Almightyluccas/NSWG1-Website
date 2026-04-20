@@ -90,7 +90,7 @@ export function AdminSidebar({ className }: SidebarProps) {
           </li>
           <RoleGuard
             roles={session?.user.roles || []}
-            allowedRoles={["admin", "superAdmin"]}
+            allowedRoles={[UserRole.admin, UserRole.superAdmin]}
             hide={true}
           >
             <li>
@@ -224,7 +224,7 @@ export function AdminSidebar({ className }: SidebarProps) {
                       </li>
                       <RoleGuard
                         roles={session?.user.roles || []}
-                        allowedRoles={["admin", "superAdmin"]}
+                        allowedRoles={[UserRole.admin, UserRole.superAdmin]}
                         hide={true}
                       >
                         <li>
