@@ -17,4 +17,4 @@ export interface DocumentMetaData {
   category: string;
 }
 
-export type UploadType = "profile" | "background" | "document" | "gallery" | "sse";
+export type UploadType = "profile" | "document" | "gallery" | "sse";

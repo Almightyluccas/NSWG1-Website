@@ -94,7 +94,6 @@ const getAcceptedFileTypes = (uploadType: UploadType): string => {
   switch (uploadType) {
     case "profile":
       return "image/jpeg,image/png,image/webp,image/gif";
-    case "background":
     case "gallery":
       return "image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff";
     case "document":
@@ -108,7 +107,6 @@ const getMaxFileSize = (uploadType: UploadType): number => {
   switch (uploadType) {
     case "profile":
       return 5 * 1024 * 1024; // 5MB
-    case "background":
     case "gallery":
       return 10 * 1024 * 1024; // 10MB
     case "document":
@@ -122,8 +120,6 @@ const getUploadTypeLabel = (uploadType: UploadType): string => {
   switch (uploadType) {
     case "profile":
       return "Profile Image";
-    case "background":
-      return "Photo";
     case "gallery":
       return "Gallery Image";
     case "document":
@@ -136,7 +132,6 @@ const getUploadTypeLabel = (uploadType: UploadType): string => {
 const getFileIcon = (file: File, uploadType: UploadType) => {
   if (
     uploadType === "profile" ||
-    uploadType === "background" ||
     uploadType === "gallery"
   ) {
     return <ImageIcon className="h-8 w-8 text-accent" />;
@@ -471,9 +466,7 @@ export function FileUploadDialog({
         <p>Maximum file size: {formatFileSize(maxFileSize)}</p>
         <p>
           Supported formats:{" "}
-          {uploadType === "profile" ||
-          uploadType === "background" ||
-          uploadType === "gallery"
+          {uploadType === "profile" || uploadType === "gallery"
             ? "JPEG, PNG, WebP, GIF"
             : uploadType === "document"
               ? "PDF, DOC, DOCX, TXT, XLS, XLSX"
@@ -738,7 +731,7 @@ export function FileUploadDialog({
           <p>Maximum file size: {formatFileSize(maxFileSize)}</p>
           <p>
             Supported formats:{" "}
-            {uploadType === "profile" || uploadType === "background"
+            {uploadType === "profile"
               ? "JPEG, PNG, WebP, GIF"
               : uploadType === "document"
                 ? "PDF, DOC, DOCX, TXT, XLS, XLSX"

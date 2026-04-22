@@ -126,8 +126,8 @@ export const fileUpload = async ({
         break;
 
       case "profile":
-        if (updateSession) await updateSession({ image: key });
         await saveUploadDetails(key, uploadType);
+        if (updateSession) await updateSession({ image: key });
         break;
 
       default:

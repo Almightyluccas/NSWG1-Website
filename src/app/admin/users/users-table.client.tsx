@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Filter, MoreHorizontal, Search } from "lucide-react";
+import { Check, Copy, Filter, MoreHorizontal, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -39,6 +39,7 @@ export const UsersTable = ({ users }: UserTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
   const [isNameManagerOpen, setIsNameManagerOpen] = useState(false);
+  const [copiedPerscomId, setCopiedPerscomId] = useState<number | null>(null);
 
   const { data: session } = useSession();
 
@@ -48,9 +49,21 @@ export const UsersTable = ({ users }: UserTableProps) => {
       user.name?.toLowerCase().includes(searchLower) ||
       user.discord_username.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
-      user.role.some((role) => role.toLowerCase().includes(searchLower))
+      user.role.some((role) => role.toLowerCase().includes(searchLower)) ||
+      user.perscom_id?.toString().includes(searchLower)
     );
   });
+
+  const handleCopyPerscomId = async (perscomId: number | null) => {
+    if (!perscomId) return;
+    try {
+      await navigator.clipboard.writeText(String(perscomId));
+      setCopiedPerscomId(perscomId);
+      setTimeout(() => setCopiedPerscomId((current) => (current === perscomId ? null : current)), 1500);
+    } catch {
+      // ignore clipboard errors
+    }
+  };
 
   const handleViewDetails = (user: User) => {
     setSelectedUser(user);
@@ -106,7 +119,7 @@ export const UsersTable = ({ users }: UserTableProps) => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
             <Input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search by name, Discord, email, role, or Perscom ID..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -126,6 +139,9 @@ export const UsersTable = ({ users }: UserTableProps) => {
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                   Name
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Perscom ID
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                   Roles
@@ -162,6 +178,31 @@ export const UsersTable = ({ users }: UserTableProps) => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.perscom_id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm text-gray-700 dark:text-zinc-300">
+                          {user.perscom_id}
+                        </span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => handleCopyPerscomId(user.perscom_id)}
+                          aria-label={`Copy Perscom ID ${user.perscom_id}`}
+                        >
+                          {copiedPerscomId === user.perscom_id ? (
+                            <Check className="h-3.5 w-3.5 text-green-500" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 dark:text-zinc-500">—</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-wrap gap-1">
                       {(() => {
@@ -302,6 +343,30 @@ export const UsersTable = ({ users }: UserTableProps) => {
                   </h4>
                   <div className="bg-gray-50 dark:bg-zinc-700/50 rounded-md p-4 space-y-2">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-sm font-medium">Perscom ID</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 dark:text-zinc-400 font-mono">
+                            {selectedUser.perscom_id ?? "—"}
+                          </p>
+                          {selectedUser.perscom_id ? (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => handleCopyPerscomId(selectedUser.perscom_id)}
+                              aria-label={`Copy Perscom ID ${selectedUser.perscom_id}`}
+                            >
+                              {copiedPerscomId === selectedUser.perscom_id ? (
+                                <Check className="h-3.5 w-3.5 text-green-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
                       <div>
                         <p className="text-sm font-medium">Email</p>
                         <p className="text-sm text-gray-500 dark:text-zinc-400">

@@ -4,9 +4,8 @@ import { getToken } from "next-auth/jwt";
 import { routePermissions } from "@/config/roles";
 import { roleHierarchy } from "@/types/database";
 
-const SESSION_TIMEOUT = 60 * 60 * 24 * 30; // 30 days
 const SESSION_SECURE = process.env.NEXTAUTH_URL?.startsWith("https://");
-const SESSION_COOKIE = SESSION_SECURE
+const SESSION_COOKIE_NAME = SESSION_SECURE
   ? "__Secure-next-auth.session-token"
   : "next-auth.session-token";
 
@@ -24,18 +23,14 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
   }
 
   const response = NextResponse.next();
-
-  const rememberMe = request.cookies.get("remember-me")?.value === "true";
-
-  if (token) {
-    const currentCookie = request.cookies.get(SESSION_COOKIE)?.value;
-
+  if (token.rememberMe === false) {
+    const currentCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     if (currentCookie) {
-      response.cookies.set(SESSION_COOKIE, currentCookie, {
+      response.cookies.set(SESSION_COOKIE_NAME, currentCookie, {
         httpOnly: true,
-        secure: SESSION_SECURE,
+        secure: Boolean(SESSION_SECURE),
         sameSite: "lax",
-        maxAge: rememberMe ? SESSION_TIMEOUT : undefined,
+        path: "/",
       });
     }
   }

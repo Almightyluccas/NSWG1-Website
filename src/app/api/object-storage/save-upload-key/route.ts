@@ -38,9 +38,6 @@ export async function POST(request: NextRequest) {
       case "profile":
         await database.put.userProfilePicture(key, userId);
         break;
-      case "background":
-        await database.post.userCustomHeroImage(key, userId);
-        break;
       case "gallery":
         await database.post.galleryImage(key, userId, galleryItem!);
         break;

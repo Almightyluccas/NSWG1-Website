@@ -30,10 +30,10 @@ export default async function RootLayout({
 }>) {
   const session = await getAuthSession();
 
-  const activeThemeName = session?.user?.preferences?.activeThemeName || "Red";
+  const activeThemeName = session?.user?.preferences?.activeThemeName || "Gold";
   const allThemes = [...defaultThemes, ...(session?.user?.customThemes || [])];
   const activeTheme: CustomTheme =
-    allThemes.find((t) => t.name === activeThemeName) || defaultThemes[3];
+    allThemes.find((t) => t.name === activeThemeName) || defaultThemes[0];
 
   return (
     <html lang="en" suppressHydrationWarning>

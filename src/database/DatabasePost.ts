@@ -40,13 +40,6 @@ export class DatabasePost {
     );
   }
 
-  async userCustomHeroImage(s3Key: string, userId: string): Promise<void> {
-    await this.client.query<any[]>(
-      `INSERT INTO images (image_url, image_type, author_id) VALUES (?, ?, ?)`,
-      [s3Key, "hero", userId]
-    );
-  }
-
   async galleryImage(
     s3Key: string,
     userId: string,
@@ -452,9 +445,9 @@ export class DatabasePost {
 
   async defaultUserPreferences(userId: string): Promise<void> {
     await this.client.query(
-      `INSERT IGNORE INTO user_preferences (user_id, active_theme_name, homepage_image_url)
-       VALUES (?, ?, ?)`,
-      [userId, "Red", "/images/tacdev/default.png"]
+      `INSERT IGNORE INTO user_preferences (user_id, active_theme_name)
+       VALUES (?, ?)`,
+      [userId, "Red"]
     );
   }
 

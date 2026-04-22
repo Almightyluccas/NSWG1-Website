@@ -1,11 +1,30 @@
 import { getServerSession, NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import { cookies } from "next/headers";
 import { database } from "@/database";
+
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60;
+const SESSION_SECURE = process.env.NEXTAUTH_URL?.startsWith("https://");
+const SESSION_COOKIE_NAME = SESSION_SECURE
+  ? "__Secure-next-auth.session-token"
+  : "next-auth.session-token";
 
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // Default to 30 days
+    maxAge: SESSION_MAX_AGE,
+  },
+  cookies: {
+    sessionToken: {
+      name: SESSION_COOKIE_NAME,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: Boolean(SESSION_SECURE),
+        maxAge: SESSION_MAX_AGE,
+      },
+    },
   },
   providers: [
     DiscordProvider({
@@ -16,8 +35,12 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account, user, trigger, session }) {
       if (account && user) {
+        const cookieStore = await cookies();
+        const rememberMeIntent = cookieStore.get("remember-me-intent")?.value;
         token.user_id = user.id;
         token.discordName = user.name;
+        token.rememberMe = rememberMeIntent === "true";
+        cookieStore.delete("remember-me-intent");
       }
 
       // TODO: Implement caching if performance becomes an issue
@@ -42,11 +65,15 @@ export const authOptions: NextAuthOptions = {
           ) {
             fixedImageUrl = process.env.OCI_PROFILE_PAR_URL + imageUrl;
           }
+          const isDiscordAvatar =
+            typeof fixedImageUrl === "string" &&
+            (fixedImageUrl.includes("cdn.discordapp.com") ||
+              fixedImageUrl.includes("media.discordapp.net"));
 
           token.roles = roles;
           token.perscomId = perscomId;
           token.name = name;
-          token.image = fixedImageUrl;
+          token.image = isDiscordAvatar ? null : fixedImageUrl;
           token.preferences = preferences;
           token.customThemes = customThemes;
           token.discordName = discordName;
@@ -55,8 +82,7 @@ export const authOptions: NextAuthOptions = {
           token.roles = [];
           token.customThemes = [];
           token.preferences = {
-            activeThemeName: "Red",
-            homepageImageUrl: "/images/tacdev/default.png",
+            activeThemeName: "Gold",
           };
         }
       }
@@ -81,8 +107,12 @@ export const authOptions: NextAuthOptions = {
           await database.put.userName(token.user_id as string, session.name);
           token.name = session.name;
         }
-        if (session.image && process.env.OCI_PROFILE_PAR_URL) {
-          token.image = process.env.OCI_PROFILE_PAR_URL + session.image;
+        if (session.image) {
+          if (session.image.startsWith("http")) {
+            token.image = session.image;
+          } else if (process.env.OCI_PROFILE_PAR_URL) {
+            token.image = process.env.OCI_PROFILE_PAR_URL + session.image;
+          }
         }
       }
 
@@ -96,10 +126,6 @@ export const authOptions: NextAuthOptions = {
             account.providerAccountId,
             user.name!,
             user.email!
-          );
-          await database.post.userProfileImage(
-            account.providerAccountId,
-            user.image!
           );
           await database.post.defaultUserPreferences(account.providerAccountId);
         } catch (error) {
@@ -120,8 +146,7 @@ export const authOptions: NextAuthOptions = {
           id: token.user_id as string,
           image: token.image as string,
           preferences: token.preferences ?? {
-            activeThemeName: "Red",
-            homepageImageUrl: "/images/tacdev/default.png",
+            activeThemeName: "Gold",
           },
           customThemes: Array.isArray(token.customThemes) ? token.customThemes : [],
           roles: Array.isArray(token.roles) ? token.roles : [],

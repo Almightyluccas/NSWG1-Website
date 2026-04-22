@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PerscomUserResponse } from "@/types/api/perscomApi";
 import Image from "next/image";
-import { differenceInMonths, differenceInYears } from "date-fns";
+import { differenceInMonths } from "date-fns";
 
 import { type WidgetConfig } from "@/components/dashboard/widgets/widget-types";
 import { WidgetWrapper } from "@/components/dashboard/widgets/widget-wrapper";
@@ -108,7 +108,7 @@ export function DashboardContent({
   const paygrade = user.rank?.paygrade || "N/A";
 
   return (
-    <>
+    <div className="relative w-full">
       {/* Background Animated Grid Overlay */}
       <div className="fixed inset-0 z-[-1] pointer-events-none opacity-[0.02]">
         <div
@@ -132,7 +132,7 @@ export function DashboardContent({
             <div className="flex items-center gap-6 shrink-0 z-20">
               <div className="relative w-32 h-40 border-2 border-zinc-300 dark:border-zinc-500 shadow-xl bg-zinc-100 dark:bg-zinc-950 shrink-0 rounded-lg overflow-hidden">
                 <Image
-                  src={"https://cdn.discordapp.com/attachments/985651457040732341/1490535861144780982/image.png?ex=69d46932&is=69d317b2&hm=17ce629c79399202f0f2b8dd1840292eff29b3cee11ce32396e39716707043bb&"}
+                  src={user.profile_photo_url || "/placeholder.svg"}
                   alt={user.name}
                   fill
                   className="object-cover"
@@ -246,6 +246,6 @@ export function DashboardContent({
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }
