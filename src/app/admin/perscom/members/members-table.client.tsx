@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Filter, MoreHorizontal, Search } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Filter,
+  MoreHorizontal,
+  Search,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +51,7 @@ export const MembersTable = ({ members }: MembersTableProps) => {
   const [expandedFilterSection, setExpandedFilterSection] = useState<
     "status" | "position" | "unit" | null
   >(null);
+  const [copiedPerscomId, setCopiedPerscomId] = useState<number | null>(null);
 
   const availableStatuses = Array.from(
     new Set(
@@ -136,6 +144,20 @@ export const MembersTable = ({ members }: MembersTableProps) => {
     setExpandedFilterSection(
       expandedFilterSection === section ? null : section
     );
+  };
+
+  const handleCopyPerscomId = async (perscomId: number) => {
+    try {
+      await navigator.clipboard.writeText(String(perscomId));
+      setCopiedPerscomId(perscomId);
+      setTimeout(() => {
+        setCopiedPerscomId((current) =>
+          current === perscomId ? null : current
+        );
+      }, 1500);
+    } catch {
+      // Ignore clipboard access issues.
+    }
   };
 
   return (
@@ -298,6 +320,9 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                   User
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Perscom ID
+                </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
                   Rank
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -336,6 +361,27 @@ export const MembersTable = ({ members }: MembersTableProps) => {
                           {user.email}
                         </div>
                       </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm text-gray-700 dark:text-zinc-300">
+                        {user.id}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() => handleCopyPerscomId(user.id)}
+                        aria-label={`Copy Perscom ID ${user.id}`}
+                      >
+                        {copiedPerscomId === user.id ? (
+                          <Check className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

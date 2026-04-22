@@ -1,5 +1,4 @@
 import type {
-  CustomHeroImages,
   RefreshTokenRow,
   User,
   UserFullInfo,
@@ -118,7 +117,6 @@ export class DatabaseGet {
               u.name,
               u.discord_username,
               up.active_theme_name,
-              up.homepage_image_url,
               uct.name AS custom_theme_name,
               uct.accent_rgb,
               uct.accent_darker_rgb,
@@ -141,7 +139,7 @@ export class DatabaseGet {
         roles: [],
         perscomId: null,
         name: null,
-        preferences: { activeThemeName: null, homepageImageUrl: null },
+        preferences: { activeThemeName: null },
         customThemes: [],
         imageUrl: null,
         discordName: null,
@@ -158,7 +156,6 @@ export class DatabaseGet {
       discordName: firstRow.discord_username,
       preferences: {
         activeThemeName: firstRow.active_theme_name,
-        homepageImageUrl: firstRow.homepage_image_url,
       },
       customThemes: [],
       imageUrl: firstRow.image_url || null,
@@ -234,19 +231,6 @@ export class DatabaseGet {
     );
 
     return rows.length > 0 ? rows[0].image_url : null;
-  }
-
-  async userCustomHeroImages(id: string): Promise<CustomHeroImages[]> {
-    const rows = await this.client.query<any[]>(
-      `
-          SELECT image_url, id FROM images WHERE author_id = ? AND image_type = 'hero'
-      `,
-      [id]
-    );
-    return rows.map((row) => ({
-      id: row.id,
-      url: row.image_url,
-    }));
   }
 
   async refreshTokenByDetails(

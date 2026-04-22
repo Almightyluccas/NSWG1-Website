@@ -33,10 +33,6 @@ export class DatabasePut {
       setClauses.push("active_theme_name = ?");
       queryParams.push(preferences.activeThemeName);
     }
-    if (preferences.homepageImageUrl) {
-      setClauses.push("homepage_image_url = ?");
-      queryParams.push(preferences.homepageImageUrl);
-    }
     if (setClauses.length === 0) {
       return;
     }

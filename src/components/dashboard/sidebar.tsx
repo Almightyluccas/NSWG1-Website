@@ -21,7 +21,6 @@ import {
   X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { DashboardThemeToolbar } from "@/components/theme/theme-switcher";
 import { UserRole } from "@/types/database";
 
 const COLLAPSE_KEY = "sidebar-collapsed";
@@ -243,10 +242,6 @@ function SidebarContent({
               collapsed ? "flex-col gap-2" : "flex-row gap-2 shrink-0"
             )}
           >
-            <DashboardThemeToolbar
-              placement="sidebar"
-              buttonLayout={collapsed ? "vertical" : "horizontal"}
-            />
             <button
               onClick={handleSignOut}
               className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/40 hover:text-red-500 dark:hover:text-red-400 text-zinc-400 dark:text-zinc-500 transition-colors"

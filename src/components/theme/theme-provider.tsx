@@ -33,7 +33,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType>({
   themes: defaultThemes,
-  currentAccent: defaultThemes[1],
+  currentAccent: defaultThemes[0],
   setCurrentAccent: () => {},
   addCustomTheme: () => {},
   mode: "dark",

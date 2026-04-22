@@ -3,8 +3,6 @@ import { getServerSession } from "next-auth/next";
 import objectStorageService from "@/lib/Object-Storage/ObjectStorage";
 import { authOptions } from "@/lib/authOptions";
 import { UploadType } from "@/types/objectStorage";
-import { Redis } from "@upstash/redis";
-import { Ratelimit } from "@upstash/ratelimit";
 
 interface RequestBody {
   uploadType: UploadType;
@@ -26,12 +24,6 @@ const ALLOWED_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ];
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  analytics: true,
-});
-
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
@@ -39,15 +31,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Unauthorized: You must be logged in to upload files." },
       { status: 401 }
-    );
-  }
-
-  const { success } = await ratelimit.limit(session.user.id!);
-
-  if (!success) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded. Please try again later." },
-      { status: 429 }
     );
   }
 

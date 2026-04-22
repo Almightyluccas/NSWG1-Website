@@ -136,7 +136,6 @@ export interface CustomTheme {
 
 export interface Preferences {
   activeThemeName: string | null;
-  homepageImageUrl: string | null;
   /** "light" | "dark" — only applied when user is on dashboard routes and role-eligible. */
   mode?: string | null;
 }
@@ -149,9 +148,4 @@ export interface UserFullInfo {
   preferences: Preferences;
   customThemes: CustomTheme[];
   imageUrl: string | null;
-}
-
-export interface CustomHeroImages {
-  id: number;
-  url: string;
 }

@@ -22,23 +22,7 @@ export default async function Home() {
     redirect("/dashboard");
   }
   const defaultImage = "https://objectstorage.us-ashburn-1.oraclecloud.com/p/iLmoMrwA0_K72E-4Zhpr0pHNkbV06LFu10NzW8ZrDKj7gUS5by1WoD8eZpCSP4Xe/n/id8volxantwo/b/nswg1-bucket/o/backgrounds/home-backgroundArma3_x64_2025-12-06_12-24-53_6102.png";
-  let heroImageSrc =
-    session?.user?.preferences?.homepageImageUrl || defaultImage;
-
-
-  if (
-    heroImageSrc &&
-    !heroImageSrc.startsWith("/") &&
-    heroImageSrc.includes("image")
-  ) {
-    heroImageSrc = `/${heroImageSrc}`;
-  } else if (heroImageSrc && heroImageSrc.startsWith("backgrounds")) {
-    if (process.env.OCI_BACKGROUND_PAR_URL) {
-      heroImageSrc = process.env.OCI_BACKGROUND_PAR_URL + heroImageSrc;
-    }
-  }
-
-  console.log("Hero Image URL:", heroImageSrc);
+  const heroImageSrc = defaultImage;
   return (
     <main className="min-h-screen bg-zinc-900">
       <Navbar />

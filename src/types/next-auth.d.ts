@@ -1,4 +1,5 @@
 import { DefaultSession } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
 import { CustomTheme, Preferences } from "@/types/database";
 
 export interface SessionUser {
@@ -34,6 +35,7 @@ declare module "next-auth/jwt" {
     image?: string | null;
     email?: string | null;
     discordName?: string | null;
+    rememberMe?: boolean;
     error?: string;
   }
 }

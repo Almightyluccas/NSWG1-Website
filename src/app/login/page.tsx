@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/ui/fade-in";
 import Image from "next/image";
 import { signIn, useSession } from "next-auth/react";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,23 +23,15 @@ export default function LoginPage() {
   }, [session, status, router, callbackUrl]);
 
   const handleSignIn = async () => {
-    if (rememberMe) {
-      document.cookie = `remember-me=${rememberMe}; path=/; max-age=60; SameSite=Lax`;
-    } else {
-      document.cookie = `remember-me=false; path=/; max-age=0; SameSite=Lax`;
-    }
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `remember-me-intent=${
+      rememberMe ? "true" : "false"
+    }; path=/; max-age=600; SameSite=Lax${secure}`;
 
     await signIn("discord", {
       callbackUrl: callbackUrl,
-      redirect: false,
     });
   };
-
-  const handleCredentialsSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Placeholder for credential auth implementation
-    console.log("Credentials sign-in submitted");
-  }
 
   return (
     <main className="min-h-screen bg-zinc-950 relative overflow-hidden">
