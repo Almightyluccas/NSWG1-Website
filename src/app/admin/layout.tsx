@@ -3,6 +3,7 @@ import { AdminSidebar } from "@/components/admin/layout/sidebar";
 import { AdminHeader } from "@/components/admin/layout/header";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
 import { Toaster } from "sonner";
+import { UserRole } from "@/types/database";
 
 // TODO: Use perscom Webhook to setup notifications
 export default function AdminLayout({
@@ -11,7 +12,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ServerRoleGuard allowedRoles={["admin", "superAdmin", "instructor"]}>
+    <ServerRoleGuard
+      allowedRoles={[UserRole.admin, UserRole.superAdmin, UserRole.instructor]}
+    >
       <div className="flex h-screen bg-gray-100 dark:bg-zinc-900">
         <div className={"md:block"}>
           <AdminSidebar />

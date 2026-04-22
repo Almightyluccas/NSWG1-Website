@@ -12,8 +12,7 @@ export class InstructorWebhook extends DiscordWebhook {
   }
 
   private formatMessage(data: InstructorMessageType): DiscordWebhookPayload {
-    const mentions =
-      data.unit === "160th" ? "<@249242679211196417>" : "<@492142030831616010>";
+    const mentions = "<@1127073801574809652";
 
     return {
       embeds: [

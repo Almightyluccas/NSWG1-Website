@@ -39,7 +39,7 @@ import {
   Hash,
 } from "lucide-react";
 import { createForm } from "@/app/admin/forms/actions";
-import { getFormWithQuestions } from "@/app/forms/action";
+import { getFormWithQuestions } from "@/app/dashboard/forms/action";
 import type { FormDefinition, FormQuestion } from "@/types/forms";
 import { toast } from "sonner";
 

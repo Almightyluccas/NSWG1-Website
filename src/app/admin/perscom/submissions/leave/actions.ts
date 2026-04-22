@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePerscomDataCache } from "@/lib/perscom/revalidate-data-cache";
 import { perscom } from "@/lib/perscom/api";
 
 export async function acceptApplication(
@@ -21,7 +22,9 @@ export async function rejectApplication(
   perscomId: number
 ) {
   await perscom.post.submissionStatus(submissionId, "Denied");
-  revalidatePath("/admin/perscom/submissions/enlistment");
+  revalidatePerscomDataCache();
+  revalidatePath("/admin");
+  revalidatePath("/admin/perscom/submissions/leave");
 
   //TODO: change user in database to have denied leave
   //TODO: add sending message to discord

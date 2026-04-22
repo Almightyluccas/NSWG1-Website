@@ -52,7 +52,12 @@ export const authOptions: NextAuthOptions = {
           token.discordName = discordName;
         } catch (dbError) {
           console.error("Error fetching user info from DB:", dbError);
-          //TODO: add some time of error handling/logging service
+          token.roles = [];
+          token.customThemes = [];
+          token.preferences = {
+            activeThemeName: "Red",
+            homepageImageUrl: "/images/tacdev/default.png",
+          };
         }
       }
 
@@ -114,9 +119,12 @@ export const authOptions: NextAuthOptions = {
           perscomId: token.perscomId as string,
           id: token.user_id as string,
           image: token.image as string,
-          preferences: token.preferences,
-          customThemes: token.customThemes,
-          roles: token.roles,
+          preferences: token.preferences ?? {
+            activeThemeName: "Red",
+            homepageImageUrl: "/images/tacdev/default.png",
+          },
+          customThemes: Array.isArray(token.customThemes) ? token.customThemes : [],
+          roles: Array.isArray(token.roles) ? token.roles : [],
         };
       }
       return session;

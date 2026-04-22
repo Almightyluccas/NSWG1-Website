@@ -1,20 +1,23 @@
-export enum UserRole {
-  guest = "guest",
-  applicant = "applicant",
-  candidate = "candidate",
-  administration = "J-1",
-  intelligence = "J-2",
-  trainingAndDevelopment = "J-3",
-  logistics = "J-4",
-  greenTeam = "greenTeam",
-  member = "member",
-  "160th" = "160th",
-  tacdevron = "tacdevron",
-  instructor = "instructor",
-  admin = "admin",
-  superAdmin = "superAdmin",
-  developer = "developer",
-}
+export const UserRole = {
+  guest: "guest",
+  applicant: "applicant",
+  candidate: "candidate",
+  administration: "J-1",
+  intelligence: "J-2",
+  trainingAndDevelopment: "J-3",
+  logistics: "J-4",
+  greenTeam: "greenTeam",
+  member: "member",
+  "160th": "160th",
+  tacdevron: "tacdevron",
+  leadership: "leadership",
+  instructor: "instructor",
+  admin: "admin",
+  superAdmin: "superAdmin",
+  developer: "developer",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const roleHierarchy: Record<string, number> = {
   [UserRole.guest]: 0,
@@ -22,11 +25,32 @@ export const roleHierarchy: Record<string, number> = {
   [UserRole.candidate]: 20,
   [UserRole.greenTeam]: 30,
   [UserRole.member]: 40,
+  [UserRole["160th"]]: 40,
+  [UserRole.tacdevron]: 40,
+  [UserRole.administration]: 40,
+  [UserRole.intelligence]: 40,
+  [UserRole.trainingAndDevelopment]: 40,
+  [UserRole.logistics]: 40,
+  [UserRole.leadership]: 60,
   [UserRole.instructor]: 50,
   [UserRole.admin]: 80,
   [UserRole.superAdmin]: 90,
   [UserRole.developer]: 100,
 };
+
+export function hasRole(userRoles: string[], role: UserRole): boolean {
+  return userRoles.includes(role);
+}
+
+export function hasAnyRole(userRoles: string[], roles: UserRole[]): boolean {
+  return roles.some((role) => userRoles.includes(role));
+}
+
+export function hasMinRole(userRoles: string[], minimumRole: UserRole): boolean {
+  const userLevel = Math.max(0, ...userRoles.map((r) => roleHierarchy[r] || 0));
+  const requiredLevel = roleHierarchy[minimumRole] || Infinity;
+  return userLevel >= requiredLevel;
+}
 
 export type Units = "160th" | "tacdevron";
 
@@ -113,6 +137,8 @@ export interface CustomTheme {
 export interface Preferences {
   activeThemeName: string | null;
   homepageImageUrl: string | null;
+  /** "light" | "dark" — only applied when user is on dashboard routes and role-eligible. */
+  mode?: string | null;
 }
 
 export interface UserFullInfo {

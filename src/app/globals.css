@@ -2,8 +2,10 @@
 @import "tw-animate-css";
 
 [cmdk-item][data-disabled="false"] {
-  opacity: 1 !important; /* Ensures it's fully visible */
-  pointer-events: auto !important; /* Ensures it's clickable */
+  opacity: 1 !important;
+  /* Ensures it's fully visible */
+  pointer-events: auto !important;
+  /* Ensures it's clickable */
 }
 
 @layer base {
@@ -31,8 +33,10 @@
     --radius: 0.5rem;
 
     /* Theme colors - Change these to update the entire site's color scheme */
-    --accent-color: 223, 192, 105; /* Default: Amber/Gold (RGB values) */
-    --accent-color-darker: 201, 168, 75; /* Darker shade for hover states */
+    --accent-color: 223, 192, 105;
+    /* Default: Amber/Gold (RGB values) */
+    --accent-color-darker: 201, 168, 75;
+    /* Darker shade for hover states */
 
     /* Light mode specific */
     --foreground-rgb: 0, 0, 0;
@@ -72,11 +76,16 @@
 }
 
 body {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   font-feature-settings:
     "rlig" 1,
     "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Theme utility classes */
@@ -108,13 +117,98 @@ body {
   background-color: rgb(var(--accent-color-darker));
 }
 
-/* Card styles that adapt to theme */
 .theme-card {
   background-color: rgb(var(--card-bg));
   border-color: rgb(var(--card-border));
 }
 
-/* Grain overlay effect */
+/* Dashboard ID card — static CSS avoids server/client inline style serialization mismatches */
+.dashboard-id-card-diagonal-stripes {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #000 0,
+    #000 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 8px 8px;
+}
+
+.dashboard-id-barcode-line {
+  height: 1.5rem;
+  width: 100%;
+  max-width: 160px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 2px,
+    transparent 2px,
+    transparent 4px,
+    currentColor 4px,
+    currentColor 5px,
+    transparent 5px,
+    transparent 8px,
+    currentColor 8px,
+    currentColor 12px,
+    transparent 12px,
+    transparent 14px
+  );
+}
+
+.section-label {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-color));
+  opacity: 0.7;
+}
+
+.scan-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.accent-border-top {
+  border-top: 2px solid rgb(var(--accent-color));
+}
+
+.stencil-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.section-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(to right,
+      transparent,
+      rgb(var(--accent-color) / 0.3),
+      transparent);
+}
+
+.section-transition-dark {
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(24, 24, 27, 1) 100%);
+}
+
 .grain-overlay {
   position: absolute;
   top: 0;
@@ -129,28 +223,33 @@ body {
 }
 
 @keyframes grain {
+
   0%,
   100% {
     transform: translate(0, 0);
   }
+
   10% {
     transform: translate(-5%, -10%);
   }
+
   30% {
     transform: translate(3%, -15%);
   }
+
   50% {
     transform: translate(12%, 9%);
   }
+
   70% {
     transform: translate(9%, 4%);
   }
+
   90% {
     transform: translate(-1%, 7%);
   }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -283,7 +382,65 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* --- Military Dashboard Animations --- */
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar {
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0%, rgba(var(--accent-color), 0.05) 10%, transparent 40%);
+  animation: radar-sweep 8s linear infinite;
+  border-radius: 50%;
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes grid-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(24px); /* Match background size */
+  }
+}
+
+.animate-grid-scroll {
+  animation: grid-scroll 3s linear infinite;
+}
+
+.glass-panel {
+  @apply bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-700/50 shadow-lg;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+  z-index: 10;
+}
+
+.dark .glass-panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }

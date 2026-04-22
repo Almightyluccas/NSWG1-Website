@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS users
 (
     id               VARCHAR(255) PRIMARY KEY,
@@ -8,14 +9,14 @@ CREATE TABLE IF NOT EXISTS users
     date_of_birth    DATE,
     email            VARCHAR(255) NOT NULL,
     profile_image_id INT,
-    role             set ('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'instructor', 'admin', 'superAdmin', 'developer'),
+    role             SET ('guest', 'applicant', 'candidate', 'J-1', 'J-2', 'J-3', 'J-4', 'greenTeam', 'member', '160th', 'tacdevron', 'leadership', 'instructor', 'admin', 'superAdmin', 'developer'),
     created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_perscom_id (perscom_id),
     INDEX idx_discord_username (discord_username),
     INDEX idx_email (email)
 );
 
-CREATE TABLE user_preferences
+CREATE TABLE IF NOT EXISTS user_preferences
 (
     id                 INT AUTO_INCREMENT PRIMARY KEY,
     user_id            VARCHAR(255) NOT NULL UNIQUE,
@@ -27,7 +28,7 @@ CREATE TABLE user_preferences
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE user_custom_themes
+CREATE TABLE IF NOT EXISTS user_custom_themes
 (
     id                INT PRIMARY KEY AUTO_INCREMENT,
     user_id           VARCHAR(255)          NOT NULL,
@@ -40,7 +41,7 @@ CREATE TABLE user_custom_themes
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens
 (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
@@ -79,6 +80,33 @@ CREATE TABLE IF NOT EXISTS gallery_items
     INDEX idx_image_id (image_id),
     INDEX idx_display_order (display_order),
     FOREIGN KEY (image_id) REFERENCES images (id) ON DELETE CASCADE
+);
+
+-- Public marketing gallery (images, local video, YouTube) — used by /api/gallery
+CREATE TABLE IF NOT EXISTS gallery_media
+(
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(255) NOT NULL,
+    description   TEXT,
+    media_type    ENUM ('image', 'video', 'youtube') NOT NULL,
+    src           TEXT         NOT NULL,
+    thumbnail     TEXT         NULL,
+    video_id      VARCHAR(64)  NULL,
+    category      VARCHAR(64)  NOT NULL,
+    display_order INT          NOT NULL DEFAULT 0,
+    created_by    VARCHAR(255) NULL,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_display_order (display_order),
+    INDEX idx_category (category),
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS gallery_media_units
+(
+    media_id INT         NOT NULL,
+    unit       VARCHAR(64) NOT NULL,
+    PRIMARY KEY (media_id, unit),
+    FOREIGN KEY (media_id) REFERENCES gallery_media (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS categories
@@ -211,7 +239,6 @@ CREATE TABLE IF NOT EXISTS training_rsvps
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
--- Training attendance table
 CREATE TABLE IF NOT EXISTS training_attendance
 (
     id          VARCHAR(255) PRIMARY KEY,
@@ -232,13 +259,12 @@ CREATE TABLE IF NOT EXISTS training_attendance
     FOREIGN KEY (marked_by) REFERENCES users (id) ON DELETE CASCADE
 );
 
--- Recurring trainings table
 CREATE TABLE IF NOT EXISTS recurring_trainings
 (
     id            VARCHAR(255) PRIMARY KEY,
     name          VARCHAR(255) NOT NULL,
     description   TEXT         NOT NULL,
-    day_of_week   INT          NOT NULL, -- 0 = Sunday, 1 = Monday, etc.
+    day_of_week   INT          NOT NULL,
     time          TIME         NOT NULL,
     location      VARCHAR(255) NOT NULL,
     instructor    VARCHAR(255),
@@ -253,7 +279,6 @@ CREATE TABLE IF NOT EXISTS recurring_trainings
     FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
 );
 
--- Recurring training instances table to track created instances
 CREATE TABLE IF NOT EXISTS recurring_training_instances
 (
     id                    VARCHAR(255) PRIMARY KEY,
@@ -288,7 +313,7 @@ CREATE TABLE IF NOT EXISTS form_questions
     question_text TEXT                                                                                                               NOT NULL,
     question_type ENUM ('short_answer', 'paragraph', 'multiple_choice', 'checkboxes', 'dropdown', 'date', 'time', 'email', 'number') NOT NULL,
     is_required   BOOLEAN                                                                                                                     DEFAULT FALSE,
-    options       JSON, -- For multiple choice, checkboxes, dropdown options
+    options       JSON,
     order_index   INT                                                                                                                NOT NULL,
     created_at    DATETIME                                                                                                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_form_id (form_id),
@@ -323,7 +348,7 @@ CREATE TABLE IF NOT EXISTS form_submission_answers
     submission_id INT      NOT NULL,
     question_id   INT      NOT NULL,
     answer_text   TEXT,
-    answer_json   JSON, -- For complex answers like multiple selections
+    answer_json   JSON,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_submission_id (submission_id),
     INDEX idx_question_id (question_id),
@@ -347,4 +372,240 @@ CREATE TABLE IF NOT EXISTS document_access_logs
     INDEX idx_access_type (access_type),
     INDEX idx_accessed_at (accessed_at),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS alerts
+(
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    type         ENUM ('priority', 'info', 'warning') NOT NULL,
+    label        VARCHAR(255)                          NOT NULL,
+    message      TEXT                                  NOT NULL,
+    target_roles VARCHAR(500)                          NULL,
+    is_active    BOOLEAN                               DEFAULT TRUE,
+    expires_at   DATETIME                              NULL,
+    created_by   VARCHAR(255)                          NOT NULL,
+    created_at   DATETIME                              NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_is_active (is_active),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_created_by (created_by),
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS sse_items
+(
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    campaign_id     VARCHAR(255) NOT NULL,
+    mission_id      VARCHAR(255) NULL,
+    type            VARCHAR(64)  NOT NULL,
+    name            VARCHAR(255) NOT NULL,
+    description     TEXT,
+    status          ENUM ('LOGGED', 'ANALYZING', 'LOCKED', 'RELEASED') DEFAULT 'LOGGED',
+    minimum_role    VARCHAR(50)                             DEFAULT 'member',
+    image_url       TEXT                                    NULL,
+    classification  VARCHAR(64)                             NULL,
+    collected_date  DATE                                    NULL,
+    uploaded_by     VARCHAR(255)                            NOT NULL,
+    created_at      DATETIME                                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME                                DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_campaign_id (campaign_id),
+    INDEX idx_mission_id (mission_id),
+    INDEX idx_type (type),
+    INDEX idx_status (status),
+    INDEX idx_uploaded_by (uploaded_by),
+    FOREIGN KEY (campaign_id) REFERENCES campaigns (id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES missions (id) ON DELETE SET NULL,
+    FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS operation_documents
+(
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    campaign_id     VARCHAR(255) NOT NULL,
+    mission_id      VARCHAR(255)          NULL,
+    name            VARCHAR(255) NOT NULL,
+    description     TEXT                  NULL,
+    doc_type        VARCHAR(64)           NULL,
+    classification  VARCHAR(64)         NULL,
+    doc_date        DATE                  NULL,
+    file_url        TEXT         NOT NULL,
+    file_type       VARCHAR(50)  NOT NULL,
+    file_size       VARCHAR(50)           NULL,
+    minimum_role    VARCHAR(50)           DEFAULT 'member',
+    uploaded_by     VARCHAR(255) NOT NULL,
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_campaign_id (campaign_id),
+    INDEX idx_mission_id (mission_id),
+    INDEX idx_uploaded_by (uploaded_by),
+    FOREIGN KEY (campaign_id) REFERENCES campaigns (id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES missions (id) ON DELETE SET NULL,
+    FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS operation_intel
+(
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    campaign_id  VARCHAR(255)                                  NOT NULL,
+    mission_id   VARCHAR(255)                                  NULL,
+    type         ENUM ('image', 'regional', 'operational')     NOT NULL,
+    title        VARCHAR(255)                                  NOT NULL,
+    description  TEXT                                          NULL,
+    image_url    TEXT                                          NULL,
+    minimum_role VARCHAR(50)                                   DEFAULT 'member',
+    created_by   VARCHAR(255)                                  NOT NULL,
+    created_at   DATETIME                                      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME                                      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_campaign_id (campaign_id),
+    INDEX idx_mission_id (mission_id),
+    INDEX idx_type (type),
+    INDEX idx_created_by (created_by),
+    FOREIGN KEY (campaign_id) REFERENCES campaigns (id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES missions (id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS directives
+(
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    label        VARCHAR(255) NOT NULL,
+    description  TEXT                  NULL,
+    user_id      VARCHAR(255) NOT NULL,
+    assigned_by  VARCHAR(255) NOT NULL,
+    status       ENUM ('pending', 'done')    DEFAULT 'pending',
+    due_date     DATE                  NULL,
+    completed_at DATETIME              NULL,
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_assigned_by (assigned_by),
+    INDEX idx_status (status),
+    INDEX idx_due_date (due_date),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS after_action_reports
+(
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    campaign_id     VARCHAR(255) NOT NULL,
+    mission_id      VARCHAR(255)          NULL,
+    title           VARCHAR(255) NOT NULL,
+    summary         TEXT         NOT NULL,
+    key_outcomes    TEXT                  NULL,
+    lessons_learned TEXT                  NULL,
+    submitted_by    VARCHAR(255) NOT NULL,
+    status          ENUM ('draft', 'submitted', 'reviewed') DEFAULT 'submitted',
+    reviewed_by     VARCHAR(255)          NULL,
+    reviewed_at     DATETIME              NULL,
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_campaign_id (campaign_id),
+    INDEX idx_mission_id (mission_id),
+    INDEX idx_submitted_by (submitted_by),
+    INDEX idx_status (status),
+    FOREIGN KEY (campaign_id) REFERENCES campaigns (id) ON DELETE CASCADE,
+    FOREIGN KEY (mission_id) REFERENCES missions (id) ON DELETE SET NULL,
+    FOREIGN KEY (submitted_by) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS perscom_notifications
+(
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    target_perscom_id INT          NOT NULL,
+    event             VARCHAR(128) NOT NULL,
+    type              ENUM ('priority', 'info', 'warning') NOT NULL DEFAULT 'info',
+    label             VARCHAR(255) NOT NULL,
+    message           TEXT         NOT NULL,
+    created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_target_perscom (target_perscom_id),
+    INDEX idx_created_at (created_at)
+);
+
+CREATE TABLE IF NOT EXISTS perscom_notification_dismissals
+(
+    id                INT AUTO_INCREMENT PRIMARY KEY,
+    notification_id   INT          NOT NULL,
+    user_id           VARCHAR(255) NOT NULL,
+    dismissed_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_perscom_notification_user (notification_id, user_id),
+    INDEX idx_user_id (user_id),
+    FOREIGN KEY (notification_id) REFERENCES perscom_notifications (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS documents
+(
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(255) NOT NULL,
+    description     TEXT                  NULL,
+    doc_type        VARCHAR(64)           NULL,
+    classification  VARCHAR(64)           NOT NULL DEFAULT 'GENERAL',
+    unit            VARCHAR(255)          NOT NULL DEFAULT 'NSWG1 HQ',
+    file_key        TEXT                  NOT NULL,
+    file_type       VARCHAR(100)          NOT NULL,
+    file_size       BIGINT                NULL,
+    minimum_role    VARCHAR(50)           NOT NULL DEFAULT 'member',
+    uploaded_by     VARCHAR(255)          NOT NULL,
+    created_at      DATETIME              NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_documents_uploaded_by (uploaded_by),
+    INDEX idx_documents_classification (classification),
+    INDEX idx_documents_unit (unit),
+    FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS document_tags
+(
+    document_id  INT          NOT NULL,
+    tag          VARCHAR(64)  NOT NULL,
+    PRIMARY KEY (document_id, tag),
+    INDEX idx_document_tags_tag (tag),
+    FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS document_allowed_roles
+(
+    document_id  INT          NOT NULL,
+    role         VARCHAR(50)  NOT NULL,
+    PRIMARY KEY (document_id, role),
+    INDEX idx_document_allowed_roles_role (role),
+    FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS document_allowed_users
+(
+    document_id  INT          NOT NULL,
+    user_id      VARCHAR(255) NOT NULL,
+    PRIMARY KEY (document_id, user_id),
+    INDEX idx_document_allowed_users_user_id (user_id),
+    FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS training_allowed_roles
+(
+    training_id  VARCHAR(255) NOT NULL,
+    role         VARCHAR(50)  NOT NULL,
+    PRIMARY KEY (training_id, role),
+    INDEX idx_training_allowed_roles_role (role),
+    FOREIGN KEY (training_id) REFERENCES training_records (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS training_allowed_users
+(
+    training_id  VARCHAR(255) NOT NULL,
+    user_id      VARCHAR(255) NOT NULL,
+    PRIMARY KEY (training_id, user_id),
+    INDEX idx_training_allowed_users_user_id (user_id),
+    FOREIGN KEY (training_id) REFERENCES training_records (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS training_documents
+(
+    training_id  VARCHAR(255) NOT NULL,
+    document_id  INT          NOT NULL,
+    PRIMARY KEY (training_id, document_id),
+    INDEX idx_training_documents_document_id (document_id),
+    FOREIGN KEY (training_id) REFERENCES training_records (id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
 );

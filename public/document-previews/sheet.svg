@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 420" role="img" aria-labelledby="title desc">
+  <title id="title">Spreadsheet Preview Placeholder</title>
+  <desc id="desc">Generic XLSX preview thumbnail.</desc>
+  <rect width="320" height="420" rx="20" fill="#052E16" />
+  <rect x="24" y="24" width="272" height="372" rx="12" fill="#F0FDF4" />
+  <rect x="40" y="48" width="110" height="30" rx="6" fill="#15803D" />
+  <text x="95" y="69" text-anchor="middle" fill="#ffffff" font-size="15" font-family="Arial, sans-serif" font-weight="700">XLSX</text>
+  <g fill="#BBF7D0">
+    <rect x="40" y="102" width="240" height="30" rx="4" />
+    <rect x="40" y="138" width="240" height="30" rx="4" />
+    <rect x="40" y="174" width="240" height="30" rx="4" />
+    <rect x="40" y="210" width="240" height="30" rx="4" />
+  </g>
+  <g stroke="#16A34A" stroke-width="2">
+    <line x1="100" y1="102" x2="100" y2="240" />
+    <line x1="160" y1="102" x2="160" y2="240" />
+    <line x1="220" y1="102" x2="220" y2="240" />
+  </g>
+</svg>

@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import RoleGuard from "@/components/auth/role-guard";
 import Image from "next/image";
+import { UserRole } from "@/types/database";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -79,17 +80,21 @@ export function Navbar() {
                 <ChevronDown className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"></span>
               </button>
+              {/* Invisible bridge to prevent gap between button and dropdown */}
+              {isUnitsDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 h-2"></div>
+              )}
 
               {isUnitsDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-zinc-700">
+                <div className="absolute top-full left-0 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-zinc-700">
                   <Link
-                    href="/tf160th"
+                    href="/units/tf160th"
                     className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                   >
                     Task Force 160th
                   </Link>
                   <Link
-                    href="/tacdevron2"
+                    href="/units/tacdevron2"
                     className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                   >
                     TACDEVRON2
@@ -104,7 +109,13 @@ export function Navbar() {
               <>
                 <RoleGuard
                   roles={session.user.roles}
-                  allowedRoles={["member", "greenTeam"]}
+                  allowedRoles={[
+                    UserRole.member,
+                    UserRole.greenTeam,
+                    UserRole["160th"],
+                    UserRole.tacdevron,
+                    UserRole.admin,
+                  ]}
                   hide={true}
                 >
                   <div
@@ -113,7 +124,7 @@ export function Navbar() {
                     onMouseLeave={() => setIsOperationCenterOpen(false)}
                   >
                     <button className="text-gray-700 dark:text-zinc-300 hover:text-accent transition-colors relative group flex items-center">
-                      Operation Center
+                      Operations
                       <ChevronDown className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:rotate-180" />
                       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300 group-hover:w-full"></span>
                     </button>
@@ -121,27 +132,47 @@ export function Navbar() {
                     {isOperationCenterOpen && (
                       <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-zinc-700">
                         <Link
-                          href="/calendar"
+                          href="/dashboard/operations"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          Operations Center
+                        </Link>
+                        <Link
+                          href="/dashboard/operations/sse"
+                          className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
+                        >
+                          SSE Repository
+                        </Link>
+                        <Link
+                          href="/dashboard/calendar"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Calendar
                         </Link>
                         <Link
-                          href="/forms"
+                          href="/dashboard/forms"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Forms
                         </Link>
                         <Link
-                          href="/documents"
+                          href="/dashboard/documents"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Documents
                         </Link>
+                        {session.user.roles?.includes(UserRole.admin) && (
+                          <Link
+                            href="/dashboard/operations/management"
+                            className="block px-4 py-2 text-gray-700 dark:text-accent hover:bg-gray-100 dark:hover:bg-zinc-700"
+                          >
+                            Op Management
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>
-                  {/*<NavLink href="/calendar">Calendar</NavLink>*/}
+                  {/*<NavLink href="/dashboard/calendar">Calendar</NavLink>*/}
                   <div
                     className="relative group"
                     onMouseEnter={() => setIsPerscomDropdownOpen(true)}
@@ -156,25 +187,25 @@ export function Navbar() {
                     {isPerscomDropdownOpen && (
                       <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-zinc-700">
                         <Link
-                          href="/perscom/roster"
+                          href="/dashboard/perscom/roster"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Roster
                         </Link>
                         <Link
-                          href="/perscom/awards"
+                          href="/dashboard/perscom/awards"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Awards
                         </Link>
                         <Link
-                          href="/perscom/ranks"
+                          href="/dashboard/perscom/ranks"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Ranks
                         </Link>
                         <Link
-                          href="/perscom/qualifications"
+                          href="/dashboard/perscom/qualifications"
                           className="block px-4 py-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-700 hover:text-accent"
                         >
                           Qualifications
@@ -232,14 +263,14 @@ export function Navbar() {
               {isMobileUnitsOpen && (
                 <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
                   <Link
-                    href="/tf160th"
+                    href="/units/tf160th"
                     className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Task Force 160th
                   </Link>
                   <Link
-                    href="/tacdevron2"
+                    href="/units/tacdevron2"
                     className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -260,7 +291,13 @@ export function Navbar() {
               <>
                 <RoleGuard
                   roles={session.user.roles}
-                  allowedRoles={["member", "greenTeam"]}
+                  allowedRoles={[
+                    UserRole.member,
+                    UserRole.greenTeam,
+                    UserRole["160th"],
+                    UserRole.tacdevron,
+                    UserRole.admin,
+                  ]}
                   hide={true}
                 >
                   <div>
@@ -272,7 +309,7 @@ export function Navbar() {
                         )
                       }
                     >
-                      <span>Operations Center</span>
+                      <span>Operations</span>
                       <ChevronDown
                         className={`h-4 w-4 transition-transform duration-200 ${isMobileOperationCenterOpen ? "rotate-180" : ""}`}
                       />
@@ -281,26 +318,49 @@ export function Navbar() {
                     {isMobileOperationCenterOpen && (
                       <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
                         <Link
-                          href="/calendar"
+                          href="/dashboard/operations"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileOperationCenterOpen(false)}
+                        >
+                          Operations Center
+                        </Link>
+                        <Link
+                          href="/dashboard/operations/sse"
+                          className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
+                          onClick={() => setIsMobileOperationCenterOpen(false)}
+                        >
+                          SSE Repository
+                        </Link>
+                        <Link
+                          href="/dashboard/calendar"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileOperationCenterOpen(false)}
                         >
                           Calendar
                         </Link>
                         <Link
-                          href="/forms"
+                          href="/dashboard/forms"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileOperationCenterOpen(false)}
                         >
                           Forms
                         </Link>
                         <Link
-                          href="/documents"
+                          href="/dashboard/documents"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileOperationCenterOpen(false)}
                         >
                           Documents
                         </Link>
+                        {session.user.roles?.includes(UserRole.admin) && (
+                          <Link
+                            href="/dashboard/operations/management"
+                            className="block py-2 text-accent"
+                            onClick={() => setIsMobileOperationCenterOpen(false)}
+                          >
+                            Op Management
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>
@@ -321,28 +381,28 @@ export function Navbar() {
                     {isMobilePerscomOpen && (
                       <div className="pl-4 py-2 space-y-2 bg-gray-50 dark:bg-zinc-800/50 rounded-md mt-1">
                         <Link
-                          href="/perscom/roster"
+                          href="/dashboard/perscom/roster"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Roster
                         </Link>
                         <Link
-                          href="/perscom/awards"
+                          href="/dashboard/perscom/awards"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Awards
                         </Link>
                         <Link
-                          href="/perscom/ranks"
+                          href="/dashboard/perscom/ranks"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Ranks
                         </Link>
                         <Link
-                          href="/perscom/qualifications"
+                          href="/dashboard/perscom/qualifications"
                           className="block py-2 text-gray-700 dark:text-zinc-300 hover:text-accent"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >

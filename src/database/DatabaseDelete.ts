@@ -49,4 +49,79 @@ export class DatabaseDelete {
       formId,
     ]);
   }
+
+  // ── Alerts ──
+
+  async alert(alertId: number): Promise<void> {
+    await this.client.query(`DELETE FROM alerts WHERE id = ?`, [alertId]);
+  }
+
+  // ── SSE Items ──
+
+  async sseItem(sseItemId: number): Promise<void> {
+    await this.client.query(`DELETE FROM sse_items WHERE id = ?`, [sseItemId]);
+  }
+
+  async detachSseFromMission(sseId: number, missionId: string): Promise<void> {
+    await this.client.query(
+      `DELETE FROM sse_item_missions WHERE sse_id = ? AND mission_id = ?`,
+      [sseId, missionId]
+    );
+  }
+
+  // ── Directives ──
+
+  async directive(directiveId: number): Promise<void> {
+    await this.client.query(`DELETE FROM directives WHERE id = ?`, [
+      directiveId,
+    ]);
+  }
+
+  // ── Operation Documents ──
+
+  async operationDocument(docId: number): Promise<void> {
+    await this.client.query(`DELETE FROM operation_documents WHERE id = ?`, [
+      docId,
+    ]);
+  }
+
+  async detachDocumentFromMission(docId: number, missionId: string): Promise<void> {
+    await this.client.query(
+      `DELETE FROM operation_document_missions WHERE document_id = ? AND mission_id = ?`,
+      [docId, missionId]
+    );
+  }
+
+  async document(documentId: number): Promise<void> {
+    await this.client.query(`DELETE FROM documents WHERE id = ?`, [documentId]);
+  }
+
+  async detachDocumentFromTraining(trainingId: string, documentId: number): Promise<void> {
+    await this.client.query(
+      `DELETE FROM training_documents WHERE training_id = ? AND document_id = ?`,
+      [trainingId, documentId]
+    );
+  }
+
+  // ── Marketing gallery_media ──
+
+  async galleryMedia(mediaId: number): Promise<void> {
+    await this.client.query(`DELETE FROM gallery_media WHERE id = ?`, [mediaId]);
+  }
+
+  // ── Operation Intel ──
+
+  async operationIntel(intelId: number): Promise<void> {
+    await this.client.query(`DELETE FROM operation_intel WHERE id = ?`, [
+      intelId,
+    ]);
+  }
+
+  // ── After Action Reports ──
+
+  async afterActionReport(aarId: number): Promise<void> {
+    await this.client.query(`DELETE FROM after_action_reports WHERE id = ?`, [
+      aarId,
+    ]);
+  }
 }

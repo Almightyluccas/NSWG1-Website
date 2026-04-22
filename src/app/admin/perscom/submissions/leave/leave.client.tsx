@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import RoleGuard from "@/components/auth/role-guard";
+import { UserRole } from "@/types/database";
 import { useSession } from "next-auth/react";
 import { PaginationBar } from "@/components/ui/pagination";
 import { acceptApplication, rejectApplication } from "./actions";
@@ -151,7 +152,7 @@ export const LeaveOfAbsenceTable = ({
     <>
       <RoleGuard
         roles={session?.user?.roles || []}
-        allowedRoles={["admin", "superAdmin", "instructor"]}
+        allowedRoles={[UserRole.admin, UserRole.superAdmin, UserRole.instructor]}
       >
         <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm">
           <div className="p-6 border-b border-gray-200 dark:border-zinc-700 flex flex-col sm:flex-row gap-4">

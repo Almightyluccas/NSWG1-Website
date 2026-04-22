@@ -237,7 +237,7 @@ export function CategoryManagementDialog({
 
               {filteredCategories.length === 0 && categories.length > 0 && (
                 <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
-                  No categories found matching "{categorySearchQuery}"
+                  No categories found matching &quot;{categorySearchQuery}&quot;
                 </div>
               )}
               {categories.length === 0 && (

@@ -5,6 +5,7 @@ import { FileText, Users, Clock } from "lucide-react";
 import { getForms } from "@/app/admin/forms/actions"; // Updated import
 import { FormsManagementClient } from "./forms-management-client";
 import ServerRoleGuard from "@/components/auth/server-role-guard";
+import { UserRole } from "@/types/database";
 
 async function FormsStats() {
   const forms = await getForms();
@@ -49,7 +50,7 @@ async function FormsStats() {
 
 export default async function AdminFormsPage() {
   return (
-    <ServerRoleGuard allowedRoles={["admin", "superAdmin"]}>
+    <ServerRoleGuard allowedRoles={[UserRole.admin, UserRole.superAdmin]}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Forms Management</h1>

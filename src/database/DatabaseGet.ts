@@ -18,6 +18,7 @@ import type {
   RawSubmissionQueryResult,
 } from "@/types/forms";
 import { GalleryItem } from "@/types/objectStorage";
+import type { MarketingGalleryItem } from "@/app/(marketing)/gallery/gallery-types";
 
 export class DatabaseGet {
   constructor(private client: DatabaseClient) {}
@@ -393,7 +394,13 @@ export class DatabaseGet {
         GROUP BY t.id, t.name, t.description, t.date, t.time, t.location, t.instructor, t.max_personnel, t.status, t.created_by, t.created_at, t.updated_at
         ORDER BY t.date DESC, t.time DESC
     `);
-    return rows;
+    if (!userId) return rows;
+
+    const roles = await this.trainingAllowedRolesByUser(userId);
+    return rows.filter((row) => {
+      const roleSet = new Set(roles);
+      return roleSet.has(`training:${row.id}:open`) || roleSet.has(`training:${row.id}:allowed`);
+    });
   }
 
   async trainingByDateRange(
@@ -423,6 +430,65 @@ export class DatabaseGet {
       [trainingId]
     );
     return rows;
+  }
+
+  async userTrainingRsvpStatus(trainingId: string, userId: string): Promise<string | null> {
+    const rows = await this.client.query<{ status: string }[]>(
+      `SELECT status FROM training_rsvps WHERE training_id = ? AND user_id = ? LIMIT 1`,
+      [trainingId, userId]
+    );
+    return rows[0]?.status ?? null;
+  }
+
+  async trainingAllowlist(trainingId: string): Promise<{ roles: string[]; userIds: string[] }> {
+    const roleRows = await this.client.query<{ role: string }[]>(
+      `SELECT role FROM training_allowed_roles WHERE training_id = ?`,
+      [trainingId]
+    );
+    const userRows = await this.client.query<{ user_id: string }[]>(
+      `SELECT user_id FROM training_allowed_users WHERE training_id = ?`,
+      [trainingId]
+    );
+    return {
+      roles: roleRows.map((row) => row.role),
+      userIds: userRows.map((row) => row.user_id),
+    };
+  }
+
+  async canUserAccessTraining(trainingId: string, userId: string, userRoles: string[]): Promise<boolean> {
+    const allowlist = await this.trainingAllowlist(trainingId);
+    if (allowlist.roles.length === 0 && allowlist.userIds.length === 0) {
+      return true;
+    }
+    if (allowlist.userIds.includes(userId)) return true;
+    return allowlist.roles.some((role) => userRoles.includes(role));
+  }
+
+  private async trainingAllowedRolesByUser(userId: string): Promise<string[]> {
+    const openRows = await this.client.query<{ id: string }[]>(
+      `SELECT tr.id
+       FROM training_records tr
+       LEFT JOIN training_allowed_roles tar ON tr.id = tar.training_id
+       LEFT JOIN training_allowed_users tau ON tr.id = tau.training_id
+       GROUP BY tr.id
+       HAVING COUNT(tar.role) = 0 AND COUNT(tau.user_id) = 0`
+    );
+    const directRows = await this.client.query<{ training_id: string }[]>(
+      `SELECT training_id FROM training_allowed_users WHERE user_id = ?`,
+      [userId]
+    );
+    const roleRows = await this.client.query<{ training_id: string }[]>(
+      `SELECT DISTINCT tar.training_id
+       FROM training_allowed_roles tar
+       JOIN users u ON u.id = ?
+       WHERE FIND_IN_SET(tar.role, u.role) > 0`,
+      [userId]
+    );
+    return [
+      ...openRows.map((row) => `training:${row.id}:open`),
+      ...directRows.map((row) => `training:${row.training_id}:allowed`),
+      ...roleRows.map((row) => `training:${row.training_id}:allowed`),
+    ];
   }
 
   async trainingAttendance(trainingId: string): Promise<any[]> {
@@ -816,7 +882,547 @@ export class DatabaseGet {
 
   async galleryItems(): Promise<GalleryItem[]> {
     return await this.client.query<GalleryItem[]>(
-      `SELECT i.title, i.alt_text, i.description, i.category, i.unit, u.display_order FROM images AS i JOIN gallery_items AS u ON i.id = u.image_id`
+      `SELECT i.title, i.alt_text AS altText, i.description, '' AS category, i.unit, gi.display_order
+       FROM images AS i
+                JOIN gallery_items AS gi ON i.id = gi.image_id`
     );
+  }
+
+  /** Public marketing gallery rows (images / video / YouTube). */
+  async galleryMarketingItems(): Promise<MarketingGalleryItem[]> {
+    const rows = await this.client.query<any[]>(
+      `
+          SELECT gm.id,
+                 gm.title,
+                 gm.description,
+                 gm.media_type,
+                 gm.src,
+                 gm.thumbnail,
+                 gm.video_id,
+                 gm.category,
+                 gm.display_order,
+                 GROUP_CONCAT(gmu.unit ORDER BY gmu.unit SEPARATOR ',') AS units_csv
+          FROM gallery_media gm
+                   LEFT JOIN gallery_media_units gmu ON gm.id = gmu.media_id
+          GROUP BY gm.id, gm.title, gm.description, gm.media_type, gm.src, gm.thumbnail, gm.video_id, gm.category,
+                   gm.display_order
+          ORDER BY gm.display_order ASC, gm.id ASC
+      `
+    );
+
+    return rows.map((row) => {
+      const units = row.units_csv
+        ? String(row.units_csv)
+            .split(",")
+            .map((u: string) => u.trim())
+            .filter(Boolean)
+        : [];
+      const type = row.media_type as MarketingGalleryItem["type"];
+      const item: MarketingGalleryItem = {
+        id: row.id,
+        title: row.title,
+        category: row.category,
+        unit: units.length ? units : ["tacdevron2"],
+        type,
+        src: row.src,
+        description: row.description || "",
+        thumbnail: row.thumbnail || undefined,
+        videoId: row.video_id || undefined,
+        videoType: type === "youtube" ? "youtube" : type === "video" ? "local" : undefined,
+      };
+      return item;
+    });
+  }
+
+  // ── Alerts ──
+
+  async alerts(targetRoles?: string[]): Promise<any[]> {
+    let query = `
+      SELECT a.*, u.name as creator_name
+      FROM alerts a
+      LEFT JOIN users u ON a.created_by = u.id
+      WHERE a.is_active = TRUE
+        AND (a.expires_at IS NULL OR a.expires_at > NOW())
+    `;
+    const params: any[] = [];
+
+    if (targetRoles && targetRoles.length > 0) {
+      // Return alerts that target any of the user's roles, or alerts with no target (all)
+      const placeholders = targetRoles.map(() => "a.target_roles LIKE ?").join(" OR ");
+      query += ` AND (a.target_roles IS NULL OR ${placeholders})`;
+      for (const role of targetRoles) {
+        params.push(`%${role}%`);
+      }
+    }
+
+    query += ` ORDER BY a.created_at DESC`;
+    return await this.client.query<any[]>(query, params);
+  }
+
+  async allAlerts(): Promise<any[]> {
+    return await this.client.query<any[]>(`
+      SELECT a.*, u.name as creator_name
+      FROM alerts a
+      LEFT JOIN users u ON a.created_by = u.id
+      ORDER BY a.created_at DESC
+    `);
+  }
+
+  async perscomNotificationsVisibleForUser(
+    targetPerscomId: number,
+    userId: string
+  ): Promise<any[]> {
+    return await this.client.query<any[]>(
+      `
+      SELECT n.*
+      FROM perscom_notifications n
+      LEFT JOIN perscom_notification_dismissals d
+        ON d.notification_id = n.id AND d.user_id = ?
+      WHERE n.target_perscom_id = ? AND d.id IS NULL
+      ORDER BY n.created_at DESC
+      `,
+      [userId, targetPerscomId]
+    );
+  }
+
+  async allPerscomNotifications(): Promise<any[]> {
+    return await this.client.query<any[]>(
+      `SELECT * FROM perscom_notifications ORDER BY created_at DESC`
+    );
+  }
+
+  async perscomNotificationBelongsToUser(
+    notificationId: number,
+    userId: string
+  ): Promise<boolean> {
+    const rows = await this.client.query<{ id: number }[]>(
+      `
+      SELECT n.id
+      FROM perscom_notifications n
+      INNER JOIN users u ON u.perscom_id = n.target_perscom_id
+      WHERE n.id = ? AND u.id = ?
+      `,
+      [notificationId, userId]
+    );
+    return rows.length > 0;
+  }
+
+  // ── SSE Items ──
+
+  /**
+   * @param opts string = legacy `campaignId` filter; object = filters including management scope
+   */
+  async sseItems(
+    opts?:
+      | string
+      | {
+          campaignId?: string;
+          missionId?: string;
+          scope?: string;
+          uploadedBy?: string;
+          status?: string;
+        }
+  ): Promise<any[]> {
+    let query = `
+      SELECT s.*, c.name as campaign_name, u.name as uploader_name
+      FROM sse_items s
+      LEFT JOIN campaigns c ON s.campaign_id = c.id
+      LEFT JOIN users u ON s.uploaded_by = u.id
+    `;
+    const params: any[] = [];
+    const conditions: string[] = [];
+
+    if (typeof opts === "string" || opts === undefined) {
+      const campaignId = typeof opts === "string" ? opts : undefined;
+      if (campaignId) {
+        conditions.push("s.campaign_id = ?");
+        params.push(campaignId);
+      }
+    } else {
+      const { campaignId, missionId, scope, uploadedBy, status } = opts;
+      if (scope === "management" && missionId) {
+        conditions.push(`(
+          s.mission_id = ?
+          OR EXISTS (
+            SELECT 1
+            FROM sse_item_missions sim
+            WHERE sim.sse_id = s.id AND sim.mission_id = ?
+          )
+        )`);
+        params.push(missionId, missionId);
+      } else if (scope === "management" && campaignId && !missionId) {
+        conditions.push("s.campaign_id = ?");
+        params.push(campaignId);
+        conditions.push("s.mission_id IS NULL");
+        conditions.push(
+          "NOT EXISTS (SELECT 1 FROM sse_item_missions sim WHERE sim.sse_id = s.id)"
+        );
+      } else if (scope === "repository" && campaignId) {
+        conditions.push("s.campaign_id = ?");
+        params.push(campaignId);
+        conditions.push("s.mission_id IS NULL");
+        conditions.push(
+          "NOT EXISTS (SELECT 1 FROM sse_item_missions sim WHERE sim.sse_id = s.id)"
+        );
+      } else if (campaignId) {
+        conditions.push("s.campaign_id = ?");
+        params.push(campaignId);
+      }
+
+      if (uploadedBy) {
+        conditions.push("s.uploaded_by = ?");
+        params.push(uploadedBy);
+      }
+
+      if (status) {
+        conditions.push("s.status = ?");
+        params.push(status);
+      }
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    query += ` ORDER BY s.created_at DESC`;
+    return await this.client.query<any[]>(query, params);
+  }
+
+  async sseItemById(id: number): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `
+      SELECT s.*, c.name as campaign_name, u.name as uploader_name
+      FROM sse_items s
+      LEFT JOIN campaigns c ON s.campaign_id = c.id
+      LEFT JOIN users u ON s.uploaded_by = u.id
+      WHERE s.id = ?
+      `,
+      [id]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  }
+
+  // ── Directives ──
+
+  async directives(userId: string): Promise<any[]> {
+    return await this.client.query<any[]>(
+      `
+      SELECT d.*, u.name as user_name, a.name as assigner_name
+      FROM directives d
+      LEFT JOIN users u ON d.user_id = u.id
+      LEFT JOIN users a ON d.assigned_by = a.id
+      WHERE d.user_id = ?
+      ORDER BY d.created_at DESC
+      `,
+      [userId]
+    );
+  }
+
+  async allDirectives(): Promise<any[]> {
+    return await this.client.query<any[]>(`
+      SELECT d.*, u.name as user_name, a.name as assigner_name
+      FROM directives d
+      LEFT JOIN users u ON d.user_id = u.id
+      LEFT JOIN users a ON d.assigned_by = a.id
+      ORDER BY d.created_at DESC
+    `);
+  }
+
+  // ── Operations (campaigns with op fields) ──
+
+  async operationCampaigns(): Promise<any[]> {
+    return await this.client.query<any[]>(`
+      SELECT c.*,
+             DATE_FORMAT(c.start_date, '%Y-%m-%d') as start_date,
+             DATE_FORMAT(c.end_date, '%Y-%m-%d') as end_date,
+             COUNT(DISTINCT m.id) as mission_count,
+             COUNT(DISTINCT mr.user_id) as personnel_count
+      FROM campaigns c
+      LEFT JOIN missions m ON c.id = m.campaign_id
+      LEFT JOIN mission_rsvps mr ON m.id = mr.mission_id AND mr.status = 'attending'
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `);
+  }
+
+  async operationCampaignById(campaignId: string): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `
+      SELECT c.*,
+             DATE_FORMAT(c.start_date, '%Y-%m-%d') as start_date,
+             DATE_FORMAT(c.end_date, '%Y-%m-%d') as end_date
+      FROM campaigns c
+      WHERE c.id = ?
+      `,
+      [campaignId]
+    );
+
+    if (rows.length === 0) return null;
+    return rows[0];
+  }
+
+  // ── Operation Documents ──
+
+  /**
+   * @param campaignPlanningOnly when true and missionId is omitted, only documents with mission_id IS NULL
+   */
+  async operationDocuments(
+    campaignId: string,
+    missionId?: string,
+    campaignPlanningOnly = false
+  ): Promise<any[]> {
+    let query = `
+      SELECT od.*,
+             u.name as uploader_name,
+             DATE_FORMAT(od.doc_date, '%Y-%m-%d') AS doc_date_fmt
+      FROM operation_documents od
+      LEFT JOIN users u ON od.uploaded_by = u.id
+      WHERE od.campaign_id = ?
+    `;
+    const params: any[] = [campaignId];
+
+    if (missionId) {
+      query += ` AND (
+        od.mission_id = ?
+        OR EXISTS (
+          SELECT 1
+          FROM operation_document_missions odm
+          WHERE odm.document_id = od.id AND odm.mission_id = ?
+        )
+      )`;
+      params.push(missionId, missionId);
+    } else if (campaignPlanningOnly) {
+      query += ` AND od.mission_id IS NULL
+        AND NOT EXISTS (
+          SELECT 1
+          FROM operation_document_missions odm
+          WHERE odm.document_id = od.id
+        )`;
+    }
+
+    query += ` ORDER BY od.created_at DESC`;
+    return await this.client.query<any[]>(query, params);
+  }
+
+  async operationDocumentById(docId: number): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `
+      SELECT od.*, u.name as uploader_name,
+             DATE_FORMAT(od.doc_date, '%Y-%m-%d') AS doc_date_fmt
+      FROM operation_documents od
+      LEFT JOIN users u ON od.uploaded_by = u.id
+      WHERE od.id = ?
+      `,
+      [docId]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  }
+
+  async operationDocumentCampaignId(docId: number): Promise<string | null> {
+    const rows = await this.client.query<{ campaign_id: string }[]>(
+      `SELECT campaign_id FROM operation_documents WHERE id = ?`,
+      [docId]
+    );
+    return rows.length > 0 ? rows[0].campaign_id : null;
+  }
+
+  async sseItemCampaignId(sseId: number): Promise<string | null> {
+    const rows = await this.client.query<{ campaign_id: string }[]>(
+      `SELECT campaign_id FROM sse_items WHERE id = ?`,
+      [sseId]
+    );
+    return rows.length > 0 ? rows[0].campaign_id : null;
+  }
+
+  async operationDocumentMissionIds(docId: number): Promise<string[]> {
+    const rows = await this.client.query<{ mission_id: string }[]>(
+      `SELECT mission_id FROM operation_document_missions WHERE document_id = ?`,
+      [docId]
+    );
+    return rows.map((r) => r.mission_id);
+  }
+
+  async documents(filters: {
+    search?: string;
+    unit?: string;
+    classification?: string;
+    tag?: string;
+  } = {}): Promise<any[]> {
+    const where: string[] = [];
+    const params: any[] = [];
+
+    if (filters.search) {
+      where.push(`(d.name LIKE ? OR d.description LIKE ?)`);
+      params.push(`%${filters.search}%`, `%${filters.search}%`);
+    }
+    if (filters.unit) {
+      where.push(`d.unit = ?`);
+      params.push(filters.unit);
+    }
+    if (filters.classification) {
+      where.push(`d.classification = ?`);
+      params.push(filters.classification);
+    }
+    if (filters.tag) {
+      where.push(`EXISTS (SELECT 1 FROM document_tags dt2 WHERE dt2.document_id = d.id AND dt2.tag = ?)`);
+      params.push(filters.tag);
+    }
+
+    const sql = `
+      SELECT d.*, u.name AS uploader_name,
+             DATE_FORMAT(d.created_at, '%Y-%m-%d') AS created_date
+      FROM documents d
+      LEFT JOIN users u ON d.uploaded_by = u.id
+      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+      ORDER BY d.created_at DESC
+    `;
+    return this.client.query<any[]>(sql, params);
+  }
+
+  async documentById(documentId: number): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `SELECT d.*, u.name AS uploader_name
+       FROM documents d
+       LEFT JOIN users u ON d.uploaded_by = u.id
+       WHERE d.id = ?
+       LIMIT 1`,
+      [documentId]
+    );
+    return rows[0] ?? null;
+  }
+
+  async documentTags(documentId: number): Promise<string[]> {
+    const rows = await this.client.query<{ tag: string }[]>(
+      `SELECT tag FROM document_tags WHERE document_id = ? ORDER BY tag ASC`,
+      [documentId]
+    );
+    return rows.map((row) => row.tag);
+  }
+
+  async documentAllowedRoles(documentId: number): Promise<string[]> {
+    const rows = await this.client.query<{ role: string }[]>(
+      `SELECT role FROM document_allowed_roles WHERE document_id = ?`,
+      [documentId]
+    );
+    return rows.map((row) => row.role);
+  }
+
+  async documentAllowedUsers(documentId: number): Promise<string[]> {
+    const rows = await this.client.query<{ user_id: string }[]>(
+      `SELECT user_id FROM document_allowed_users WHERE document_id = ?`,
+      [documentId]
+    );
+    return rows.map((row) => row.user_id);
+  }
+
+  async trainingDocuments(trainingId: string): Promise<any[]> {
+    return this.client.query<any[]>(
+      `SELECT d.*, td.training_id
+       FROM training_documents td
+       JOIN documents d ON d.id = td.document_id
+       WHERE td.training_id = ?
+       ORDER BY d.created_at DESC`,
+      [trainingId]
+    );
+  }
+
+  async sseItemMissionIds(sseId: number): Promise<string[]> {
+    const rows = await this.client.query<{ mission_id: string }[]>(
+      `SELECT mission_id FROM sse_item_missions WHERE sse_id = ?`,
+      [sseId]
+    );
+    return rows.map((r) => r.mission_id);
+  }
+
+  // ── Operation Intel ──
+
+  /** All intel rows for a campaign (images, narrative, etc.). */
+  async operationIntel(campaignId: string): Promise<any[]> {
+    return await this.client.query<any[]>(
+      `
+      SELECT oi.*, u.name as creator_name
+      FROM operation_intel oi
+      LEFT JOIN users u ON oi.created_by = u.id
+      WHERE oi.campaign_id = ?
+      ORDER BY oi.created_at DESC
+      `,
+      [campaignId]
+    );
+  }
+
+  /** Regional + operational narrative rows for campaign-level or a specific mission. */
+  async operationIntelNarrativeRows(
+    campaignId: string,
+    missionId: string | null
+  ): Promise<any[]> {
+    return await this.client.query<any[]>(
+      `
+      SELECT oi.*, u.name as creator_name
+      FROM operation_intel oi
+      LEFT JOIN users u ON oi.created_by = u.id
+      WHERE oi.campaign_id = ?
+        AND oi.mission_id <=> ?
+        AND oi.type IN ('regional', 'operational')
+      ORDER BY oi.type ASC
+      `,
+      [campaignId, missionId]
+    );
+  }
+
+  async missionCampaignId(missionId: string): Promise<string | null> {
+    const rows = await this.client.query<{ campaign_id: string }[]>(
+      `SELECT campaign_id FROM missions WHERE id = ?`,
+      [missionId]
+    );
+    return rows.length > 0 ? rows[0].campaign_id : null;
+  }
+
+  // ── After Action Reports ──
+
+  async afterActionReports(campaignId?: string, missionId?: string): Promise<any[]> {
+    let query = `
+      SELECT aar.*, c.name as campaign_name, m.name as mission_name,
+             u.name as submitter_name, r.name as reviewer_name
+      FROM after_action_reports aar
+      LEFT JOIN campaigns c ON aar.campaign_id = c.id
+      LEFT JOIN missions m ON aar.mission_id = m.id
+      LEFT JOIN users u ON aar.submitted_by = u.id
+      LEFT JOIN users r ON aar.reviewed_by = r.id
+    `;
+    const params: any[] = [];
+    const conditions: string[] = [];
+
+    if (campaignId) {
+      conditions.push("aar.campaign_id = ?");
+      params.push(campaignId);
+    }
+    if (missionId) {
+      conditions.push("aar.mission_id = ?");
+      params.push(missionId);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    query += ` ORDER BY aar.created_at DESC`;
+    return await this.client.query<any[]>(query, params);
+  }
+
+  async afterActionReportById(id: number): Promise<any | null> {
+    const rows = await this.client.query<any[]>(
+      `
+      SELECT aar.*, c.name as campaign_name, m.name as mission_name,
+             u.name as submitter_name, r.name as reviewer_name
+      FROM after_action_reports aar
+      LEFT JOIN campaigns c ON aar.campaign_id = c.id
+      LEFT JOIN missions m ON aar.mission_id = m.id
+      LEFT JOIN users u ON aar.submitted_by = u.id
+      LEFT JOIN users r ON aar.reviewed_by = r.id
+      WHERE aar.id = ?
+      `,
+      [id]
+    );
+    return rows.length > 0 ? rows[0] : null;
   }
 }

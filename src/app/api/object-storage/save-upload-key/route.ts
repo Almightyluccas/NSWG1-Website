@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
       case "document":
         // await database.post.userDocument(key, userId);
         break;
+      case "sse":
+        // SSE rows are persisted via POST /api/sse after upload.
+        break;
     }
 
     return NextResponse.json({ success: true, message: "Database updated." });

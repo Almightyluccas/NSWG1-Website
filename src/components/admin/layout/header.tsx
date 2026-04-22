@@ -86,7 +86,7 @@ export function AdminHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/perscom/user/${session?.user.perscomId}`}
+                  href={`/dashboard/perscom/user/${session?.user.perscomId}`}
                   className="w-full"
                 >
                   <User className="mr-2 h-4 w-4" />
@@ -94,7 +94,7 @@ export function AdminHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="cursor-pointer">
+                <Link href="/dashboard/settings" className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </Link>
