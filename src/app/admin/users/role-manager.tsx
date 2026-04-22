@@ -50,8 +50,7 @@ export function RoleManager({
 
     if (isCurrentUserAdmin) {
       return allRoles.filter(
-        (role) =>
-          ![UserRole.developer, UserRole.superAdmin].includes(role as UserRole)
+        (role) => role !== UserRole.developer && role !== UserRole.superAdmin
       );
     }
 

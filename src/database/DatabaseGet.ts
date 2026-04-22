@@ -1053,17 +1053,10 @@ export class DatabaseGet {
       } else if (scope === "management" && campaignId && !missionId) {
         conditions.push("s.campaign_id = ?");
         params.push(campaignId);
-        if (scope === "repository") {
-          conditions.push("s.mission_id IS NULL");
-          conditions.push(
-            "NOT EXISTS (SELECT 1 FROM sse_item_missions sim WHERE sim.sse_id = s.id)"
-          );
-        } else {
-          conditions.push("s.mission_id IS NULL");
-          conditions.push(
-            "NOT EXISTS (SELECT 1 FROM sse_item_missions sim WHERE sim.sse_id = s.id)"
-          );
-        }
+        conditions.push("s.mission_id IS NULL");
+        conditions.push(
+          "NOT EXISTS (SELECT 1 FROM sse_item_missions sim WHERE sim.sse_id = s.id)"
+        );
       } else if (scope === "repository" && campaignId) {
         conditions.push("s.campaign_id = ?");
         params.push(campaignId);

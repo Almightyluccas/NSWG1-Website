@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,13 +59,9 @@ export function AarSection({
 
   const userLevel = Math.max(0, ...userRoles.map((r) => roleHierarchy[r] || 0));
   const canSubmit = userLevel >= AAR_MIN_LEVEL;
-  const canReview = userRoles.some((r) => REVIEW_ROLES.includes(r));
+  const canReview = userRoles.some((r) => REVIEW_ROLES.some((allowed) => allowed === r));
 
-  useEffect(() => {
-    loadAars();
-  }, [campaignId, missionId]);
-
-  async function loadAars() {
+  const loadAars = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -82,7 +78,11 @@ export function AarSection({
     } finally {
       setLoading(false);
     }
-  }
+  }, [campaignId, missionId]);
+
+  useEffect(() => {
+    void loadAars();
+  }, [loadAars]);
 
   async function handleSubmit() {
     if (!title || !summary) return;

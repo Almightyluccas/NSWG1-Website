@@ -14,7 +14,7 @@ const REVIEW_ROLES = [
 ];
 
 function canReview(roles: string[]): boolean {
-  return roles.some((r) => REVIEW_ROLES.includes(r));
+  return roles.some((r) => REVIEW_ROLES.some((allowed) => allowed === r));
 }
 
 export async function GET(

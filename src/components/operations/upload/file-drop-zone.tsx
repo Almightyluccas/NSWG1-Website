@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { UploadCloud, X, FileText } from "lucide-react";
+import Image from "next/image";
 
 export type UploadQueuedFile = {
   id: string;
@@ -81,7 +82,13 @@ export function FileDropZone({
                 {showImagePreviews ? (
                   <div className="relative aspect-video rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800">
                     {entry.previewUrl ? (
-                      <img src={entry.previewUrl} alt={entry.file.name} className="w-full h-full object-cover" />
+                      <Image
+                        src={entry.previewUrl}
+                        alt={entry.file.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
                         <FileText className="h-4 w-4 text-zinc-500" />
