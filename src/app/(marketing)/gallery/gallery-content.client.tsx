@@ -18,6 +18,27 @@ import type {
 type Category = "all" | "operations" | "training" | "briefing";
 type Unit = "all" | "tf160th" | "tacdevron2";
 
+const PUBLIC_FOLDER_GALLERY_ITEMS: MarketingGalleryItem[] = [
+  {
+    id: -1001,
+    title: "Night Boat Raid",
+    category: "operations",
+    unit: ["tacdevron2"],
+    type: "image",
+    src: "/images/tacdev/tacdev-night-boat-raid.png",
+    description: "Public-folder legacy showcase image.",
+  },
+  {
+    id: -1002,
+    title: "Task Unit Brief",
+    category: "briefing",
+    unit: ["tf160th", "tacdevron2"],
+    type: "image",
+    src: "/images/tacdev/default.png",
+    description: "Legacy public briefing visual.",
+  },
+];
+
 export default function GalleryContentClient() {
   const [items, setItems] = useState<MarketingGalleryItem[]>([]);
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">(
@@ -40,14 +61,26 @@ export default function GalleryContentClient() {
         const data = (await res.json()) as MarketingGalleryApiResponse;
         if (!cancelled) {
           if (Array.isArray(data.items)) {
-            setItems(data.items);
+            const apiItems = data.items;
+            const seen = new Set(apiItems.map((item) => `${item.title}|${item.src}`));
+            const mergedItems = [
+              ...PUBLIC_FOLDER_GALLERY_ITEMS.filter(
+                (item) => !seen.has(`${item.title}|${item.src}`)
+              ),
+              ...apiItems,
+            ];
+            setItems(mergedItems);
             setLoadState("ok");
           } else {
             setLoadState("error");
           }
         }
       } catch {
-        if (!cancelled) setLoadState("error");
+        if (!cancelled) {
+          // Even if API fails, keep the marketing page usable via public-folder items.
+          setItems(PUBLIC_FOLDER_GALLERY_ITEMS);
+          setLoadState("ok");
+        }
       }
     })();
     return () => {

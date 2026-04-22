@@ -3,11 +3,49 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { database } from "@/database";
 import { UserRole } from "@/types/database";
+import type { MarketingGalleryItem } from "@/app/(marketing)/gallery/gallery-types";
+
+const LEGACY_MARKETING_ITEMS: MarketingGalleryItem[] = [
+  {
+    id: -1,
+    title: "Night Boat Raid",
+    category: "operations",
+    unit: ["tacdevron2"],
+    type: "image",
+    src: "/images/tacdev/tacdev-night-boat-raid.png",
+    description: "Legacy showcase image from TACDEVRON2 maritime operations.",
+  },
+  {
+    id: -2,
+    title: "Operator Roster Brief",
+    category: "briefing",
+    unit: ["tf160th", "tacdevron2"],
+    type: "image",
+    src: "/images/tacdev/default.png",
+    description: "Legacy briefing card retained for the public gallery.",
+  },
+  {
+    id: -3,
+    title: "Training Evolution",
+    category: "training",
+    unit: ["tf160th"],
+    type: "image",
+    src: "/images/tacdev/default.png",
+    description: "Legacy training media retained for continuity.",
+  },
+];
 
 export async function GET() {
   try {
-    const items = await database.get.galleryMarketingItems();
-    return NextResponse.json({ items });
+    const dbItems = await database.get.galleryMarketingItems();
+    const seen = new Set(dbItems.map((item) => `${item.title}|${item.src}`));
+    const merged = [
+      ...LEGACY_MARKETING_ITEMS.filter(
+        (item) => !seen.has(`${item.title}|${item.src}`)
+      ),
+      ...dbItems,
+    ];
+    return NextResponse.json({ items: merged });
   } catch (error) {
     console.error("Error fetching gallery:", error);
     return NextResponse.json(
