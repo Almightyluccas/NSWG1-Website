@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,28 +8,75 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   UploadCloud,
   ChevronLeft,
-  FileText,
   AlertTriangle,
   CheckCircle2,
+  Loader2,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SSE_CATEGORIES } from "@/lib/config/operations";
-import { type MockOperation } from "@/types/operations";
-import { UserRole } from "@/types/database";
+import imageCompression from "browser-image-compression";
+import { FileDropZone, type UploadQueuedFile } from "@/components/operations/upload/file-drop-zone";
 
-export function SseUploadClient() {
+type OperationOption = {
+  id: string;
+  name: string;
+  codename: string | null;
+};
+
+type MissionOption = {
+  id: string;
+  name: string;
+};
+
+type QueuedImage = UploadQueuedFile & { previewUrl: string };
+
+const IMAGE_COMPRESSION_OPTIONS = {
+  maxSizeMB: 2,
+  maxWidthOrHeight: 1920,
+  useWebWorker: true,
+  fileType: "image/webp",
+  initialQuality: 1,
+};
+
+function getTodayIsoDate(): string {
+  const now = new Date();
+  const tzOffsetMs = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+}
+
+export function SseUploadClient({
+  initialCampaignId,
+  initialMissionId,
+}: {
+  initialCampaignId?: string;
+  initialMissionId?: string;
+}) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ops, setOps] = useState<MockOperation[]>([]);
+  const [ops, setOps] = useState<OperationOption[]>([]);
+  const [missions, setMissions] = useState<MissionOption[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState(initialCampaignId ?? "");
+  const [selectedMissionId, setSelectedMissionId] = useState(initialMissionId ?? "");
+  const [dumpNote, setDumpNote] = useState("");
+  const [collectedDate, setCollectedDate] = useState(getTodayIsoDate());
+  const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
+  const [transferCount, setTransferCount] = useState(0);
+  const [transferErrors, setTransferErrors] = useState(0);
 
-  // Form fields
-  const [name, setName] = useState("");
-  const [campaignId, setCampaignId] = useState("");
-  const [type, setType] = useState("");
-  const [description, setDescription] = useState("");
+  const hasPrefilledOwner = Boolean(initialCampaignId || initialMissionId);
+
+  const selectedOperationLabel = useMemo(() => {
+    const op = ops.find((item) => item.id === selectedCampaignId);
+    return op?.codename || op?.name || "UNKNOWN OPERATION";
+  }, [ops, selectedCampaignId]);
+
+  const selectedMissionLabel = useMemo(() => {
+    const mission = missions.find((item) => item.id === selectedMissionId);
+    return mission?.name || "";
+  }, [missions, selectedMissionId]);
 
   useEffect(() => {
     async function fetchOps() {
@@ -37,7 +84,13 @@ export function SseUploadClient() {
         const res = await fetch("/api/operations");
         const data = await res.json();
         if (Array.isArray(data)) {
-          setOps(data);
+          setOps(
+            data.map((op) => ({
+              id: String(op.id),
+              name: String(op.name ?? ""),
+              codename: op.codename ?? null,
+            })),
+          );
         } else {
           setOps([]);
         }
@@ -48,27 +101,165 @@ export function SseUploadClient() {
     fetchOps();
   }, []);
 
+  useEffect(() => {
+    if (!selectedCampaignId) {
+      setMissions([]);
+      setSelectedMissionId("");
+      return;
+    }
+
+    async function fetchCampaignMissions() {
+      try {
+        const res = await fetch(`/api/operations/${selectedCampaignId}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to load campaign missions");
+        }
+        const list = Array.isArray(data?.missions)
+          ? data.missions.map((mission: any) => ({
+              id: String(mission.id),
+              name: String(mission.name ?? "Unnamed mission"),
+            }))
+          : [];
+        setMissions(list);
+      } catch (err) {
+        console.error(err);
+        setMissions([]);
+      }
+    }
+
+    fetchCampaignMissions();
+  }, [selectedCampaignId]);
+
+  useEffect(() => {
+    if (missions.length === 0) {
+      setSelectedMissionId("");
+      return;
+    }
+
+    const stillExists = missions.some((mission) => mission.id === selectedMissionId);
+    if (!stillExists) {
+      const prefilledExists = initialMissionId
+        ? missions.some((mission) => mission.id === initialMissionId)
+        : false;
+      setSelectedMissionId(prefilledExists ? initialMissionId! : missions[0].id);
+    }
+  }, [missions, selectedMissionId, initialMissionId]);
+
+  const handleFileInput = (files: File[]) => {
+    if (!files.length) return;
+
+    const incoming: QueuedImage[] = files
+      .filter((file) => file.type.startsWith("image/"))
+      .map((file) => ({
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+        status: "queued",
+      }));
+
+    setQueuedImages((prev) => [...prev, ...incoming]);
+  };
+
+  useEffect(() => {
+    return () => {
+      queuedImages.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
+    };
+  }, [queuedImages]);
+
+  const removeQueuedImage = (id: string) => {
+    setQueuedImages((prev) => {
+      const target = prev.find((entry) => entry.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((entry) => entry.id !== id);
+    });
+  };
+
+  const uploadOne = async (entry: QueuedImage) => {
+    const compressedFile = await imageCompression(entry.file, IMAGE_COMPRESSION_OPTIONS);
+
+    const presignRes = await fetch("/api/object-storage/generate-upload-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uploadType: "sse",
+        contentType: compressedFile.type,
+      }),
+    });
+    if (!presignRes.ok) {
+      const data = await presignRes.json().catch(() => ({}));
+      throw new Error(data.error || "Unable to acquire upload URL");
+    }
+    const { url, key } = await presignRes.json();
+
+    const putRes = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": compressedFile.type },
+      body: compressedFile,
+    });
+    if (!putRes.ok) {
+      throw new Error("Storage transfer failed");
+    }
+
+    const sseRes = await fetch("/api/sse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        campaignId: selectedCampaignId,
+        missionId: selectedMissionId || null,
+        type: "MEDIA",
+        name: entry.file.name,
+        description: dumpNote,
+        status: "LOGGED",
+        imageUrl: key,
+        collectedDate: collectedDate || null,
+      }),
+    });
+    if (!sseRes.ok) {
+      const data = await sseRes.json().catch(() => ({}));
+      throw new Error(data.error || "Failed to register SSE row");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCampaignId || queuedImages.length === 0) {
+      setError("Select an operation and queue at least one image.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
+    setTransferCount(0);
+    setTransferErrors(0);
+
     try {
-      const res = await fetch("/api/sse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          campaignId,
-          type: type || "OTHER",
-          name,
-          description,
-          status: "LOGGED",
-          minimumRole: UserRole.member,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to upload");
+      for (const entry of queuedImages) {
+        setQueuedImages((prev) =>
+          prev.map((item) =>
+            item.id === entry.id ? { ...item, status: "uploading", error: undefined } : item,
+          ),
+        );
+        try {
+          await uploadOne(entry);
+          setQueuedImages((prev) =>
+            prev.map((item) => (item.id === entry.id ? { ...item, status: "done" } : item)),
+          );
+          setTransferCount((prev) => prev + 1);
+        } catch (entryError: any) {
+          setQueuedImages((prev) =>
+            prev.map((item) =>
+              item.id === entry.id
+                ? { ...item, status: "failed", error: entryError?.message || "Upload failed" }
+                : item,
+            ),
+          );
+          setTransferErrors((prev) => prev + 1);
+        }
       }
+
       setSubmitted(true);
       setTimeout(() => {
         router.push("/dashboard/operations/sse");
@@ -90,7 +281,9 @@ export function SseUploadClient() {
                 <CheckCircle2 className="h-20 w-20 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
             </div>
             <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-[0.2em] mb-3">Payload Transfer Complete</h2>
-            <p className="text-zinc-400 text-sm uppercase tracking-widest max-w-md">Evidence has been successfully aggregated into the SSE master registry.</p>
+            <p className="text-zinc-400 text-sm uppercase tracking-widest max-w-md">
+              {transferCount} frame(s) ingested. {transferErrors > 0 ? `${transferErrors} failed.` : "All transfers successful."}
+            </p>
             <div className="mt-8 flex items-center gap-2 text-emerald-500/50 text-[10px] uppercase font-bold tracking-widest">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Redirecting...
@@ -117,13 +310,21 @@ export function SseUploadClient() {
         <AlertTriangle className="h-5 w-5 text-accent shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest">
-            Data Integrity & OpSec Protocol
+            Field Terminal // SD Card Ingest
           </p>
           <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 leading-relaxed font-mono uppercase tracking-wider">
-            Packages submitted via this uplink default to <span className="text-accent font-bold">TOP SECRET / PENDING REVIEW</span>. A designated Intelligence Officer or Command Admin will assign final clearances. <br/>This terminal is secured via NSA Suite B Cryptography (AES-256); cleared to transmit SCI / SAP payloads.
+            Drops auto-log as <span className="text-accent font-bold">PENDING REVIEW</span>. Uploaded material is tied to selected operation/mission and uploader identity.
           </p>
         </div>
       </div>
+
+      {hasPrefilledOwner && (
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 text-xs font-mono uppercase tracking-wider flex items-center gap-2">
+          <Lock className="h-3.5 w-3.5 text-accent" />
+          Prefilled Target Loaded (Editable) // {selectedOperationLabel}
+          {selectedMissionLabel ? ` › ${selectedMissionLabel}` : ""}
+        </div>
+      )}
 
       <Card className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xl relative overflow-hidden group">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-[0.3]" />
@@ -142,26 +343,16 @@ export function SseUploadClient() {
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Item Name */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Asset Designation / Identity</label>
-                <Input 
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Encrypted Ledger, Seized Relay..." 
-                  className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-600 focus:border-accent/80 font-mono text-sm py-4 rounded-lg shadow-inner transition-colors"
-                />
-              </div>
-
-              {/* Operation — pulled from shared config */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Source Operation Node</label>
-                <select 
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Source Operation (Required)</label>
+                <select
                   required
                   className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold tracking-wider rounded-lg px-3 py-2 h-10 flex items-center focus:border-accent/80 focus:ring-1 focus:ring-accent/50 outline-none transition-all appearance-none cursor-pointer"
-                  value={campaignId}
-                  onChange={(e) => setCampaignId(e.target.value)}
+                  value={selectedCampaignId}
+                  onChange={(e) => {
+                    setSelectedCampaignId(e.target.value);
+                    setSelectedMissionId("");
+                  }}
                 >
                   <option value="" disabled className="text-zinc-600">Assign Operation...</option>
                   {ops.map((op) => (
@@ -170,60 +361,58 @@ export function SseUploadClient() {
                 </select>
               </div>
 
-              {/* Category — pulled from shared config */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Material Category</label>
-                <select 
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Mission (Required)</label>
+                <select
                   required
+                  disabled={!selectedCampaignId}
                   className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold tracking-wider rounded-lg px-3 py-2 h-10 flex items-center focus:border-accent/80 focus:ring-1 focus:ring-accent/50 outline-none transition-all appearance-none cursor-pointer"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
+                  value={selectedMissionId}
+                  onChange={(e) => setSelectedMissionId(e.target.value)}
                 >
-                  <option value="" disabled className="text-zinc-600">Select Category...</option>
-                  {SSE_CATEGORIES.map((cat) => (
-                    <option key={cat.key} value={cat.key}>{cat.label}</option>
+                  <option value="" disabled>Select mission...</option>
+                  {missions.map((mission) => (
+                    <option key={mission.id} value={mission.id}>{mission.name}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Date Collected */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Acquisition Timestamp</label>
-                <Input 
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Collected Date (Optional)</label>
+                <Input
                   type="date"
-                  required
-                  className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 font-mono text-sm py-4 rounded-lg shadow-inner transition-colors dark:[color-scheme:dark]"
+                  value={collectedDate}
+                  onChange={(e) => setCollectedDate(e.target.value)}
+                  className="h-10 px-3 pr-2 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 text-sm rounded-lg transition-colors dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:mr-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
                 />
               </div>
             </div>
 
-            {/* Description */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Preliminary Findings / Extraction Context</label>
-              <Textarea 
-                required
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Log physical condition, immediate intel value, or extraction parameters..."
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Dump Note (Optional)</label>
+              <Textarea
+                value={dumpNote}
+                onChange={(e) => setDumpNote(e.target.value)}
+                placeholder="Quick context applied to each uploaded frame..."
                 className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-600 min-h-[100px] focus:border-accent/80 font-mono text-sm p-4 rounded-lg shadow-inner transition-colors"
               />
             </div>
 
-            {/* File Upload Mock */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Evidence File Attachment</label>
-              <div className="relative border border-dashed border-zinc-200 dark:border-zinc-700 hover:border-accent/50 bg-white dark:bg-zinc-900/50 rounded-lg text-center transition-all cursor-pointer group overflow-hidden">
-                <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute top-0 bottom-0 left-0 w-full bg-[linear-gradient(to_bottom,transparent,rgba(var(--accent),0.1),transparent)] -translate-y-full group-hover:animate-[scan_2s_ease-in-out_infinite]" />
-                
-                <div className="relative z-10 py-8 px-4">
-                    <div className="h-12 w-12 mx-auto bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center mb-3 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(var(--accent),0.2)] transition-all">
-                        <UploadCloud className="h-5 w-5 text-zinc-500 group-hover:text-accent transition-colors" />
-                    </div>
-                    <p className="text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-widest drop-shadow-sm group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">DRAG FILES HERE OR CLICK TO SELECT FROM DEVICE</p>
-                    <p className="text-[9px] text-zinc-500 font-mono mt-1.5 uppercase tracking-widest">SUPPORTED FILE TYPES: PDF, PNG, JPG, DOCX / MAX SIZE: 10MB</p>
-                </div>
-              </div>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Drop Screenshots (Required)</label>
+              <FileDropZone
+                files={queuedImages}
+                onFilesAdded={handleFileInput}
+                onRemove={removeQueuedImage}
+                accept="image/*"
+                multiple
+                disabled={isSubmitting}
+                label="Drop images here or click to load SD dump"
+                hint="SUPPORTED: JPG, PNG, WEBP, GIF"
+                showImagePreviews
+                isTransferring={isSubmitting}
+                transferCount={transferCount + transferErrors}
+              />
             </div>
 
             <div className="pt-5 border-t border-zinc-200 dark:border-zinc-800/80 flex flex-col md:flex-row justify-end gap-3">
@@ -232,13 +421,13 @@ export function SseUploadClient() {
                   CANCEL
                 </Button>
               </Link>
-              <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent/80 text-black font-black uppercase tracking-widest h-10 px-8 shadow-[0_0_15px_rgba(var(--accent),0.2)] hover:shadow-[0_0_25px_rgba(var(--accent),0.6)] transition-all disabled:opacity-70 disabled:pointer-events-none">
+              <Button type="submit" disabled={isSubmitting || !selectedCampaignId || !selectedMissionId || queuedImages.length === 0} className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent/80 text-black font-black uppercase tracking-widest h-10 px-8 shadow-[0_0_15px_rgba(var(--accent),0.2)] hover:shadow-[0_0_25px_rgba(var(--accent),0.6)] transition-all disabled:opacity-70 disabled:pointer-events-none">
                 {isSubmitting ? (
                     <span className="flex items-center gap-2 text-[10px]">
-                        <span className="h-3 w-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                        UPLOADING...
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        TRANSFERRING FRAMES...
                     </span>
-                ) : "UPLOAD EVIDENCE"}
+                ) : "INGEST SD DUMP"}
               </Button>
             </div>
           </form>

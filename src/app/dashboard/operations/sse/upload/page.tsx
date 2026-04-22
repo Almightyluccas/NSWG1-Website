@@ -2,7 +2,12 @@ import { Suspense } from "react";
 import { SseUploadClient } from "./sse-upload-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function SseUploadPage() {
+export default async function SseUploadPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ campaignId?: string; missionId?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
   return (
     <div>
       <div className="mb-6">
@@ -17,7 +22,10 @@ export default function SseUploadPage() {
       <Suspense
         fallback={<Skeleton className="h-[600px] w-full max-w-4xl rounded-lg" />}
       >
-        <SseUploadClient />
+        <SseUploadClient
+          initialCampaignId={params.campaignId}
+          initialMissionId={params.missionId}
+        />
       </Suspense>
     </div>
   );

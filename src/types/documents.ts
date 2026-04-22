@@ -25,4 +25,9 @@ export interface DocumentItem {
   minimumRole?: UserRole;
   /** Optional PERSCOM `rank.order` minimum to view (inclusive). */
   minimumRankOrder?: number;
+  tags?: string[];
+  allowedRoles?: string[];
+  allowedUsers?: string[];
+  fileType?: string;
+  fileSizeBytes?: number | null;
 }

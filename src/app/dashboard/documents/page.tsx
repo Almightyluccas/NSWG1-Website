@@ -2,23 +2,10 @@ import { Suspense } from "react";
 import { DocumentsClient } from "./documents-client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthSession } from "@/lib/authOptions";
-import { perscom } from "@/lib/perscom/api";
-import { type PerscomUserResponse } from "@/types/api/perscomApi";
 
 export default async function DocumentsPage() {
   const session = await getAuthSession();
   const roles = session?.user?.roles ?? [];
-  const perscomId = session?.user?.perscomId ? Number(session.user.perscomId) : null;
-
-  let perscomProfile: PerscomUserResponse | null = null;
-  if (perscomId) {
-    try {
-      const users = await perscom.get.users();
-      perscomProfile = users.find((user) => user.id === perscomId) ?? null;
-    } catch {
-      perscomProfile = null;
-    }
-  }
 
   return (
     <div>
@@ -45,17 +32,7 @@ export default async function DocumentsPage() {
           </div>
         }
       >
-        <DocumentsClient
-          viewerContext={{
-            roles,
-            perscom: {
-              unitName: perscomProfile?.unit?.name ?? null,
-              positionName: perscomProfile?.position?.name ?? null,
-              statusName: perscomProfile?.status?.name ?? null,
-            },
-            rankOrder: perscomProfile?.rank?.order ?? null,
-          }}
-        />
+        <DocumentsClient roles={roles} />
       </Suspense>
     </div>
   );

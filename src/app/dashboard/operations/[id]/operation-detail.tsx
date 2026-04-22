@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { WorldMap } from "@/components/operations/world-map";
 import {
   MapPin,
   Crosshair,
@@ -15,37 +14,20 @@ import {
   FileText,
   Download,
   Terminal,
-  Eye,
   Database,
   Users,
-  Layers,
   Wifi,
   Target,
-  Settings2,
 } from "lucide-react";
 import Link from "next/link";
 import {
-  CLASSIFICATIONS,
   getClassification,
-  getRedactedName,
 } from "@/lib/config/operations";
-import { type MockOperation, type MockPersonnel } from "@/types/operations";
+import { type MockOperation } from "@/types/operations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AarSection } from "@/components/operations/aar-section";
-
-// Rough lat/lng for demo (map is marked "coming soon")
-const aoCoords: Record<string, { lat: number; lng: number }> = {
-  "op-trident-fury": { lat: 35.0, lng: 71.0 },
-  "op-silent-storm": { lat: 12.5, lng: 45.0 },
-  "op-phantom-eagle": { lat: 39.0, lng: 68.0 },
-  "op-iron-shield": { lat: 36.9, lng: -76.0 },
-  "op-midnight-sun": { lat: 72.0, lng: 33.0 },
-  "op-neptune-reach": { lat: 34.6, lng: -77.3 },
-  "op-desert-strike": { lat: 33.4, lng: 43.3 },
-  "op-crimson-tide": { lat: 32.7, lng: -117.2 },
-  "op-viper-strike": { lat: 31.5, lng: 64.0 },
-  "op-shadow-lance": { lat: 20.0, lng: 130.0 },
-};
+import { groupPersonnel, UNIT_GROUP } from "@/lib/config/personnel-groups";
+import { UserRole } from "@/types/database";
 
 type ScopedSseItem = {
   id: string;
@@ -58,14 +40,21 @@ type ScopedSseItem = {
   collectedDate: string;
 };
 
-export function OperationDetailClient({ id }: { id: string }) {
+type OperationDocItem = {
+  id: string;
+  title: string;
+  description: string;
+  docType: string;
+  classification: string;
+  fileUrl: string;
+  date: string;
+};
+
+export function OperationDetailClient({ id, userRoles = [] }: { id: string; userRoles?: string[] }) {
   const [opData, setOpData] = useState<MockOperation | null>(null);
   const [sseItems, setSseItems] = useState<ScopedSseItem[]>([]);
+  const [docs, setDocs] = useState<OperationDocItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Mock clearance toggle for demo
-  const [viewerClearance, setViewerClearance] = useState("developer");
-  const [devMode, setDevMode] = useState(false);
 
   useEffect(() => {
     async function fetchOp() {
@@ -90,11 +79,22 @@ export function OperationDetailClient({ id }: { id: string }) {
   useEffect(() => {
     const loadSse = async () => {
       try {
-        const res = await fetch(`/api/sse?scope=management&campaignId=${id}`);
+        const res = await fetch(`/api/sse?campaignId=${id}&status=RELEASED`);
         if (!res.ok) throw new Error("Failed to load SSE.");
         const data = await res.json();
         if (Array.isArray(data)) {
-          setSseItems(data);
+          setSseItems(
+            data.map((item: any) => ({
+              id: String(item.id),
+              title: String(item.name ?? "Unnamed"),
+              description: String(item.description ?? ""),
+              type: String(item.type ?? "OTHER"),
+              classification: String(item.classification ?? "UNCLASSIFIED"),
+              status: String(item.status ?? "LOGGED"),
+              imageUrl: String(item.image_url ?? ""),
+              collectedDate: String(item.collected_date ?? ""),
+            })),
+          );
           return;
         }
       } catch {
@@ -108,7 +108,7 @@ export function OperationDetailClient({ id }: { id: string }) {
           description: "Recovered communications hardware from objective site.",
           type: "EVIDENCE",
           classification: "CONFIDENTIAL",
-          status: "ANALYZING",
+          status: "RELEASED",
           imageUrl: "/placeholder.svg",
           collectedDate: "2026-03-16",
         },
@@ -117,6 +117,40 @@ export function OperationDetailClient({ id }: { id: string }) {
 
     loadSse();
   }, [id]);
+
+  useEffect(() => {
+    const loadDocs = async () => {
+      try {
+        const res = await fetch(`/api/docs?campaignId=${id}`);
+        if (!res.ok) throw new Error("Failed to load docs");
+        const data = await res.json();
+        setDocs(Array.isArray(data) ? data : []);
+      } catch {
+        setDocs([]);
+      }
+    };
+    loadDocs();
+  }, [id]);
+
+  const personnelByUnit = useMemo(() => {
+    const roleByUser = new Map<string, string>();
+    const users = new Map<string, { id: string; name: string; primaryRole: string }>();
+
+    (opData?.missions ?? []).forEach((mission) => {
+      (mission.rsvps ?? []).forEach((rsvp) => {
+        roleByUser.set(rsvp.user_id, "member");
+        if (!users.has(rsvp.user_id)) {
+          users.set(rsvp.user_id, {
+            id: rsvp.user_id,
+            name: rsvp.user_name,
+            primaryRole: roleByUser.get(rsvp.user_id) || "member",
+          });
+        }
+      });
+    });
+
+    return groupPersonnel(Array.from(users.values()), UNIT_GROUP);
+  }, [opData?.missions]);
 
   if (loading) {
     return (
@@ -137,37 +171,16 @@ export function OperationDetailClient({ id }: { id: string }) {
   }
 
   const clr = getClassification(opData.minimum_role);
-  const coords = aoCoords[id] ?? { lat: 0, lng: 0 };
   const missionCount = opData.missions?.length ?? 0;
+  const isAdmin = userRoles.some((role) => role === UserRole.admin);
+  const codenameDisplay =
+    (opData.codename && opData.codename.trim()) || opData.name || "OPERATION";
   const commanderInitials = (opData.commander || "CO")
     .split(" ")
     .map((n) => n.charAt(0))
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const opDocs = [
-    {
-      type: "COMMANDER INTENT",
-      desc: "Leadership guidance and execution priorities",
-      name: `${opData.codename.replace(/\s+/g, "_")}_intent.pdf`,
-      fileType: "PDF",
-      href: "/documents/nswg1-sop-001.pdf",
-    },
-    {
-      type: "REMARKS",
-      desc: "Command notes and mission caveats",
-      name: `${opData.codename.replace(/\s+/g, "_")}_remarks.docx`,
-      fileType: "DOCX",
-      href: "/documents/nswg1-opsec-026.docx",
-    },
-    {
-      type: "ANNEX",
-      desc: "Supporting references and operational notes",
-      name: `${opData.codename.replace(/\s+/g, "_")}_annex.pdf`,
-      fileType: "PDF",
-      href: "/documents/st2-aar-041.pdf",
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -188,7 +201,7 @@ export function OperationDetailClient({ id }: { id: string }) {
                 </div>
               )}
               <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white uppercase tracking-widest leading-none">
-                {opData.codename}
+                {codenameDisplay}
               </h1>
             </div>
 
@@ -304,11 +317,17 @@ export function OperationDetailClient({ id }: { id: string }) {
 
         <div className="lg:col-span-5 h-[360px] lg:h-auto">
           <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-700/50 rounded-lg overflow-hidden h-full flex flex-col min-h-[360px]">
-            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 border-b border-zinc-200 dark:border-zinc-800/80 flex justify-between items-center">
+            <div className="bg-zinc-50 dark:bg-zinc-950 p-3 border-b border-zinc-200 dark:border-zinc-800/80 flex justify-between items-center gap-2">
               <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-2">
                 <Users className="h-3.5 w-3.5 text-accent" />
                 Command Card
               </span>
+              <Badge
+                variant="outline"
+                className="text-[10px] border-amber-500/40 text-amber-600 dark:text-amber-200 bg-amber-500/10 shrink-0"
+              >
+                Map: coming soon
+              </Badge>
             </div>
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-800/80">
               <div className="flex items-center gap-3">
@@ -322,23 +341,24 @@ export function OperationDetailClient({ id }: { id: string }) {
                 </div>
               </div>
             </div>
-            <div className="flex-1 w-full relative">
-              <div className="opacity-45 blur-[0.2px]">
-                <WorldMap lat={coords.lat} lng={coords.lng} />
+            <div className="flex-1 w-full min-h-[200px] flex items-center justify-center bg-zinc-100/80 dark:bg-zinc-950/80 border-t border-zinc-200 dark:border-zinc-800/60">
+              <div className="text-center px-6 py-8 space-y-2">
+                <MapPin className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600" />
+                <p className="text-xs font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                  Area map
+                </p>
+                <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Coming soon</p>
               </div>
             </div>
           </Card>
         </div>
       </div>
 
-      {/* ─── INTEL / PLANNING / SSE / PERSONNEL TABS ─── */}
+      {/* ─── DOCS / SSE / AAR / PERSONNEL TABS ─── */}
       <Tabs defaultValue="docs" className="w-full">
-        <TabsList className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 p-1 rounded-lg w-full sm:w-auto h-auto grid grid-cols-5 gap-1">
+        <TabsList className="bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 p-1 rounded-lg w-full sm:w-auto h-auto grid grid-cols-4 gap-1">
           <TabsTrigger value="docs" className="text-[10px] md:text-xs font-semibold uppercase tracking-wider py-1.5 md:py-2 rounded-lg data-[state=active]:bg-zinc-200 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm text-zinc-400">
             Docs
-          </TabsTrigger>
-          <TabsTrigger value="planning" className="text-[10px] md:text-xs font-semibold uppercase tracking-wider py-1.5 md:py-2 rounded-lg data-[state=active]:bg-zinc-200 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm text-zinc-400">
-            Planning Docs
           </TabsTrigger>
           <TabsTrigger value="sse" className="text-[10px] md:text-xs font-semibold uppercase tracking-wider py-1.5 md:py-2 rounded-lg data-[state=active]:bg-zinc-200 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm text-zinc-400">
             SSE Returns
@@ -352,28 +372,42 @@ export function OperationDetailClient({ id }: { id: string }) {
         </TabsList>
 
         <TabsContent value="docs" className="mt-6 space-y-4">
+          {isAdmin && (
+            <div className="flex justify-end">
+              <Link href={`/dashboard/operations/docs/upload?campaignId=${id}`}>
+                <Button className="h-7 text-[10px] font-bold uppercase tracking-wider bg-accent hover:bg-accent/80 text-black">
+                  Upload Doc
+                </Button>
+              </Link>
+            </div>
+          )}
+          {docs.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 py-10 text-center text-xs text-zinc-500 uppercase tracking-widest">
+              No docs uploaded for this operation.
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {opDocs.map((doc, i) => (
-              <Card key={i} className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-700/50 rounded-lg hover:border-zinc-300 dark:hover:border-zinc-500 transition-colors group">
+            {docs.map((doc) => (
+              <Card key={doc.id} className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-700/50 rounded-lg hover:border-zinc-300 dark:hover:border-zinc-500 transition-colors group">
                 <CardContent className="p-4 flex flex-col h-full">
                   <div className="flex justify-between items-start mb-3">
                     <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300">
                       <FileText className="h-4 w-4" />
                     </div>
                     <Badge variant="outline" className="text-[10px] font-bold border-zinc-300 dark:border-zinc-600/50 text-zinc-700 dark:text-zinc-300">
-                      {doc.fileType}
+                      {doc.docType || "DOC"}
                     </Badge>
                   </div>
                   <div className="mt-auto space-y-2">
-                    <p className="text-[10px] font-bold text-accent uppercase tracking-wider">{doc.type}</p>
-                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{doc.name}</p>
-                    <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2">{doc.desc}</p>
+                    <p className="text-[10px] font-bold text-accent uppercase tracking-wider">{doc.classification || "UNCLASSIFIED"}</p>
+                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{doc.title}</p>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2">{doc.description}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 bg-transparent"
-                        onClick={() => window.open(doc.href, "_blank", "noopener,noreferrer")}
+                        onClick={() => window.open(doc.fileUrl, "_blank", "noopener,noreferrer")}
                       >
                         OPEN
                       </Button>
@@ -383,8 +417,8 @@ export function OperationDetailClient({ id }: { id: string }) {
                         className="h-7 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 bg-transparent"
                         onClick={() => {
                           const link = document.createElement("a");
-                          link.href = doc.href;
-                          link.download = doc.name;
+                          link.href = doc.fileUrl;
+                          link.download = doc.title;
                           document.body.appendChild(link);
                           link.click();
                           document.body.removeChild(link);
@@ -399,42 +433,32 @@ export function OperationDetailClient({ id }: { id: string }) {
               </Card>
             ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="planning" className="mt-4">
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                { type: "CONOP", desc: "Concept of Operations", name: "CONOP_V2.pdf", fileType: "PDF" },
-                { type: "WARNO", desc: "Warning Order", name: "WARNO_01.docx", fileType: "DOCX" },
-                { type: "FRAGO", desc: "Fragmentary Order", name: "FRAGO_UPDATE_04.pdf", fileType: "PDF" },
-              ].map((doc, i) => (
-                <Card key={i} className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-700/50 rounded-lg hover:border-zinc-300 dark:hover:border-zinc-500 transition-colors group">
-                  <CardContent className="p-4 flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300">
-                        <FileText className="h-4 w-4" />
-                      </div>
-                      <Badge variant="outline" className="text-[10px] font-bold border-zinc-300 dark:border-zinc-600/50 text-zinc-700 dark:text-zinc-300">
-                        {doc.fileType}
-                      </Badge>
-                    </div>
-                    <div className="mt-auto">
-                       <p className="text-[10px] font-bold text-accent uppercase tracking-wider">{doc.type}</p>
-                       <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mt-1 mb-1 truncate">{doc.name}</p>
-                       <p className="text-xs text-zinc-700 dark:text-zinc-300 mb-3 truncate">{doc.desc}</p>
-                       <Button variant="outline" size="sm" className="w-full h-7 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-accent/10 hover:text-accent hover:border-accent/40 bg-transparent">
-                         <Download className="h-3 w-3 mr-1.5" />
-                         DOWNLOAD
-                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-           </div>
+          )}
         </TabsContent>
 
         <TabsContent value="sse" className="mt-6 space-y-4">
-           {sseItems.map(item => (
+           <div className="flex justify-end gap-2">
+              <Link href={`/dashboard/operations/sse/upload?campaignId=${id}`}>
+                 <Button className="h-7 text-[10px] font-bold uppercase tracking-wider bg-accent hover:bg-accent/80 text-black">
+                   Dump SSE
+                 </Button>
+              </Link>
+              <Link href="/dashboard/operations/sse">
+                 <Button
+                   variant="outline"
+                   className="h-7 text-[10px] font-bold uppercase tracking-wider border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                 >
+                   <Database className="h-3 w-3 mr-1.5" />
+                   View Full SSE Library
+                 </Button>
+              </Link>
+           </div>
+
+           {sseItems.length === 0 ? (
+             <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 py-10 text-center text-xs text-zinc-500 uppercase tracking-widest">
+               No SSE returns released for this operation.
+             </div>
+           ) : sseItems.map(item => (
               <div key={item.id} className="bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-lg p-3 md:p-4 flex flex-col md:flex-row gap-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors">
                 <div className="relative w-full md:w-[220px] aspect-[16/9] rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 shrink-0 bg-zinc-100 dark:bg-zinc-950">
                   <Image src={item.imageUrl || "/placeholder.svg"} alt={item.title} fill className="object-cover" unoptimized />
@@ -458,79 +482,42 @@ export function OperationDetailClient({ id }: { id: string }) {
                 </div>
               </div>
            ))}
-
-           <div className="pt-4 flex justify-end">
-              <Link href="/dashboard/operations/sse">
-                 <Button className="bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-sm font-bold uppercase tracking-wider h-9">
-                   <Database className="h-4 w-4 mr-2" />
-                   VIEW FULL SSE LIBRARY
-                 </Button>
-              </Link>
-           </div>
         </TabsContent>
 
         {/* ─── AAR TAB ─── */}
         <TabsContent value="aar" className="mt-6">
-          <AarSection
-            campaignId={id}
-            userRoles={[viewerClearance]}
-          />
+          <AarSection campaignId={id} userRoles={["developer"]} />
         </TabsContent>
 
         {/* ─── PERSONNEL TAB ─── */}
         <TabsContent value="personnel" className="mt-6 space-y-4">
-          {/* Clearance Viewer Toggle */}
-          <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-700/50 rounded-lg">
-            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-accent" />
-                <div>
-                  <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">Task Force Personnel</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">Names redacted according to logged-in user role rules.</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <Button 
-                  onClick={() => setDevMode(!devMode)}
-                  variant="outline" 
-                  size="sm" 
-                  className={`h-8 text-xs font-bold uppercase tracking-wider border-zinc-200 dark:border-zinc-700 ${devMode ? 'bg-accent/10 text-accent border-accent/40' : 'text-zinc-700 dark:text-zinc-300 bg-transparent'}`}
-                >
-                  <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Dev Mode Override
-                </Button>
-
-                {devMode && (
-                  <div className="flex items-center gap-2 border-l border-zinc-200 dark:border-zinc-800/80 pl-4">
-                    <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Test Role:</span>
-                    <select
-                      value={viewerClearance}
-                      onChange={(e) => setViewerClearance(e.target.value)}
-                      className="bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm font-bold rounded-lg px-3 py-1 focus:border-accent/50 focus:outline-none"
-                    >
-                      {CLASSIFICATIONS.map((c) => (
-                        <option key={c.key} value={c.key}>{c.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Personnel Table */}
           <Card className="bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800/80 rounded-lg overflow-hidden">
-            <div className="hidden md:grid md:grid-cols-12 gap-4 px-5 py-3 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800/80 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              <div className="col-span-1">#</div>
-              <div className="col-span-5">Name</div>
-              <div className="col-span-4">Role / Billet</div>
-              <div className="col-span-2">Min. Clearance</div>
-            </div>
-            <div className="divide-y divide-zinc-200 dark:divide-zinc-800/60">
-              <div className="px-5 py-6 text-center text-zinc-500 text-xs font-mono uppercase tracking-widest">
-                Personnel Roster API Integration Required
-              </div>
-            </div>
+            <CardContent className="p-4 space-y-4">
+              {personnelByUnit.length === 0 ? (
+                <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-widest border border-dashed rounded-lg">
+                  No RSVP personnel yet.
+                </div>
+              ) : (
+                personnelByUnit.map((group) => (
+                  <div key={group.key} className="space-y-2">
+                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2">
+                      <p className="text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">{group.label}</p>
+                      <Badge variant="outline" className="text-[10px]">{group.users.length}</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {group.users.map((user, index) => (
+                        <div key={user.id} className="grid grid-cols-12 gap-3 items-center rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 bg-white dark:bg-zinc-950/40">
+                          <div className="col-span-1 text-[10px] text-zinc-500 font-mono">{index + 1}</div>
+                          <div className="col-span-6 text-sm text-zinc-800 dark:text-zinc-200">{user.name}</div>
+                          <div className="col-span-3 text-xs text-zinc-500 uppercase">{user.primaryRole || "member"}</div>
+                          <div className="col-span-2 text-xs text-zinc-500 uppercase">Member</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

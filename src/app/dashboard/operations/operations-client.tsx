@@ -502,21 +502,27 @@ function MissionCard({
         : "active",
   );
 
+  const href = `/dashboard/operations/${campaign.id}`;
+
   return (
-    <div className="group rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:border-accent/30 bg-zinc-50 dark:bg-zinc-950/50 transition-all duration-200 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
+    <Link
+      href={href}
+      aria-label={`Open campaign: ${mission.name}`}
+      className="group block rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:border-accent/30 bg-zinc-50 dark:bg-zinc-950/50 transition-all duration-200 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950"
+    >
       <div className="relative flex">
         <div className={`w-1 ${statusCfg.barColor} shrink-0`} />
         <div className="flex-1 p-4 space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 {statusCfg.pulse && (
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-2 w-2 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
                   </span>
                 )}
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider truncate">
                   {mission.name}
                 </h3>
               </div>
@@ -524,43 +530,40 @@ function MissionCard({
                 {mission.description}
               </p>
             </div>
-            <Link href={`/dashboard/operations/${campaign.id}`}>
-              <ChevronRight className="h-4 w-4 text-zinc-300 dark:text-zinc-600 group-hover:text-accent transition-colors" />
-            </Link>
+            <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600 group-hover:text-accent transition-colors" />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
-              {mission.date} @ {mission.time}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Clock className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <span className="truncate">
+                {mission.date} @ {mission.time}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
-              {mission.location}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <MapPin className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <span className="truncate">{mission.location}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Crosshair className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
-              {campaign.mission_type || "Direct Action"}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Crosshair className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <span className="truncate">{campaign.mission_type || "Direct Action"}</span>
             </div>
             {mission.max_personnel && (
               <div className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/70" />
+                <span className="h-2 w-2 rounded-full bg-emerald-500/70 shrink-0" />
                 {mission.max_personnel} max
               </div>
             )}
           </div>
 
           <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/70 flex items-center justify-end">
-            <Link
-              href={`/dashboard/operations/${campaign.id}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-accent hover:bg-accent/5 transition-all"
-            >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-hover:text-accent group-hover:bg-accent/5 transition-all">
               Open campaign
               <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+            </span>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

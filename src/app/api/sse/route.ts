@@ -3,23 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { database } from "@/database";
 import { UserRole } from "@/types/database";
-
-type ScopedSseItem = {
-  id: string;
-  ownerType: "campaign" | "mission";
-  ownerId: string;
-  title: string;
-  description: string;
-  type: string;
-  classification: string;
-  status: string;
-  imageUrl: string;
-  collectedDate: string;
-  createdAt: string;
-  createdBy: string;
-};
-
-const scopedSseStore: ScopedSseItem[] = [];
+import { mapSseRowForManagement } from "@/lib/api/sse-management-map";
+import { postAdminAlert } from "@/lib/dashboard/postAdminAlert";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,31 +16,37 @@ export async function GET(request: NextRequest) {
     const missionId = request.nextUrl.searchParams.get("missionId");
     const campaignId = request.nextUrl.searchParams.get("campaignId");
     const scope = request.nextUrl.searchParams.get("scope");
+    const uploadedBy = request.nextUrl.searchParams.get("uploadedBy");
+    const status = request.nextUrl.searchParams.get("status");
 
-    if (scope === "management" || missionId) {
+    if (scope === "management" || scope === "repository" || missionId) {
       if (!missionId && !campaignId) {
         return NextResponse.json(
           { error: "campaignId or missionId is required" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
-      const ownerType = missionId ? "mission" : "campaign";
-      const ownerId = missionId ?? campaignId!;
-      const items = scopedSseStore.filter(
-        (item) => item.ownerType === ownerType && item.ownerId === ownerId,
-      );
-      return NextResponse.json(items);
+      const rows = await database.get.sseItems({
+        campaignId: campaignId || undefined,
+        missionId: missionId || undefined,
+        scope: scope || "management",
+        uploadedBy: uploadedBy || undefined,
+        status: status || undefined,
+      });
+      return NextResponse.json(rows.map(mapSseRowForManagement));
     }
 
-    const items = await database.get.sseItems(campaignId || undefined);
+    const items = await database.get.sseItems({
+      campaignId: campaignId || undefined,
+      missionId: missionId || undefined,
+      uploadedBy: uploadedBy || undefined,
+      status: status || undefined,
+    });
     return NextResponse.json(items);
   } catch (error) {
     console.error("Error fetching SSE items:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch SSE items" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch SSE items" }, { status: 500 });
   }
 }
 
@@ -67,72 +58,85 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const ownerType = body.missionId ? "mission" : "campaign";
-    const ownerId = String(body.missionId ?? body.campaignId ?? "").trim();
     const isScopedPayload =
       body.scope === "management" || !!body.missionId || !!body.title;
 
     if (isScopedPayload) {
-      if (!ownerId || !String(body.title ?? "").trim()) {
+      const title = String(body.title ?? "").trim();
+      let campaignId = String(body.campaignId ?? "").trim();
+      const missionIdRaw = body.missionId ? String(body.missionId).trim() : "";
+
+      if (!title) {
         return NextResponse.json(
           { error: "owner (campaignId/missionId) and title are required" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
-      // TODO: Replace in-memory storage with database persistence and object storage.
-      const nextItem: ScopedSseItem = {
-        id: `sse-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
-        ownerType,
-        ownerId,
-        title: String(body.title ?? ""),
-        description: String(body.description ?? ""),
-        type: String(body.type ?? "EVIDENCE"),
-        classification: String(body.classification ?? "UNCLASSIFIED"),
-        status: String(body.status ?? "LOGGED"),
-        imageUrl: String(body.imageUrl ?? ""),
-        collectedDate: String(body.collectedDate ?? ""),
-        createdAt: new Date().toISOString(),
-        createdBy: session.user.id ?? "unknown",
-      };
-
-      // Keep management SSE linked to the main SSE pipeline.
-      const linkedCampaignId = String(body.campaignId ?? "").trim();
-      if (linkedCampaignId) {
-        // TODO: When real upload/storage is implemented, store full metadata in DB.
-        await database.post.sseItem({
-          campaignId: linkedCampaignId,
-          type: nextItem.type,
-          name: nextItem.title,
-          description: nextItem.description,
-          status: nextItem.status,
-          minimumRole: UserRole.member,
-          imageUrl: nextItem.imageUrl,
-          uploadedBy: session.user.id!,
-        });
+      if (!campaignId && missionIdRaw) {
+        const cid = await database.get.missionCampaignId(missionIdRaw);
+        if (!cid) {
+          return NextResponse.json({ error: "Mission not found" }, { status: 400 });
+        }
+        campaignId = cid;
       }
 
-      scopedSseStore.unshift(nextItem);
-      return NextResponse.json({ success: true, item: nextItem }, { status: 201 });
+      if (!campaignId) {
+        return NextResponse.json(
+          { error: "campaignId is required (or missionId to resolve campaign)" },
+          { status: 400 }
+        );
+      }
+
+      const collectedDate =
+        body.collectedDate != null && String(body.collectedDate).trim() !== ""
+          ? String(body.collectedDate).trim().slice(0, 10)
+          : null;
+
+      const id = await database.post.sseItem({
+        campaignId,
+        missionId: missionIdRaw || null,
+        type: String(body.type ?? "EVIDENCE"),
+        name: title,
+        description: String(body.description ?? ""),
+        status: String(body.status ?? "LOGGED"),
+        minimumRole: UserRole.member,
+        imageUrl: String(body.imageUrl ?? ""),
+        classification: body.classification != null ? String(body.classification) : null,
+        collectedDate,
+        uploadedBy: session.user.id!,
+      });
+
+      const row = await database.get.sseItemById(id);
+      const item = row ? mapSseRowForManagement(row) : null;
+      await postAdminAlert({
+        label: "SSE UPLOADED",
+        message: `${title} uploaded${missionIdRaw ? ` and linked to mission ${missionIdRaw}` : ""}.`,
+        createdBy: session.user.id!,
+      });
+      return NextResponse.json({ success: true, item }, { status: 201 });
     }
 
     const id = await database.post.sseItem({
       campaignId: body.campaignId,
+      missionId: body.missionId ?? null,
       type: body.type,
       name: body.name,
       description: body.description,
       status: body.status,
       minimumRole: body.minimumRole,
       imageUrl: body.imageUrl,
+      classification: body.classification ?? null,
+      collectedDate:
+        body.collectedDate != null && String(body.collectedDate).trim() !== ""
+          ? String(body.collectedDate).trim().slice(0, 10)
+          : null,
       uploadedBy: session.user.id!,
     });
 
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
     console.error("Error creating SSE item:", error);
-    return NextResponse.json(
-      { error: "Failed to create SSE item" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create SSE item" }, { status: 500 });
   }
 }

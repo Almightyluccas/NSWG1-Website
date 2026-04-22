@@ -3,12 +3,14 @@ import { OperationDetailClient } from "./operation-detail";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { getAuthSession } from "@/lib/authOptions";
 
 export default async function OperationDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await getAuthSession();
   const { id } = await params;
 
   return (
@@ -29,7 +31,7 @@ export default async function OperationDetailPage({
           </div>
         }
       >
-        <OperationDetailClient id={id} />
+        <OperationDetailClient id={id} userRoles={session?.user?.roles ?? []} />
       </Suspense>
     </div>
   );

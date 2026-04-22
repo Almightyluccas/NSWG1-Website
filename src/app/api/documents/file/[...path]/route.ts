@@ -44,6 +44,8 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ path: string[] }> },
 ) {
+  // Deprecated endpoint retained for backwards compatibility with legacy links.
+  // New document records should use /api/documents/[id]/download.
   const { path: pathSegments } = await context.params;
   const targetPath = toSafeAbsolutePath(pathSegments);
 

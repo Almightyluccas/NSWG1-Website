@@ -30,12 +30,6 @@ import {
 import { type MockSseItem } from "@/types/sse";
 import { UserRole } from "@/types/database";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const iconMap: Record<string, React.ReactNode> = {
   FileText: <FileText className="h-4 w-4" />,
@@ -60,11 +54,14 @@ export function SseLibraryClient({ userRoles = [] }: { userRoles?: string[] }) {
   const [sortBy, setSortBy] = useState<"DATE_DESC" | "DATE_ASC" | "OP_ASC" | "OP_DESC">("DATE_DESC");
   const [items, setItems] = useState<MockSseItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUploader, setSelectedUploader] = useState<string | null>(null);
 
-  const canReview = userRoles.some((r) =>
-    [UserRole.admin, UserRole.superAdmin, UserRole.developer, UserRole.intelligence].includes(r),
-  );
+  const reviewRoles = new Set<string>([
+    UserRole.admin,
+    UserRole.superAdmin,
+    UserRole.developer,
+    UserRole.intelligence,
+  ]);
+  const canReview = userRoles.some((r) => reviewRoles.has(r));
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,9 +101,6 @@ export function SseLibraryClient({ userRoles = [] }: { userRoles?: string[] }) {
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
   const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const uploaderItems = selectedUploader
-    ? items.filter((item) => item.uploaded_by === selectedUploader)
-    : [];
 
   if (loading) {
      return (
@@ -233,13 +227,12 @@ export function SseLibraryClient({ userRoles = [] }: { userRoles?: string[] }) {
                        <p className="text-[9px] font-mono font-medium text-accent/80 mt-0.5 uppercase tracking-widest">
                           <span className="text-zinc-500 mr-1">ID:</span>SYS-X{String(item.id).padStart(4, '0')}
                        </p>
-                       <button
-                         type="button"
-                         onClick={() => setSelectedUploader(item.uploaded_by)}
-                         className="text-[9px] mt-1 font-mono uppercase tracking-widest text-zinc-500 hover:text-accent transition-colors"
+                       <Link
+                         href={`/dashboard/operations/sse/by/${item.uploaded_by}`}
+                         className="text-[9px] mt-1 font-mono uppercase tracking-widest text-zinc-500 hover:text-accent transition-colors inline-flex"
                        >
                         Uploader: {item.uploader_name || item.uploaded_by}
-                       </button>
+                       </Link>
                     </div>
                   </div>
 
@@ -349,37 +342,6 @@ export function SseLibraryClient({ userRoles = [] }: { userRoles?: string[] }) {
         )}
       </div>
 
-      <Dialog open={!!selectedUploader} onOpenChange={(open) => !open && setSelectedUploader(null)}>
-        <DialogContent className="w-[95vw] max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="text-sm uppercase tracking-wider">
-              Uploads by {selectedUploader}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
-            {uploaderItems.map((item) => (
-              <div
-                key={`uploader-${item.id}`}
-                className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 bg-zinc-50 dark:bg-zinc-950/50 space-y-2"
-              >
-                <div className="h-32 w-full rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.name || "SSE item"} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-zinc-500 text-xs">
-                      No image
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
-                  {item.name}
-                </p>
-                <p className="text-[10px] text-zinc-500 font-mono">{new Date(item.created_at).toLocaleString()}</p>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

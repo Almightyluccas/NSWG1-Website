@@ -1,82 +1,105 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { NextResponse } from "next/server";
-import { type DocumentItem } from "@/types/documents";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { database } from "@/database";
+import { canAccessDocument } from "@/lib/documents/access";
 import { UserRole } from "@/types/database";
 
-const DOCUMENTS_ROOT = path.resolve(process.cwd(), "public", "documents");
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  const units = ["KB", "MB", "GB", "TB"];
-  let value = bytes / 1024;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex += 1;
-  }
-  return `${value.toFixed(1)} ${units[unitIndex]}`;
+async function mapDocument(row: any) {
+  const tags = await database.get.documentTags(Number(row.id));
+  const allowedRoles = await database.get.documentAllowedRoles(Number(row.id));
+  const allowedUsers = await database.get.documentAllowedUsers(Number(row.id));
+  return {
+    id: String(row.id),
+    name: row.name ?? "",
+    description: row.description ?? "",
+    classification: row.classification ?? "GENERAL",
+    unit: row.unit ?? "NSWG1 HQ",
+    type: row.file_type ?? "FILE",
+    size: row.file_size ? String(row.file_size) : "",
+    lastModified:
+      row.updated_at instanceof Date
+        ? row.updated_at.toISOString().slice(0, 10)
+        : String(row.updated_at ?? row.created_date ?? ""),
+    author: row.uploader_name ?? "System",
+    docNumber: `DOC-${String(row.id).padStart(5, "0")}`,
+    minimumRole: row.minimum_role ?? UserRole.member,
+    tags,
+    allowedRoles,
+    allowedUsers,
+    fileType: row.file_type ?? "",
+    fileSizeBytes: row.file_size ? Number(row.file_size) : null,
+  };
 }
 
-function getPreviewPath(type: string): string {
-  if (type === "PDF") return "/document-previews/pdf.svg";
-  if (type === "DOC" || type === "DOCX") return "/document-previews/doc.svg";
-  if (type === "XLS" || type === "XLSX" || type === "CSV") return "/document-previews/sheet.svg";
-  return "/document-previews/file.svg";
-}
-
-async function listDocumentFiles(rootDir: string): Promise<string[]> {
-  const entries = await fs.readdir(rootDir, { withFileTypes: true });
-  const paths = await Promise.all(
-    entries.map(async (entry) => {
-      const fullPath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        return listDocumentFiles(fullPath);
-      }
-      return [fullPath];
-    }),
-  );
-  return paths.flat();
-}
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const files = await listDocumentFiles(DOCUMENTS_ROOT);
-    const docs = await Promise.all(
-      files.map(async (absolutePath, index) => {
-        const stats = await fs.stat(absolutePath);
-        const relativePath = path
-          .relative(DOCUMENTS_ROOT, absolutePath)
-          .split(path.sep)
-          .map((segment) => encodeURIComponent(segment))
-          .join("/");
-        const baseName = path.basename(absolutePath);
-        const nameWithoutExt = baseName.replace(/\.[^.]+$/, "");
-        const ext = path.extname(baseName).replace(".", "").toUpperCase() || "FILE";
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    const roles = session?.user?.roles ?? [];
+    if (!userId || !roles.includes(UserRole.member)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-        const doc: DocumentItem = {
-          id: String(index + 1),
-          name: nameWithoutExt,
-          classification: "GENERAL",
-          unit: "NSWG1 HQ",
-          type: ext,
-          size: formatFileSize(stats.size),
-          lastModified: stats.mtime.toISOString().slice(0, 10),
-          author: "System",
-          description: `${ext} document from public/documents`,
-          docNumber: nameWithoutExt.toUpperCase().replace(/[^A-Z0-9]+/g, "-"),
-          path: `/api/documents/file/${relativePath}`,
-          previewPath: getPreviewPath(ext),
-          minimumRole: UserRole.member,
-        };
-        return doc;
-      }),
+    const search = request.nextUrl.searchParams.get("search") || undefined;
+    const unit = request.nextUrl.searchParams.get("unit") || undefined;
+    const classification = request.nextUrl.searchParams.get("classification") || undefined;
+    const tag = request.nextUrl.searchParams.get("tag") || undefined;
+    const rows = await database.get.documents({ search, unit, classification, tag });
+    const mapped = await Promise.all(rows.map(mapDocument));
+    const filtered = mapped.filter((doc) =>
+      canAccessDocument(
+        { userId, roles },
+        {
+          minimumRole: doc.minimumRole,
+          allowedRoles: doc.allowedRoles ?? [],
+          allowedUsers: doc.allowedUsers ?? [],
+        }
+      )
     );
-
-    docs.sort((a, b) => a.name.localeCompare(b.name));
-    return NextResponse.json(docs);
+    return NextResponse.json(filtered);
   } catch (error) {
     console.error("Failed to list documents:", error);
-    return NextResponse.json([]);
+    return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || !session.user.roles?.includes(UserRole.admin)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const name = String(body.name ?? "").trim();
+    const fileKey = String(body.fileKey ?? "").trim();
+    const fileType = String(body.fileType ?? "").trim();
+    if (!name || !fileKey || !fileType) {
+      return NextResponse.json({ error: "name, fileKey, and fileType are required" }, { status: 400 });
+    }
+
+    const id = await database.post.document({
+      name,
+      description: String(body.description ?? ""),
+      docType: body.docType ? String(body.docType) : null,
+      classification: String(body.classification ?? "GENERAL"),
+      unit: String(body.unit ?? "NSWG1 HQ"),
+      fileKey,
+      fileType,
+      fileSize: body.fileSize ? Number(body.fileSize) : null,
+      minimumRole: String(body.minimumRole ?? UserRole.member),
+      uploadedBy: session.user.id,
+      tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
+      allowedRoles: Array.isArray(body.allowedRoles) ? body.allowedRoles.map(String) : [],
+      allowedUsers: Array.isArray(body.allowedUsers) ? body.allowedUsers.map(String) : [],
+    });
+
+    const row = await database.get.documentById(id);
+    const item = row ? await mapDocument(row) : { id: String(id) };
+    return NextResponse.json({ success: true, item }, { status: 201 });
+  } catch (error) {
+    console.error("Failed to create document:", error);
+    return NextResponse.json({ error: "Failed to create document" }, { status: 500 });
   }
 }

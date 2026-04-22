@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,18 +9,17 @@ import {
   Search,
   FileText,
   Download,
-  ExternalLink,
   Clock,
   ChevronDown,
   ChevronRight,
   AlertTriangle,
+  Upload,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 import { type DocumentClassification, type DocumentItem } from "@/types/documents";
-import { hasMinRole, UserRole } from "@/types/database";
+import { UserRole } from "@/types/database";
 
 type ClassificationLevel = DocumentClassification;
 
@@ -79,16 +75,6 @@ const roleByClassification: Record<ClassificationLevel, UserRole> = {
   GREEN_TEAM: UserRole.greenTeam,
 };
 
-type ViewerContext = {
-  roles: string[];
-  perscom?: {
-    unitName?: string | null;
-    positionName?: string | null;
-    statusName?: string | null;
-  };
-  rankOrder?: number | null;
-};
-
 const fallbackPreviewByType: Record<string, string> = {
   PDF: "/document-previews/pdf.svg",
   DOC: "/document-previews/doc.svg",
@@ -97,13 +83,13 @@ const fallbackPreviewByType: Record<string, string> = {
   XLSX: "/document-previews/sheet.svg",
 };
 
-export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContext }) {
+export function DocumentsClient({ roles }: { roles: string[] }) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<string>("ALL");
   const [selectedClassification, setSelectedClassification] = useState<string>("ALL");
+  const [selectedTag, setSelectedTag] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<"nameAsc" | "nameDesc" | "modifiedNewest" | "modifiedOldest">("nameAsc");
   const [pageSize, setPageSize] = useState<25 | 50 | 100>(25);
   const [page, setPage] = useState(1);
@@ -134,75 +120,20 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
     });
   };
 
-  const activeRoles = viewerContext.roles.length
-    ? viewerContext.roles
-    : session?.user?.roles ?? [];
-  const activeRoleSet = new Set(activeRoles.map((role) => role.toLowerCase()));
-  const unitName = viewerContext.perscom?.unitName?.toLowerCase() || "";
-  const positionName = viewerContext.perscom?.positionName?.toLowerCase() || "";
-  const statusName = viewerContext.perscom?.statusName?.toLowerCase() || "";
-
   const isPrivileged =
-    activeRoleSet.has(UserRole.superAdmin.toLowerCase()) ||
-    activeRoleSet.has(UserRole.admin.toLowerCase()) ||
-    activeRoleSet.has(UserRole.developer.toLowerCase());
+    roles.includes(UserRole.superAdmin) ||
+    roles.includes(UserRole.admin) ||
+    roles.includes(UserRole.developer);
 
-  const isIntel = activeRoleSet.has(UserRole.intelligence.toLowerCase());
-  const isGreenTeam =
-    activeRoleSet.has(UserRole.greenTeam.toLowerCase()) || unitName.includes("green team");
-  const isLeadership =
-    activeRoleSet.has(UserRole.leadership.toLowerCase()) ||
-    positionName.includes("command") ||
-    positionName.includes("officer") ||
-    positionName.includes("leader");
-  const isOnLeave = statusName.includes("leave");
-
-  const isMember = activeRoleSet.has(UserRole.member.toLowerCase());
-  const isTacdevron =
-    activeRoleSet.has(UserRole.tacdevron.toLowerCase()) || unitName.includes("tacdevron");
-  const is160th =
-    activeRoleSet.has(UserRole["160th"].toLowerCase()) || unitName.includes("160th");
-
-  const activeUnits = allUnits.filter((unit) => {
-    if (isPrivileged || isIntel) return true;
-    const normalized = unit.toLowerCase();
-    if (isTacdevron && normalized.includes("tacdevron")) return true;
-    if (is160th && normalized.includes("160th")) return true;
-    if (isMember && (normalized.includes("nswg1") || normalized.includes("seal team 2"))) {
-      return true;
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    for (const doc of documents) {
+      for (const tag of doc.tags ?? []) tags.add(tag);
     }
-    return normalized === unitName;
-  });
+    return Array.from(tags).sort((a, b) => a.localeCompare(b));
+  }, [documents]);
 
-  const canAccessDocument = (doc: DocumentItem) => {
-    if (isPrivileged) return true;
-
-    if (typeof doc.minimumRankOrder === "number") {
-      const viewerRankOrder = viewerContext.rankOrder ?? null;
-      if (typeof viewerRankOrder !== "number" || viewerRankOrder < doc.minimumRankOrder) {
-        return false;
-      }
-    }
-
-    const inUnitScope = activeUnits.includes(doc.unit);
-    const requiredRole = doc.minimumRole ?? roleByClassification[doc.classification];
-
-    if (!hasMinRole(activeRoles, requiredRole)) {
-      return false;
-    }
-
-    if (requiredRole === UserRole.greenTeam && !isOnLeave) {
-      return isGreenTeam || isIntel || isPrivileged;
-    }
-
-    return inUnitScope || isIntel || isLeadership;
-  };
-
-  // Role/unit-based filtering
-  let visibleDocuments = documents;
-  visibleDocuments = visibleDocuments.filter(canAccessDocument);
-
-  const filteredDocuments = visibleDocuments.filter((doc) => {
+  const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
       doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -210,7 +141,8 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
     const matchesUnit = selectedUnit === "ALL" || doc.unit === selectedUnit;
     const matchesClassification =
       selectedClassification === "ALL" || doc.classification === selectedClassification;
-    return matchesSearch && matchesUnit && matchesClassification;
+    const matchesTag = selectedTag === "ALL" || (doc.tags ?? []).includes(selectedTag);
+    return matchesSearch && matchesUnit && matchesClassification && matchesTag;
   });
 
   const sortedDocuments = useMemo(() => {
@@ -224,7 +156,7 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, selectedUnit, selectedClassification, sortBy, pageSize]);
+  }, [searchTerm, selectedUnit, selectedClassification, selectedTag, sortBy, pageSize]);
 
   const totalPages = Math.max(1, Math.ceil(sortedDocuments.length / pageSize));
   const boundedPage = Math.min(page, totalPages);
@@ -253,6 +185,15 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
             Unauthorized disclosure is strictly prohibited.
           </p>
         </div>
+        {isPrivileged && (
+          <Button
+            onClick={() => router.push("/dashboard/documents/upload")}
+            className="h-8 text-[10px] font-black uppercase tracking-widest"
+          >
+            <Upload className="h-3 w-3 mr-1" />
+            Upload Document
+          </Button>
+        )}
       </div>
 
       {/* Search & Filters */}
@@ -296,6 +237,16 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
               ))}
             </select>
             <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:border-accent/40 h-9 min-w-[140px]"
+            >
+              <option value="ALL">ALL TAGS</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>{tag.toUpperCase()}</option>
+              ))}
+            </select>
+            <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:border-accent/40 h-9 min-w-[150px]"
@@ -317,7 +268,7 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
           </div>
 
           {/* Active Filters */}
-          {(selectedUnit !== "ALL" || selectedClassification !== "ALL") && (
+          {(selectedUnit !== "ALL" || selectedClassification !== "ALL" || selectedTag !== "ALL") && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800/60">
               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 ACTIVE FILTERS:
@@ -340,10 +291,20 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
                   {classificationConfig[selectedClassification as ClassificationLevel]?.label} ✕
                 </Badge>
               )}
+              {selectedTag !== "ALL" && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] font-mono cursor-pointer hover:opacity-80 px-2 py-0 border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300"
+                  onClick={() => setSelectedTag("ALL")}
+                >
+                  {selectedTag.toUpperCase()} ✕
+                </Badge>
+              )}
               <button
                 onClick={() => {
                   setSelectedUnit("ALL");
                   setSelectedClassification("ALL");
+                  setSelectedTag("ALL");
                 }}
                 className="text-[10px] text-zinc-500 hover:text-accent font-bold uppercase tracking-widest transition-colors ml-auto"
               >
@@ -380,7 +341,7 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {classificationLevels.map((level) => {
           const config = classificationConfig[level];
-          const count = visibleDocuments.filter((d) => d.classification === level).length;
+          const count = documents.filter((d) => d.classification === level).length;
           const isSelected = selectedClassification === level;
           return (
             <button
@@ -508,49 +469,29 @@ export function DocumentsClient({ viewerContext }: { viewerContext: ViewerContex
                               size="sm"
                               variant="outline"
                               className="h-7 text-[10px] font-black uppercase tracking-widest px-3 rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-accent hover:border-accent/50 bg-transparent"
-                              onClick={() => {
-                                const filePath = (doc.path ?? "")
-                                  .replace(/^\/+/, "")
-                                  .replace(/^api\/documents\/file\//i, "");
-                                const safePath = filePath
-                                  .split("/")
-                                  .filter(Boolean)
-                                  .map((segment) => {
-                                    try {
-                                      return encodeURIComponent(decodeURIComponent(segment));
-                                    } catch {
-                                      return encodeURIComponent(segment);
-                                    }
-                                  })
-                                  .join("/");
-                                if (safePath) {
-                                  router.push(`/dashboard/documents/${safePath}`);
-                                }
-                              }}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              VIEW
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-[10px] font-black uppercase tracking-widest px-3 rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-accent hover:border-accent/50 bg-transparent"
-                              onClick={() => {
-                                if (doc.path) {
-                                  const link = document.createElement("a");
-                                  link.href = doc.path;
-                                  link.download = doc.name;
-                                  link.target = "_blank";
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                }
+                              onClick={async () => {
+                                const res = await fetch(`/api/documents/${doc.id}/download`);
+                                const data = await res.json().catch(() => ({}));
+                                if (res.ok && data?.url) window.open(data.url, "_blank", "noopener,noreferrer");
                               }}
                             >
                               <Download className="h-3 w-3 mr-1" />
                               DOWNLOAD
                             </Button>
                           </div>
+                          {(doc.tags ?? []).length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {(doc.tags ?? []).map((tag) => (
+                                <Badge
+                                  key={`${doc.id}-${tag}`}
+                                  variant="outline"
+                                  className="text-[9px] font-mono border-zinc-300 dark:border-zinc-700"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

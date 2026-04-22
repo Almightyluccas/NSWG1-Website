@@ -40,15 +40,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CampaignForm, type CampaignFormValues } from "@/components/operations/management/campaign-form";
 import { MissionForm, type MissionFormValues } from "@/components/operations/management/mission-form";
 import { IntelBlockForm } from "@/components/operations/management/intel-block-form";
-import { PlanningDocList } from "@/components/operations/management/planning-doc-list";
-import { SseAttachmentList } from "@/components/operations/management/sse-attachment-list";
-
-const TEAM_ORDER = ["member", "tacdevron", "160th"];
-const TEAM_LABELS: Record<string, string> = {
-  member: "GENERAL",
-  tacdevron: "TACDEVRON",
-  "160th": "160TH",
-};
+import { DocSummaryPanel } from "@/components/operations/management/doc-summary-panel";
+import { SseSummaryPanel } from "@/components/operations/management/sse-summary-panel";
+import {
+  destructiveBtn,
+  neutralBtn,
+  primaryBtn,
+  secondaryBtn,
+} from "@/components/operations/management/action-buttons";
+import { getUnitLabel, groupPersonnel, UNIT_GROUP } from "@/lib/config/personnel-groups";
 
 type DbRSVP = {
   id: string;
@@ -121,9 +121,6 @@ export function CampaignManageClient({
   const [attendanceMission, setAttendanceMission] = useState<DbMission | null>(
     null,
   );
-  const [missionIntelDialog, setMissionIntelDialog] = useState<DbMission | null>(
-    null,
-  );
   const [users, setUsers] = useState<AttendanceUser[]>([]);
   const [roleLookup, setRoleLookup] = useState<Record<string, string>>({});
   const [userSearch, setUserSearch] = useState("");
@@ -186,12 +183,6 @@ export function CampaignManageClient({
     })();
   }, [attendanceMission]);
 
-  const getUnitLabel = (role?: string) => {
-    if (role === "tacdevron") return "TACDEVRON";
-    if (role === "160th") return "160TH";
-    return "GENERAL";
-  };
-
   const getRsvpUnitBreakdown = (rsvps: DbRSVP[]) => {
     const grouped = rsvps.reduce<Record<string, number>>((acc, rsvp) => {
       const role = roleLookup[rsvp.user_id] || "member";
@@ -220,17 +211,7 @@ export function CampaignManageClient({
   }, [users, roleFilter, userSearch]);
 
   const groupedUsers = useMemo(() => {
-    const grouped = filteredUsers.reduce<Record<string, AttendanceUser[]>>((acc, user) => {
-      const key = TEAM_ORDER.includes(user.primaryRole) ? user.primaryRole : "member";
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(user);
-      return acc;
-    }, {});
-    return TEAM_ORDER.map((key) => ({
-      key,
-      label: TEAM_LABELS[key],
-      users: grouped[key] ?? [],
-    })).filter((group) => group.users.length > 0);
+    return groupPersonnel(filteredUsers, UNIT_GROUP);
   }, [filteredUsers]);
 
   if (loading) {
@@ -289,10 +270,7 @@ export function CampaignManageClient({
           <Button variant={view === "campaign" ? "default" : "outline"} asChild>
             <Link href={`/dashboard/operations/management/campaigns/${id}/campaign`}>Campaign Intel</Link>
           </Button>
-          <Button
-            className="bg-accent hover:bg-accent-darker text-black"
-            onClick={() => setMissionDialog({ type: "create", open: true })}
-          >
+          <Button className={primaryBtn} onClick={() => setMissionDialog({ type: "create", open: true })}>
             <Plus className="h-4 w-4 mr-2" />
             Add Mission
           </Button>
@@ -330,17 +308,19 @@ export function CampaignManageClient({
               ownerId={campaign.id}
               heading="Operational Intel // Campaign-Level"
             />
-            <PlanningDocList
+            <DocSummaryPanel
               ownerType="campaign"
               ownerId={campaign.id}
-              heading="Planning Docs // Campaign-Level"
+              campaignId={campaign.id}
+              isAdmin
+              heading="Docs // Campaign-Level"
             />
           </div>
-
-          <SseAttachmentList
+          <SseSummaryPanel
             ownerType="campaign"
             ownerId={campaign.id}
             campaignId={campaign.id}
+            isAdmin
             heading="SSE Returns // Campaign-Level"
           />
         </>
@@ -402,6 +382,7 @@ export function CampaignManageClient({
                       <Button
                         size="sm"
                         variant="outline"
+                        className={neutralBtn}
                         onClick={() =>
                           setAttendanceMission({ ...m, rsvps, attendance })
                         }
@@ -412,6 +393,7 @@ export function CampaignManageClient({
                       <Button
                         size="sm"
                         variant="outline"
+                        className={secondaryBtn}
                         onClick={() =>
                           setMissionDialog({ type: "edit", open: true, mission: m })
                         }
@@ -420,16 +402,19 @@ export function CampaignManageClient({
                         Edit
                       </Button>
                       <Button
+                        asChild
                         size="sm"
                         variant="outline"
-                        onClick={() => setMissionIntelDialog(m)}
+                        className={secondaryBtn}
                       >
-                        Intel &amp; Attachments
+                        <Link href={`/dashboard/operations/management/campaigns/${id}/missions/${m.id}`}>
+                          Intel &amp; Attachments
+                        </Link>
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-300 hover:text-red-200"
+                        className={destructiveBtn}
                         onClick={() => setDeleteMission(m)}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -827,48 +812,6 @@ export function CampaignManageClient({
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!missionIntelDialog}
-        onOpenChange={(open) => !open && setMissionIntelDialog(null)}
-      >
-        <DialogContent className="w-[95vw] md:w-[980px] !max-w-none overflow-y-auto max-h-[85vh]">
-          <DialogHeader>
-            <DialogTitle>Mission Intel &amp; Attachments</DialogTitle>
-          </DialogHeader>
-          {missionIntelDialog && (
-            <div className="space-y-4">
-              <div className="rounded-lg border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950/40 p-3">
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-[0.16em]">
-                  {missionIntelDialog.name}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  {missionIntelDialog.date} @ {missionIntelDialog.time} • {missionIntelDialog.location}
-                </p>
-              </div>
-
-              <IntelBlockForm
-                ownerType="mission"
-                ownerId={missionIntelDialog.id}
-                heading="Operational Intel // Mission-Level"
-              />
-
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <PlanningDocList
-                  ownerType="mission"
-                  ownerId={missionIntelDialog.id}
-                  heading="Planning Docs // Mission-Level"
-                />
-                <SseAttachmentList
-                  ownerType="mission"
-                  ownerId={missionIntelDialog.id}
-                  campaignId={campaign.id}
-                  heading="SSE Returns // Mission-Level"
-                />
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

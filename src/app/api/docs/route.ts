@@ -1,78 +1,112 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { database } from "@/database";
 import { UserRole } from "@/types/database";
+import { postAdminAlert } from "@/lib/dashboard/postAdminAlert";
 
-type PlanningDoc = {
-  id: string;
-  ownerType: "campaign" | "mission";
-  ownerId: string;
-  title: string;
-  description: string;
-  docType: string;
-  classification: string;
-  fileUrl: string;
-  date: string;
-  createdAt: string;
-  createdBy: string;
-};
-
-const planningDocStore: PlanningDoc[] = [];
+function mapPlanningDoc(row: any) {
+  return {
+    id: String(row.id),
+    title: row.name,
+    description: row.description ?? "",
+    docType: row.doc_type ?? "",
+    classification: row.classification ?? "",
+    fileUrl: row.file_url ?? "",
+    date: row.doc_date_fmt ?? "",
+    createdAt:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at ?? ""),
+  };
+}
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.roles?.includes(UserRole.member)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.roles?.includes(UserRole.member)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const campaignId = request.nextUrl.searchParams.get("campaignId");
+    const missionId = request.nextUrl.searchParams.get("missionId");
+
+    if (!campaignId && !missionId) {
+      return NextResponse.json({ error: "campaignId or missionId is required" }, { status: 400 });
+    }
+
+    let rows: any[];
+    if (missionId) {
+      const cid = await database.get.missionCampaignId(missionId);
+      if (!cid) {
+        return NextResponse.json([]);
+      }
+      rows = await database.get.operationDocuments(cid, missionId);
+    } else {
+      rows = await database.get.operationDocuments(campaignId!, undefined, true);
+    }
+
+    return NextResponse.json(rows.map(mapPlanningDoc));
+  } catch (error) {
+    console.error("Error loading planning docs:", error);
+    return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });
   }
-
-  const campaignId = request.nextUrl.searchParams.get("campaignId");
-  const missionId = request.nextUrl.searchParams.get("missionId");
-
-  if (!campaignId && !missionId) {
-    return NextResponse.json({ error: "campaignId or missionId is required" }, { status: 400 });
-  }
-
-  const ownerType = missionId ? "mission" : "campaign";
-  const ownerId = missionId ?? campaignId!;
-
-  return NextResponse.json(
-    planningDocStore.filter((doc) => doc.ownerType === ownerType && doc.ownerId === ownerId),
-  );
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.roles?.includes(UserRole.admin)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.roles?.includes(UserRole.admin)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    let campaignId = String(body.campaignId ?? "").trim();
+    const missionId = body.missionId ? String(body.missionId).trim() : "";
+    const title = String(body.title ?? "").trim();
+
+    if ((!campaignId && !missionId) || !title) {
+      return NextResponse.json(
+        { error: "owner (campaignId/missionId) and title are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!campaignId && missionId) {
+      const cid = await database.get.missionCampaignId(missionId);
+      if (!cid) {
+        return NextResponse.json({ error: "Mission not found" }, { status: 400 });
+      }
+      campaignId = cid;
+    }
+
+    const docId = await database.post.operationDocument({
+      campaignId,
+      missionId: missionId || undefined,
+      name: title,
+      description: String(body.description ?? ""),
+      docType: String(body.docType ?? "OTHER"),
+      classification: String(body.classification ?? "UNCLASSIFIED"),
+      docDate: body.date ? String(body.date).trim() || null : null,
+      fileUrl: String(body.fileUrl ?? ""),
+      fileType: String(body.fileType ?? "application/pdf"),
+      fileSize: body.fileSize ? String(body.fileSize) : undefined,
+      minimumRole: body.minimumRole,
+      uploadedBy: session.user.id!,
+    });
+
+    const row = await database.get.operationDocumentById(docId);
+    const item = row ? mapPlanningDoc(row) : { id: String(docId), title, description: "", docType: "", classification: "", fileUrl: "", date: "", createdAt: new Date().toISOString() };
+
+    await postAdminAlert({
+      label: "DOC UPLOADED",
+      message: `${title} uploaded${missionId ? ` and linked to mission ${missionId}` : ""}.`,
+      createdBy: session.user.id!,
+    });
+
+    return NextResponse.json({ success: true, item }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating planning doc:", error);
+    return NextResponse.json({ error: "Failed to create document" }, { status: 500 });
   }
-
-  const body = await request.json();
-  const ownerType = body.missionId ? "mission" : "campaign";
-  const ownerId = String(body.missionId ?? body.campaignId ?? "").trim();
-  const title = String(body.title ?? "").trim();
-
-  if (!ownerId || !title) {
-    return NextResponse.json(
-      { error: "owner (campaignId/missionId) and title are required" },
-      { status: 400 },
-    );
-  }
-
-  // TODO: Replace in-memory storage with database persistence and file storage.
-  const nextDoc: PlanningDoc = {
-    id: `doc-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
-    ownerType,
-    ownerId,
-    title,
-    description: String(body.description ?? ""),
-    docType: String(body.docType ?? "OTHER"),
-    classification: String(body.classification ?? "UNCLASSIFIED"),
-    fileUrl: String(body.fileUrl ?? ""),
-    date: String(body.date ?? ""),
-    createdAt: new Date().toISOString(),
-    createdBy: session.user.id ?? "unknown",
-  };
-
-  planningDocStore.unshift(nextDoc);
-  return NextResponse.json({ success: true, item: nextDoc }, { status: 201 });
 }

@@ -27,6 +27,18 @@ export async function POST(
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    const allowed = await db.get.canUserAccessTraining(
+      trainingId,
+      session.user.id!,
+      session.user.roles ?? []
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "You are not allowed to RSVP for this training" },
+        { status: 403 }
+      );
+    }
+
     const rsvpId = `trsvp-${trainingId}-${session.user.id}`;
 
     await db.post.trainingRSVP({

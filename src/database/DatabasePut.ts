@@ -374,6 +374,53 @@ export class DatabasePut {
     );
   }
 
+  async sseItem(
+    sseId: number,
+    data: {
+      name?: string;
+      description?: string;
+      type?: string;
+      classification?: string | null;
+      status?: string;
+      collectedDate?: string | null;
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.name !== undefined) {
+      updates.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.type !== undefined) {
+      updates.push("type = ?");
+      values.push(data.type);
+    }
+    if (data.classification !== undefined) {
+      updates.push("classification = ?");
+      values.push(data.classification || null);
+    }
+    if (data.status !== undefined) {
+      updates.push("status = ?");
+      values.push(data.status);
+    }
+    if (data.collectedDate !== undefined) {
+      updates.push("collected_date = ?");
+      values.push(data.collectedDate || null);
+    }
+
+    if (updates.length === 0) return;
+
+    updates.push("updated_at = NOW()");
+    values.push(sseId);
+
+    await this.client.query(`UPDATE sse_items SET ${updates.join(", ")} WHERE id = ?`, values);
+  }
+
   // ── Directives ──
 
   async directiveStatus(directiveId: number, status: string): Promise<void> {
@@ -448,6 +495,9 @@ export class DatabasePut {
     data: {
       name?: string;
       description?: string;
+      docType?: string | null;
+      classification?: string | null;
+      docDate?: string | null;
       minimumRole?: string;
     }
   ): Promise<void> {
@@ -462,6 +512,18 @@ export class DatabasePut {
       updates.push("description = ?");
       values.push(data.description || null);
     }
+    if (data.docType !== undefined) {
+      updates.push("doc_type = ?");
+      values.push(data.docType || null);
+    }
+    if (data.classification !== undefined) {
+      updates.push("classification = ?");
+      values.push(data.classification || null);
+    }
+    if (data.docDate !== undefined) {
+      updates.push("doc_date = ?");
+      values.push(data.docDate || null);
+    }
     if (data.minimumRole !== undefined) {
       updates.push("minimum_role = ?");
       values.push(data.minimumRole);
@@ -474,6 +536,169 @@ export class DatabasePut {
       `UPDATE operation_documents SET ${updates.join(", ")} WHERE id = ?`,
       values
     );
+  }
+
+  async document(
+    documentId: number,
+    data: {
+      name?: string;
+      description?: string;
+      docType?: string | null;
+      classification?: string;
+      unit?: string;
+      fileKey?: string;
+      fileType?: string;
+      fileSize?: number | null;
+      minimumRole?: string;
+      tags?: string[];
+      allowedRoles?: string[];
+      allowedUsers?: string[];
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.name !== undefined) {
+      updates.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.docType !== undefined) {
+      updates.push("doc_type = ?");
+      values.push(data.docType || null);
+    }
+    if (data.classification !== undefined) {
+      updates.push("classification = ?");
+      values.push(data.classification);
+    }
+    if (data.unit !== undefined) {
+      updates.push("unit = ?");
+      values.push(data.unit);
+    }
+    if (data.fileKey !== undefined) {
+      updates.push("file_key = ?");
+      values.push(data.fileKey);
+    }
+    if (data.fileType !== undefined) {
+      updates.push("file_type = ?");
+      values.push(data.fileType);
+    }
+    if (data.fileSize !== undefined) {
+      updates.push("file_size = ?");
+      values.push(data.fileSize ?? null);
+    }
+    if (data.minimumRole !== undefined) {
+      updates.push("minimum_role = ?");
+      values.push(data.minimumRole);
+    }
+
+    if (updates.length > 0) {
+      updates.push("updated_at = NOW()");
+      values.push(documentId);
+      await this.client.query(`UPDATE documents SET ${updates.join(", ")} WHERE id = ?`, values);
+    }
+
+    if (data.tags !== undefined || data.allowedRoles !== undefined || data.allowedUsers !== undefined) {
+      await this.client.query(`DELETE FROM document_tags WHERE document_id = ?`, [documentId]);
+      await this.client.query(`DELETE FROM document_allowed_roles WHERE document_id = ?`, [documentId]);
+      await this.client.query(`DELETE FROM document_allowed_users WHERE document_id = ?`, [documentId]);
+
+      for (const tag of data.tags || []) {
+        const clean = tag.trim();
+        if (!clean) continue;
+        await this.client.query(`INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`, [documentId, clean]);
+      }
+      for (const role of data.allowedRoles || []) {
+        const clean = role.trim();
+        if (!clean) continue;
+        await this.client.query(`INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`, [
+          documentId,
+          clean,
+        ]);
+      }
+      for (const userId of data.allowedUsers || []) {
+        const clean = userId.trim();
+        if (!clean) continue;
+        await this.client.query(`INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`, [
+          documentId,
+          clean,
+        ]);
+      }
+    }
+  }
+
+  // ── Marketing gallery_media ──
+
+  async galleryMedia(
+    mediaId: number,
+    data: {
+      title?: string;
+      description?: string | null;
+      mediaType?: "image" | "video" | "youtube";
+      src?: string;
+      thumbnail?: string | null;
+      videoId?: string | null;
+      category?: string;
+      units?: string[];
+    }
+  ): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.title !== undefined) {
+      updates.push("title = ?");
+      values.push(data.title);
+    }
+    if (data.description !== undefined) {
+      updates.push("description = ?");
+      values.push(data.description || null);
+    }
+    if (data.mediaType !== undefined) {
+      updates.push("media_type = ?");
+      values.push(data.mediaType);
+    }
+    if (data.src !== undefined) {
+      updates.push("src = ?");
+      values.push(data.src);
+    }
+    if (data.thumbnail !== undefined) {
+      updates.push("thumbnail = ?");
+      values.push(data.thumbnail || null);
+    }
+    if (data.videoId !== undefined) {
+      updates.push("video_id = ?");
+      values.push(data.videoId || null);
+    }
+    if (data.category !== undefined) {
+      updates.push("category = ?");
+      values.push(data.category);
+    }
+
+    if (data.units !== undefined) {
+      await this.client.query(`DELETE FROM gallery_media_units WHERE media_id = ?`, [mediaId]);
+      for (const unit of data.units) {
+        const u = String(unit).trim();
+        if (!u) continue;
+        await this.client.query(`INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`, [
+          mediaId,
+          u,
+        ]);
+      }
+    }
+
+    if (updates.length > 0) {
+      values.push(mediaId);
+      await this.client.query(`UPDATE gallery_media SET ${updates.join(", ")} WHERE id = ?`, values);
+    }
+  }
+
+  async galleryMediaOrder(orderedIds: number[]): Promise<void> {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await this.client.query(`UPDATE gallery_media SET display_order = ? WHERE id = ?`, [i, orderedIds[i]]);
+    }
   }
 
   // ── Operation Intel ──

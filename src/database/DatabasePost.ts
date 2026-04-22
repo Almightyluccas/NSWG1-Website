@@ -519,29 +519,42 @@ export class DatabasePost {
 
   async sseItem(data: {
     campaignId: string;
+    missionId?: string | null;
     type: string;
     name: string;
     description: string;
     status?: string;
     minimumRole?: string;
     imageUrl?: string;
+    classification?: string | null;
+    collectedDate?: string | null;
     uploadedBy: string;
   }): Promise<number> {
     const result = await this.client.query<any>(
-      `INSERT INTO sse_items (campaign_id, type, name, description, status, minimum_role, image_url, uploaded_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO sse_items (campaign_id, mission_id, type, name, description, status, minimum_role, image_url, classification, collected_date, uploaded_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.campaignId,
+        data.missionId ?? null,
         data.type,
         data.name,
         data.description,
         data.status || "LOGGED",
         data.minimumRole || UserRole.member,
         data.imageUrl || null,
+        data.classification ?? null,
+        data.collectedDate ?? null,
         data.uploadedBy,
       ]
     );
     return result.insertId;
+  }
+
+  async attachSseToMission(sseId: number, missionId: string): Promise<void> {
+    await this.client.query(
+      `INSERT IGNORE INTO sse_item_missions (sse_id, mission_id) VALUES (?, ?)`,
+      [sseId, missionId]
+    );
   }
 
   // ── Directives ──
@@ -595,6 +608,9 @@ export class DatabasePost {
     missionId?: string;
     name: string;
     description?: string;
+    docType?: string | null;
+    classification?: string | null;
+    docDate?: string | null;
     fileUrl: string;
     fileType: string;
     fileSize?: string;
@@ -602,13 +618,16 @@ export class DatabasePost {
     uploadedBy: string;
   }): Promise<number> {
     const result = await this.client.query<any>(
-      `INSERT INTO operation_documents (campaign_id, mission_id, name, description, file_url, file_type, file_size, minimum_role, uploaded_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO operation_documents (campaign_id, mission_id, name, description, doc_type, classification, doc_date, file_url, file_type, file_size, minimum_role, uploaded_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.campaignId,
         data.missionId || null,
         data.name,
         data.description || null,
+        data.docType ?? null,
+        data.classification ?? null,
+        data.docDate ?? null,
         data.fileUrl,
         data.fileType,
         data.fileSize || null,
@@ -619,10 +638,111 @@ export class DatabasePost {
     return result.insertId;
   }
 
+  async attachDocumentToMission(docId: number, missionId: string): Promise<void> {
+    await this.client.query(
+      `INSERT IGNORE INTO operation_document_missions (document_id, mission_id) VALUES (?, ?)`,
+      [docId, missionId]
+    );
+  }
+
+  async document(data: {
+    name: string;
+    description?: string;
+    docType?: string | null;
+    classification?: string;
+    unit?: string;
+    fileKey: string;
+    fileType: string;
+    fileSize?: number | null;
+    minimumRole?: string;
+    uploadedBy: string;
+    tags?: string[];
+    allowedRoles?: string[];
+    allowedUsers?: string[];
+  }): Promise<number> {
+    const result = await this.client.query<any>(
+      `INSERT INTO documents (name, description, doc_type, classification, unit, file_key, file_type, file_size, minimum_role, uploaded_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.name,
+        data.description || null,
+        data.docType ?? null,
+        data.classification || "GENERAL",
+        data.unit || "NSWG1 HQ",
+        data.fileKey,
+        data.fileType,
+        data.fileSize ?? null,
+        data.minimumRole || UserRole.member,
+        data.uploadedBy,
+      ]
+    );
+    const id = result.insertId as number;
+    await this.replaceDocumentScopes(id, data.tags || [], data.allowedRoles || [], data.allowedUsers || []);
+    return id;
+  }
+
+  async replaceDocumentScopes(
+    documentId: number,
+    tags: string[],
+    allowedRoles: string[],
+    allowedUsers: string[]
+  ): Promise<void> {
+    await this.client.query(`DELETE FROM document_tags WHERE document_id = ?`, [documentId]);
+    await this.client.query(`DELETE FROM document_allowed_roles WHERE document_id = ?`, [documentId]);
+    await this.client.query(`DELETE FROM document_allowed_users WHERE document_id = ?`, [documentId]);
+
+    for (const tag of tags) {
+      const clean = tag.trim();
+      if (!clean) continue;
+      await this.client.query(`INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`, [documentId, clean]);
+    }
+    for (const role of allowedRoles) {
+      const clean = role.trim();
+      if (!clean) continue;
+      await this.client.query(`INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`, [documentId, clean]);
+    }
+    for (const userId of allowedUsers) {
+      const clean = userId.trim();
+      if (!clean) continue;
+      await this.client.query(`INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`, [documentId, clean]);
+    }
+  }
+
+  async attachDocumentToTraining(trainingId: string, documentId: number): Promise<void> {
+    await this.client.query(
+      `INSERT IGNORE INTO training_documents (training_id, document_id) VALUES (?, ?)`,
+      [trainingId, documentId]
+    );
+  }
+
+  async replaceTrainingAllowlist(trainingId: string, roles: string[], userIds: string[]): Promise<void> {
+    await this.client.query(`DELETE FROM training_allowed_roles WHERE training_id = ?`, [trainingId]);
+    await this.client.query(`DELETE FROM training_allowed_users WHERE training_id = ?`, [trainingId]);
+
+    for (const role of roles) {
+      const clean = role.trim();
+      if (!clean) continue;
+      await this.client.query(`INSERT INTO training_allowed_roles (training_id, role) VALUES (?, ?)`, [
+        trainingId,
+        clean,
+      ]);
+    }
+
+    for (const userId of userIds) {
+      const clean = userId.trim();
+      if (!clean) continue;
+      await this.client.query(`INSERT INTO training_allowed_users (training_id, user_id) VALUES (?, ?)`, [
+        trainingId,
+        clean,
+      ]);
+    }
+  }
+
   // ── Operation Intel ──
 
   async operationIntel(data: {
     campaignId: string;
+    missionId?: string | null;
     type: string;
     title: string;
     description?: string;
@@ -631,10 +751,11 @@ export class DatabasePost {
     createdBy: string;
   }): Promise<number> {
     const result = await this.client.query<any>(
-      `INSERT INTO operation_intel (campaign_id, type, title, description, image_url, minimum_role, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO operation_intel (campaign_id, mission_id, type, title, description, image_url, minimum_role, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.campaignId,
+        data.missionId ?? null,
         data.type,
         data.title,
         data.description || null,
@@ -644,6 +765,117 @@ export class DatabasePost {
       ]
     );
     return result.insertId;
+  }
+
+  /** Upsert regional + operational narrative text for a campaign or mission (IntelBlockForm). */
+  async operationIntelUpsertBlock(data: {
+    ownerType: "campaign" | "mission";
+    ownerId: string;
+    regionalIntel: string;
+    operationalIntel: string;
+    createdBy: string;
+  }): Promise<void> {
+    let campaignId: string;
+    let missionId: string | null;
+
+    if (data.ownerType === "campaign") {
+      campaignId = data.ownerId;
+      missionId = null;
+    } else {
+      missionId = data.ownerId;
+      const rows = await this.client.query<{ campaign_id: string }[]>(
+        `SELECT campaign_id FROM missions WHERE id = ?`,
+        [missionId]
+      );
+      if (rows.length === 0) {
+        throw new Error("Mission not found");
+      }
+      campaignId = rows[0].campaign_id;
+    }
+
+    await this.upsertIntelNarrativeRow(
+      campaignId,
+      missionId,
+      "regional",
+      "Regional Intel",
+      data.regionalIntel,
+      data.createdBy
+    );
+    await this.upsertIntelNarrativeRow(
+      campaignId,
+      missionId,
+      "operational",
+      "Operational Intel",
+      data.operationalIntel,
+      data.createdBy
+    );
+  }
+
+  private async upsertIntelNarrativeRow(
+    campaignId: string,
+    missionId: string | null,
+    intelType: "regional" | "operational",
+    title: string,
+    description: string,
+    createdBy: string
+  ): Promise<void> {
+    const rows = await this.client.query<{ id: number }[]>(
+      `SELECT id FROM operation_intel WHERE campaign_id = ? AND mission_id <=> ? AND type = ?`,
+      [campaignId, missionId, intelType]
+    );
+
+    if (rows.length > 0) {
+      await this.client.query(
+        `UPDATE operation_intel SET description = ?, created_by = ?, updated_at = NOW() WHERE id = ?`,
+        [description || null, createdBy, rows[0].id]
+      );
+    } else {
+      await this.client.query(
+        `INSERT INTO operation_intel (campaign_id, mission_id, type, title, description, image_url, minimum_role, created_by)
+         VALUES (?, ?, ?, ?, ?, NULL, 'member', ?)`,
+        [campaignId, missionId, intelType, title, description || null, createdBy]
+      );
+    }
+  }
+
+  async galleryMedia(data: {
+    title: string;
+    description?: string;
+    mediaType: "image" | "video" | "youtube";
+    src: string;
+    thumbnail?: string | null;
+    videoId?: string | null;
+    category: string;
+    units: string[];
+    createdBy: string | null;
+  }): Promise<number> {
+    const orderRows = await this.client.query<{ next: number }[]>(
+      `SELECT COALESCE(MAX(display_order), 0) + 1 AS next FROM gallery_media`
+    );
+    const nextOrder = orderRows[0]?.next ?? 1;
+
+    const result = await this.client.query<any>(
+      `INSERT INTO gallery_media (title, description, media_type, src, thumbnail, video_id, category, display_order, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.title,
+        data.description || null,
+        data.mediaType,
+        data.src,
+        data.thumbnail ?? null,
+        data.videoId ?? null,
+        data.category,
+        nextOrder,
+        data.createdBy,
+      ]
+    );
+    const id = result.insertId as number;
+    for (const unit of data.units) {
+      const u = String(unit).trim();
+      if (!u) continue;
+      await this.client.query(`INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`, [id, u]);
+    }
+    return id;
   }
 
   // ── After Action Reports ──

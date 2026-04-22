@@ -38,13 +38,10 @@ import {
   TrainingForm,
   type TrainingFormValues,
 } from "@/components/operations/management/training-form";
-
-const TEAM_ORDER = ["member", "tacdevron", "160th"];
-const TEAM_LABELS: Record<string, string> = {
-  member: "GENERAL",
-  tacdevron: "TACDEVRON",
-  "160th": "160TH",
-};
+import { getUnitLabel, groupPersonnel, UNIT_GROUP } from "@/lib/config/personnel-groups";
+import { AllowedPersonnelPicker } from "@/components/documents/allowed-personnel-picker";
+import { UserRole } from "@/types/database";
+import { useDocumentUpload } from "@/lib/documents/useDocumentUpload";
 
 type TrainingRSVP = {
   id: string;
@@ -83,8 +80,18 @@ type AttendanceUser = {
   primaryRole: string;
 };
 
+type TrainingDocument = {
+  id: string;
+  name: string;
+  description: string;
+  docType: string;
+  classification: string;
+  tags?: string[];
+};
+
 export function TrainingManageClient({ id }: { id: string }) {
   const router = useRouter();
+  const { uploadDocument, isUploading } = useDocumentUpload();
 
   const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState<TrainingRecord | null>(null);
@@ -99,6 +106,13 @@ export function TrainingManageClient({ id }: { id: string }) {
   const [attendanceBusy, setAttendanceBusy] = useState<Record<string, string>>(
     {},
   );
+  const [allowRoles, setAllowRoles] = useState<string[]>([]);
+  const [allowUsers, setAllowUsers] = useState<string[]>([]);
+  const [allowlistSaving, setAllowlistSaving] = useState(false);
+  const [trainingDocs, setTrainingDocs] = useState<TrainingDocument[]>([]);
+  const [repositoryDocs, setRepositoryDocs] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedRepoDoc, setSelectedRepoDoc] = useState<string>("");
+  const [newDocFile, setNewDocFile] = useState<File | null>(null);
 
   const loadRecord = async () => {
     try {
@@ -144,6 +158,52 @@ export function TrainingManageClient({ id }: { id: string }) {
   }, []);
 
   useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/training/${id}/allowlist`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setAllowRoles(Array.isArray(data?.roles) ? data.roles : []);
+        setAllowUsers(Array.isArray(data?.userIds) ? data.userIds : []);
+      } catch {
+        setAllowRoles([]);
+        setAllowUsers([]);
+      }
+    })();
+  }, [id]);
+
+  const loadTrainingDocs = async () => {
+    try {
+      const res = await fetch(`/api/training/${id}/docs`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setTrainingDocs(Array.isArray(data) ? data : []);
+    } catch {
+      setTrainingDocs([]);
+    }
+  };
+
+  useEffect(() => {
+    void loadTrainingDocs();
+  }, [id]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/documents");
+        if (!res.ok) return;
+        const data = await res.json();
+        const docs = Array.isArray(data)
+          ? data.map((doc) => ({ id: String(doc.id), name: String(doc.name ?? `Doc ${doc.id}`) }))
+          : [];
+        setRepositoryDocs(docs);
+      } catch {
+        setRepositoryDocs([]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     if (!attendanceOpen) return;
     (async () => {
       try {
@@ -156,12 +216,6 @@ export function TrainingManageClient({ id }: { id: string }) {
       }
     })();
   }, [attendanceOpen]);
-
-  const getUnitLabel = (role?: string) => {
-    if (role === "tacdevron") return "TACDEVRON";
-    if (role === "160th") return "160TH";
-    return "GENERAL";
-  };
 
   const filteredUsers = useMemo(() => {
     let list = [...users];
@@ -181,18 +235,16 @@ export function TrainingManageClient({ id }: { id: string }) {
   }, [users, roleFilter, userSearch]);
 
   const groupedUsers = useMemo(() => {
-    const grouped = filteredUsers.reduce<Record<string, AttendanceUser[]>>((acc, user) => {
-      const key = TEAM_ORDER.includes(user.primaryRole) ? user.primaryRole : "member";
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(user);
-      return acc;
-    }, {});
-    return TEAM_ORDER.map((key) => ({
-      key,
-      label: TEAM_LABELS[key],
-      users: grouped[key] ?? [],
-    })).filter((group) => group.users.length > 0);
+    return groupPersonnel(filteredUsers, UNIT_GROUP);
   }, [filteredUsers]);
+
+  const toggleAllowRole = (role: string) => {
+    setAllowRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+  };
+
+  const toggleAllowUser = (userId: string) => {
+    setAllowUsers((prev) => (prev.includes(userId) ? prev.filter((u) => u !== userId) : [...prev, userId]));
+  };
 
   if (loading) {
     return (
@@ -344,6 +396,162 @@ export function TrainingManageClient({ id }: { id: string }) {
                 {unit}: {count} RSVP
               </Badge>
             ))}
+        </CardContent>
+      </Card>
+
+      <Card className="glass-panel scan-lines border border-zinc-800/80 rounded-sm">
+        <CardHeader className="border-b border-zinc-800/80 pb-3">
+          <CardTitle className="text-xs font-bold text-zinc-300 uppercase tracking-[0.2em]">
+            Allowed Personnel
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3">
+          <AllowedPersonnelPicker
+            roleOptions={Object.values(UserRole)}
+            userOptions={users}
+            selectedRoles={allowRoles}
+            selectedUserIds={allowUsers}
+            onToggleRole={toggleAllowRole}
+            onToggleUser={toggleAllowUser}
+          />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              disabled={allowlistSaving}
+              onClick={async () => {
+                setAllowlistSaving(true);
+                try {
+                  const res = await fetch(`/api/training/${record.id}/allowlist`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ roles: allowRoles, userIds: allowUsers }),
+                  });
+                  if (!res.ok) throw new Error(await res.text());
+                } finally {
+                  setAllowlistSaving(false);
+                }
+              }}
+            >
+              {allowlistSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Allowlist"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-panel scan-lines border border-zinc-800/80 rounded-sm">
+        <CardHeader className="border-b border-zinc-800/80 pb-3">
+          <CardTitle className="text-xs font-bold text-zinc-300 uppercase tracking-[0.2em]">
+            Training Documents
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex flex-col md:flex-row gap-2">
+            <Select value={selectedRepoDoc} onValueChange={setSelectedRepoDoc}>
+              <SelectTrigger className="md:w-[320px]">
+                <SelectValue placeholder="Select existing document" />
+              </SelectTrigger>
+              <SelectContent>
+                {repositoryDocs.map((doc) => (
+                  <SelectItem key={doc.id} value={doc.id}>
+                    {doc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!selectedRepoDoc}
+              onClick={async () => {
+                const res = await fetch(`/api/training/${record.id}/docs`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ documentId: selectedRepoDoc }),
+                });
+                if (res.ok) {
+                  setSelectedRepoDoc("");
+                  await loadTrainingDocs();
+                }
+              }}
+            >
+              Attach Existing
+            </Button>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-2 items-center">
+            <Input
+              type="file"
+              onChange={(e) => setNewDocFile(e.target.files?.[0] ?? null)}
+              className="md:w-[320px]"
+            />
+            <Button
+              type="button"
+              disabled={!newDocFile || isUploading}
+              onClick={async () => {
+                if (!newDocFile) return;
+                const created = await uploadDocument(newDocFile, {
+                  name: newDocFile.name,
+                  description: `Training ${record.name} document`,
+                  classification: "GENERAL",
+                  docType: "TRAINING",
+                  unit: "NSWG1 HQ",
+                  minimumRole: UserRole.member,
+                });
+                const documentId = created?.item?.id;
+                if (documentId) {
+                  await fetch(`/api/training/${record.id}/docs`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ documentId }),
+                  });
+                  setNewDocFile(null);
+                  await loadTrainingDocs();
+                }
+              }}
+            >
+              {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload New & Attach"}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {trainingDocs.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between rounded-sm border border-zinc-800 p-2">
+                <div>
+                  <p className="text-sm text-zinc-100 font-semibold">{doc.name}</p>
+                  <p className="text-xs text-zinc-400">{doc.docType} • {doc.classification}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const res = await fetch(`/api/documents/${doc.id}/download`);
+                      const data = await res.json().catch(() => ({}));
+                      if (res.ok && data?.url) {
+                        window.open(data.url, "_blank", "noopener,noreferrer");
+                      }
+                    }}
+                  >
+                    Download
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-300 hover:text-red-200"
+                    onClick={async () => {
+                      const res = await fetch(`/api/training/${record.id}/docs/${doc.id}`, { method: "DELETE" });
+                      if (res.ok) await loadTrainingDocs();
+                    }}
+                  >
+                    Detach
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {trainingDocs.length === 0 && (
+              <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.18em]">No documents attached.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
