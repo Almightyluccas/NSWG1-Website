@@ -22,9 +22,17 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
   const { data: session } = useSession();
 
   const handleSignOut = async () => {
-    sessionStorage.clear();
+    try {
+      sessionStorage.clear();
+    } catch {
+      // ignore storage access issues
+    }
 
-    await signOut({ callbackUrl: "/" });
+    try {
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      window.location.href = "/api/auth/signout?callbackUrl=%2F";
+    }
   };
 
   return (

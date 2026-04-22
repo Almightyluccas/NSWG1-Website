@@ -48,8 +48,16 @@ function SidebarContent({
   const { data: session } = useSession();
 
   const handleSignOut = async () => {
-    sessionStorage.clear();
-    await signOut({ callbackUrl: "/" });
+    try {
+      sessionStorage.clear();
+    } catch {
+      // ignore storage access issues
+    }
+    try {
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      window.location.href = "/api/auth/signout?callbackUrl=%2F";
+    }
   };
 
   const isAdmin = [UserRole.admin, UserRole.superAdmin, UserRole.instructor].some(

@@ -256,56 +256,6 @@ export default async function AboutPage() {
 
       <div className="section-divider"></div>
 
-      {/* ═══════ LEADERSHIP ═══════ */}
-      <section className="py-24 bg-zinc-900 relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle, rgb(var(--accent-color)) 1px, transparent 1px)`,
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <FadeIn>
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent/40"></div>
-                <p className="section-label">{"Command Staff"}</p>
-                <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40"></div>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 uppercase tracking-wide">
-                Our Leadership
-              </h2>
-              <div className="h-1 w-24 bg-accent mx-auto mb-8"></div>
-              <p className="text-lg text-zinc-400 leading-relaxed">
-                NSWG1 is led by a team of experienced individuals dedicated to
-                maintaining the highest standards of tactical excellence.
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/*TODO: Replace with actual images*/}
-            {/*TODO: Add the name and role from perscom so i dont need to update in future*/}
-            <LeaderCard
-              name="Lieutenant Commander J. Rola"
-              role="Troop Commander"
-              image="/placeholder.svg?height=300&width=300"
-              delay={0}
-            />
-            <LeaderCard
-              name="Major R. Stanman"
-              role="160th Commanding officer"
-              image="/placeholder.svg?height=300&width=300"
-              delay={200}
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider"></div>
-
       <ReadyToJoinSection />
       <Footer />
     </main>
@@ -335,35 +285,3 @@ function ValueCard({ icon, title, description, delay = 0 }: ValueCardProps) {
   );
 }
 
-interface LeaderCardProps {
-  name: string;
-  role: string;
-  image: string;
-  delay?: number;
-}
-
-function LeaderCard({ name, role, image, delay = 0 }: LeaderCardProps) {
-  return (
-    <FadeIn delay={delay}>
-      <div className="group bg-zinc-800/60 backdrop-blur-sm border border-zinc-700/40 rounded-lg overflow-hidden hover:border-accent/50 hover:shadow-[0_0_30px_rgba(var(--accent-color),0.1)] transition-all duration-500">
-        <div className="relative h-64">
-          <Image
-            src={image || "/placeholder.svg"}
-            alt={name}
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent"></div>
-        </div>
-        <div className="p-6 text-center">
-          <h3 className="text-xl font-bold mb-1 uppercase tracking-wide">
-            {name}
-          </h3>
-          <p className="text-zinc-400 text-sm tracking-wider uppercase">
-            {role}
-          </p>
-        </div>
-      </div>
-    </FadeIn>
-  );
-}
