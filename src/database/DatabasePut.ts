@@ -87,6 +87,17 @@ export class DatabasePut {
       [name, id]
     );
   }
+
+  async userPerscomId(id: string, perscomId: number): Promise<void> {
+    await this.client.query(
+        `
+            UPDATE users
+            SET perscom_id = ?
+            WHERE id = ?
+        `,
+        [perscomId, id]
+    );
+  }
   async userProfilePicture(s3Key: string, userId: string): Promise<void> {
     const existingUserRows = await this.client.query<any[]>(
       `SELECT profile_image_id FROM users WHERE id = ?`,

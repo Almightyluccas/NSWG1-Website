@@ -26,6 +26,7 @@ import { PaginationBar } from "@/components/ui/pagination";
 import RoleGuard from "@/components/auth/role-guard";
 import { RoleManager } from "@/app/admin/users/role-manager";
 import { NameManager } from "@/app/admin/users/name-manager";
+import {PerscomIdManager} from "@/app/admin/users/perscomIdManager";
 
 interface UserTableProps {
   users: User[];
@@ -39,6 +40,7 @@ export const UsersTable = ({ users }: UserTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isRoleManagerOpen, setIsRoleManagerOpen] = useState(false);
   const [isNameManagerOpen, setIsNameManagerOpen] = useState(false);
+  const [isPerscomIdManagerOpen, setIsPerscomIdManagerOpen] = useState(false);
   const [copiedPerscomId, setCopiedPerscomId] = useState<number | null>(null);
 
   const { data: session } = useSession();
@@ -254,6 +256,14 @@ export const UsersTable = ({ users }: UserTableProps) => {
                         >
                           Edit Roles
                         </DropdownMenuItem>
+                          <DropdownMenuItem
+                              onClick={() => {
+                                  setSelectedUser(user);
+                                  setIsPerscomIdManagerOpen(true);
+                              }}
+                          >
+                              Edit Perscom ID
+                          </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedUser(user);
@@ -430,6 +440,15 @@ export const UsersTable = ({ users }: UserTableProps) => {
           userName={selectedUser.name || ""}
         />
       )}
+        {selectedUser && isPerscomIdManagerOpen && (
+        <PerscomIdManager
+          open={isPerscomIdManagerOpen}
+          onOpenChangeAction={setIsPerscomIdManagerOpen}
+          userId={selectedUser.id}
+          perscomId={selectedUser.perscom_id || 0}
+        />
+      )}
+
     </>
   );
 };
