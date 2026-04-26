@@ -49,7 +49,6 @@ export interface AfterActionReport {
   updated_at: string;
 }
 
-
 export interface OperationMission {
   id: string;
   campaign_id: string;

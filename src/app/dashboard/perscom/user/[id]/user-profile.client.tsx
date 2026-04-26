@@ -172,30 +172,46 @@ export const UserProfile = ({
                 </Badge>
                 <div className="mt-2 w-full border-t border-gray-200 pt-4 dark:border-zinc-700">
                   <div className="mb-2 flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Position:</span>
-                    <span className="font-medium">{user.position?.name || "Unknown"}</span>
+                    <span className="text-gray-500 dark:text-zinc-400">
+                      Position:
+                    </span>
+                    <span className="font-medium">
+                      {user.position?.name || "Unknown"}
+                    </span>
                   </div>
                   <div className="mb-2 flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Unit:</span>
-                    <span className="font-medium">{user.unit?.name || "Unknown"}</span>
+                    <span className="text-gray-500 dark:text-zinc-400">
+                      Unit:
+                    </span>
+                    <span className="font-medium">
+                      {user.unit?.name || "Unknown"}
+                    </span>
                   </div>
                   <div className="mb-2 flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Time in Service:</span>
+                    <span className="text-gray-500 dark:text-zinc-400">
+                      Time in Service:
+                    </span>
                     <span className="font-medium">
                       {calculateTimeDifference(user.created_at)}
                     </span>
                   </div>
                   <div className="mb-2 flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Time in Grade:</span>
+                    <span className="text-gray-500 dark:text-zinc-400">
+                      Time in Grade:
+                    </span>
                     <span className="font-medium">
                       {calculateTimeDifference(user.last_rank_change_date)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-zinc-400">Time in Position:</span>
+                    <span className="text-gray-500 dark:text-zinc-400">
+                      Time in Position:
+                    </span>
                     <span className="font-medium">
                       {user.last_assignment_change_date
-                        ? calculateTimeDifference(user.last_assignment_change_date)
+                        ? calculateTimeDifference(
+                            user.last_assignment_change_date
+                          )
                         : "Unknown"}
                     </span>
                   </div>
@@ -213,7 +229,9 @@ export const UserProfile = ({
               <div className="flex flex-wrap justify-center gap-4">
                 {awardRecords.length > 0 ? (
                   awardRecords.map((record, index) => {
-                    const awardImage = awardImages.find((img) => img.id === record.award_id);
+                    const awardImage = awardImages.find(
+                      (img) => img.id === record.award_id
+                    );
                     return (
                       <div key={index} className="text-center">
                         <div className="group relative">
@@ -233,7 +251,9 @@ export const UserProfile = ({
                     );
                   })
                 ) : (
-                  <p className="text-gray-500 dark:text-zinc-400">No awards recorded.</p>
+                  <p className="text-gray-500 dark:text-zinc-400">
+                    No awards recorded.
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -384,7 +404,9 @@ export const UserProfile = ({
                           <div key={index} className="relative">
                             <div className="absolute -left-8 mt-1.5 h-4 w-4 rounded-full bg-accent"></div>
                             <div className="mb-1">
-                              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Combat Record</h4>
+                              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                Combat Record
+                              </h4>
                             </div>
                             <p className="text-sm text-gray-500 dark:text-zinc-400">
                               Recorded on {record.date}
@@ -478,7 +500,9 @@ export const UserProfile = ({
                                 height={48}
                               />
                               <div>
-                                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">{record.name}</h4>
+                                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                  {record.name}
+                                </h4>
                               </div>
                             </div>
                             <p className="text-sm text-gray-500 dark:text-zinc-400">

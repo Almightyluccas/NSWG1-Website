@@ -33,11 +33,15 @@ export async function PUT(
     } = {};
 
     if (body.title !== undefined) patch.title = String(body.title);
-    if (body.description !== undefined) patch.description = String(body.description);
+    if (body.description !== undefined)
+      patch.description = String(body.description);
     if (body.mediaType !== undefined || body.type !== undefined) {
       const mt = body.mediaType ?? body.type;
       if (!["image", "video", "youtube"].includes(String(mt))) {
-        return NextResponse.json({ error: "Invalid mediaType" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid mediaType" },
+          { status: 400 }
+        );
       }
       patch.mediaType = mt as "image" | "video" | "youtube";
     }
@@ -55,7 +59,10 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating gallery item:", error);
-    return NextResponse.json({ error: "Failed to update gallery item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update gallery item" },
+      { status: 500 }
+    );
   }
 }
 
@@ -79,6 +86,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting gallery item:", error);
-    return NextResponse.json({ error: "Failed to delete gallery item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete gallery item" },
+      { status: 500 }
+    );
   }
 }

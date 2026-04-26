@@ -9,7 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, UserPlus, ShieldUser, ChevronDown } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Settings,
+  UserPlus,
+  ShieldUser,
+  ChevronDown,
+} from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { UserRole } from "@/types/database";
@@ -74,11 +81,9 @@ export function UserMenu({ onJoinClickAction }: UserMenuProps) {
                 </DropdownMenuItem>
               </Link>
 
-              {[
-                UserRole.admin,
-                UserRole.superAdmin,
-                UserRole.instructor,
-              ].some((role) => session.user.roles.includes(role)) && (
+              {[UserRole.admin, UserRole.superAdmin, UserRole.instructor].some(
+                (role) => session.user.roles.includes(role)
+              ) && (
                 <Link href="/admin" className="w-full">
                   <DropdownMenuItem>
                     <ShieldUser className="mr-2 h-4 w-4" />

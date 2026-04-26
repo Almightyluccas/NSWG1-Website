@@ -179,7 +179,7 @@ export default async function UnitPage({
                       <div className="md:hidden flex items-stretch gap-4 border-l-2 border-accent/40 pl-4 py-2 relative">
                         {/* Connecting dot for mobile */}
                         <div className="absolute left-[-5px] top-6 w-2 h-2 rounded-full bg-accent" />
-                        
+
                         <div
                           className={`flex-1 rounded-sm p-5 border-l-4 transition-all duration-300 ${
                             isLast
@@ -202,22 +202,31 @@ export default async function UnitPage({
 
                       {/* Desktop Layout (Alternating) */}
                       <div className="hidden md:flex items-center justify-center w-full relative">
-                        
                         {/* Left Side Content */}
-                        <div className={`w-1/2 pr-12 flex ${isEven ? 'justify-end' : 'justify-end opacity-0 pointer-events-none'}`}>
+                        <div
+                          className={`w-1/2 pr-12 flex ${isEven ? "justify-end" : "justify-end opacity-0 pointer-events-none"}`}
+                        >
                           {isEven && (
-                            <div className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:-translate-x-2 ${
-                              isLast ? 'bg-accent/5' : 'bg-zinc-900/60'
-                            }`}>
+                            <div
+                              className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:-translate-x-2 ${
+                                isLast ? "bg-accent/5" : "bg-zinc-900/60"
+                              }`}
+                            >
                               {/* Background scanline effect */}
                               <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none" />
-                              
+
                               {/* Content box with tech borders */}
-                              <div className={`relative p-6 border transition-colors duration-300 ${
-                                isLast ? 'border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]' : 'border-zinc-700/60 group-hover:border-accent/40'
-                              }`}
-                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}>
-                                
+                              <div
+                                className={`relative p-6 border transition-colors duration-300 ${
+                                  isLast
+                                    ? "border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]"
+                                    : "border-zinc-700/60 group-hover:border-accent/40"
+                                }`}
+                                style={{
+                                  clipPath:
+                                    "polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)",
+                                }}
+                              >
                                 <div className="flex justify-between items-start mb-2">
                                   <span className="text-accent font-mono text-xs tracking-widest">
                                     [ PHASE {padded} ]
@@ -225,12 +234,18 @@ export default async function UnitPage({
                                   {isLast ? (
                                     <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                                   ) : (
-                                    <span className="text-zinc-600 font-mono text-[10px]">{'>>'}</span>
+                                    <span className="text-zinc-600 font-mono text-[10px]">
+                                      {">>"}
+                                    </span>
                                   )}
                                 </div>
-                                <h4 className={`text-xl font-bold uppercase tracking-wide mt-2 ${
-                                  isLast ? 'text-accent' : 'text-zinc-100 group-hover:text-white'
-                                }`}>
+                                <h4
+                                  className={`text-xl font-bold uppercase tracking-wide mt-2 ${
+                                    isLast
+                                      ? "text-accent"
+                                      : "text-zinc-100 group-hover:text-white"
+                                  }`}
+                                >
                                   {step}
                                 </h4>
                               </div>
@@ -240,34 +255,50 @@ export default async function UnitPage({
 
                         {/* Center Node (Diamond) */}
                         <div className="absolute left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
-                          <div className={`w-8 h-8 rotate-45 border-2 flex items-center justify-center transition-all duration-500 ${
-                            isLast 
-                              ? 'bg-accent border-accent shadow-[0_0_20px_rgba(var(--accent-color),0.5)]' 
-                              : 'bg-zinc-900 border-zinc-500 group-hover:border-accent group-hover:bg-accent/20'
-                          }`}>
-                            <div className={`w-2 h-2 bg-zinc-900 transition-colors duration-500 ${isLast ? 'bg-zinc-950' : 'group-hover:bg-accent'}`} />
+                          <div
+                            className={`w-8 h-8 rotate-45 border-2 flex items-center justify-center transition-all duration-500 ${
+                              isLast
+                                ? "bg-accent border-accent shadow-[0_0_20px_rgba(var(--accent-color),0.5)]"
+                                : "bg-zinc-900 border-zinc-500 group-hover:border-accent group-hover:bg-accent/20"
+                            }`}
+                          >
+                            <div
+                              className={`w-2 h-2 bg-zinc-900 transition-colors duration-500 ${isLast ? "bg-zinc-950" : "group-hover:bg-accent"}`}
+                            />
                           </div>
                           {/* Horizontal connector line to card */}
-                          <div className={`absolute top-1/2 w-12 h-px -z-10 bg-gradient-to-${isEven ? 'l' : 'r'} from-accent/50 to-transparent ${
-                            isEven ? 'right-full' : 'left-full'
-                          }`} />
+                          <div
+                            className={`absolute top-1/2 w-12 h-px -z-10 bg-gradient-to-${isEven ? "l" : "r"} from-accent/50 to-transparent ${
+                              isEven ? "right-full" : "left-full"
+                            }`}
+                          />
                         </div>
 
                         {/* Right Side Content */}
-                        <div className={`w-1/2 pl-12 flex ${!isEven ? 'justify-start' : 'justify-start opacity-0 pointer-events-none'}`}>
+                        <div
+                          className={`w-1/2 pl-12 flex ${!isEven ? "justify-start" : "justify-start opacity-0 pointer-events-none"}`}
+                        >
                           {!isEven && (
-                            <div className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:translate-x-2 ${
-                              isLast ? 'bg-accent/5' : 'bg-zinc-900/60'
-                            }`}>
+                            <div
+                              className={`relative overflow-hidden group w-full max-w-sm transition-all duration-500 hover:translate-x-2 ${
+                                isLast ? "bg-accent/5" : "bg-zinc-900/60"
+                              }`}
+                            >
                               {/* Background scanline effect */}
                               <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-10 pointer-events-none" />
-                              
+
                               {/* Content box with tech borders */}
-                              <div className={`relative p-6 border transition-colors duration-300 ${
-                                isLast ? 'border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]' : 'border-zinc-700/60 group-hover:border-accent/40'
-                              }`}
-                              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}>
-                                
+                              <div
+                                className={`relative p-6 border transition-colors duration-300 ${
+                                  isLast
+                                    ? "border-accent/60 shadow-[0_0_20px_rgba(var(--accent-color),0.15)]"
+                                    : "border-zinc-700/60 group-hover:border-accent/40"
+                                }`}
+                                style={{
+                                  clipPath:
+                                    "polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)",
+                                }}
+                              >
                                 <div className="flex justify-between items-start mb-2">
                                   <span className="text-accent font-mono text-xs tracking-widest">
                                     [ PHASE {padded} ]
@@ -275,19 +306,24 @@ export default async function UnitPage({
                                   {isLast ? (
                                     <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                                   ) : (
-                                    <span className="text-zinc-600 font-mono text-[10px]">{'>>'}</span>
+                                    <span className="text-zinc-600 font-mono text-[10px]">
+                                      {">>"}
+                                    </span>
                                   )}
                                 </div>
-                                <h4 className={`text-xl font-bold uppercase tracking-wide mt-2 ${
-                                  isLast ? 'text-accent' : 'text-zinc-100 group-hover:text-white'
-                                }`}>
+                                <h4
+                                  className={`text-xl font-bold uppercase tracking-wide mt-2 ${
+                                    isLast
+                                      ? "text-accent"
+                                      : "text-zinc-100 group-hover:text-white"
+                                  }`}
+                                >
                                   {step}
                                 </h4>
                               </div>
                             </div>
                           )}
                         </div>
-
                       </div>
                     </div>
                   </FadeIn>
@@ -296,10 +332,10 @@ export default async function UnitPage({
 
               {/* END marker */}
               <FadeIn delay={unit.pipelineSteps.length * 150} direction="up">
-                 <div className="flex justify-center mt-8 relative z-10 hidden md:flex">
+                <div className="flex justify-center mt-8 relative z-10 hidden md:flex">
                   <div className="bg-zinc-950 px-6 py-2 border-x-2 border-accent shadow-[0_0_20px_rgba(var(--accent-color),0.3)] backdrop-blur-sm">
                     <span className="text-accent font-mono text-xs tracking-[0.4em] uppercase font-bold">
-                      OPERATIONAL STATUS ACHIEVED 
+                      OPERATIONAL STATUS ACHIEVED
                     </span>
                   </div>
                 </div>

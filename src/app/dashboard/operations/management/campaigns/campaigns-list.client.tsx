@@ -39,9 +39,11 @@ type Campaign = {
 };
 
 const statusColors: Record<string, string> = {
-  planning: "border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  planning:
+    "border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10",
   active: "border-accent/40 text-accent bg-accent/10",
-  completed: "border-zinc-400/40 text-zinc-500 dark:text-zinc-400 bg-zinc-500/10",
+  completed:
+    "border-zinc-400/40 text-zinc-500 dark:text-zinc-400 bg-zinc-500/10",
   cancelled: "border-red-400/40 text-red-500 dark:text-red-400 bg-red-500/10",
 };
 
@@ -71,7 +73,9 @@ export function CampaignListClient() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/campaigns/${deleteId}`, { method: "DELETE" });
+      const res = await fetch(`/api/campaigns/${deleteId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete campaign");
       setCampaigns((prev) => prev.filter((c) => c.id !== deleteId));
       toast.success("Campaign deleted");
@@ -112,7 +116,9 @@ export function CampaignListClient() {
         </div>
       ) : campaigns.length === 0 ? (
         <div className="py-16 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/30">
-          <p className="text-zinc-400 dark:text-zinc-500 text-sm">No campaigns yet.</p>
+          <p className="text-zinc-400 dark:text-zinc-500 text-sm">
+            No campaigns yet.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -154,7 +160,11 @@ export function CampaignListClient() {
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  onClick={() => router.push(`/dashboard/operations/management/campaigns/${campaign.id}/missions`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/operations/management/campaigns/${campaign.id}/missions`
+                    )
+                  }
                 >
                   Mission Mgmt
                 </Button>
@@ -162,7 +172,11 @@ export function CampaignListClient() {
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  onClick={() => router.push(`/dashboard/operations/management/campaigns/${campaign.id}/campaign`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/operations/management/campaigns/${campaign.id}/campaign`
+                    )
+                  }
                 >
                   <Edit className="h-3.5 w-3.5 mr-1.5" />
                   Campaign Edit
@@ -181,12 +195,16 @@ export function CampaignListClient() {
         </div>
       )}
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this campaign and all its missions. This action cannot be undone.
+              This will permanently delete this campaign and all its missions.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

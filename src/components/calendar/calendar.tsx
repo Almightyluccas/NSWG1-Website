@@ -384,7 +384,12 @@ export function AttendanceCalendar({
   };
 
   const getGroupedRsvps = (
-    rsvps: Array<{ id: string; userId: string; userName: string; status: string }>
+    rsvps: Array<{
+      id: string;
+      userId: string;
+      userName: string;
+      status: string;
+    }>
   ) => {
     const grouped = new Map<
       string,
@@ -469,15 +474,25 @@ export function AttendanceCalendar({
     userAttendance: string | null;
     onRSVP: (status: RSVPStatus) => void;
   }) => {
-    const attendingCount = event.rsvps.filter((r) => r.status === "attending").length;
+    const attendingCount = event.rsvps.filter(
+      (r) => r.status === "attending"
+    ).length;
     const maybeCount = event.rsvps.filter((r) => r.status === "maybe").length;
     const notAttendingCount = event.rsvps.filter(
       (r) => r.status === "not-attending"
     ).length;
-    const presentCount = event.attendance.filter((a) => a.status === "present").length;
-    const absentCount = event.attendance.filter((a) => a.status === "absent").length;
-    const lateCount = event.attendance.filter((a) => a.status === "late").length;
-    const excusedCount = event.attendance.filter((a) => a.status === "excused").length;
+    const presentCount = event.attendance.filter(
+      (a) => a.status === "present"
+    ).length;
+    const absentCount = event.attendance.filter(
+      (a) => a.status === "absent"
+    ).length;
+    const lateCount = event.attendance.filter(
+      (a) => a.status === "late"
+    ).length;
+    const excusedCount = event.attendance.filter(
+      (a) => a.status === "excused"
+    ).length;
     const groupedRsvps = getGroupedRsvps(event.rsvps);
     const eventIcon =
       variant === "mission" ? (
@@ -520,7 +535,8 @@ export function AttendanceCalendar({
           </div>
           {event.instructor && (
             <div className="sm:col-span-2">
-              <span className="font-medium">Instructor:</span> {event.instructor}
+              <span className="font-medium">Instructor:</span>{" "}
+              {event.instructor}
             </div>
           )}
           {event.max_personnel && (
@@ -540,7 +556,11 @@ export function AttendanceCalendar({
                 size="sm"
                 variant={userRSVP === "attending" ? "default" : "outline"}
                 onClick={() => onRSVP("attending")}
-                className={userRSVP === "attending" ? "bg-green-500 hover:bg-green-600" : ""}
+                className={
+                  userRSVP === "attending"
+                    ? "bg-green-500 hover:bg-green-600"
+                    : ""
+                }
               >
                 <CheckCircle className="mr-1 h-3 w-3" />
                 Attending
@@ -549,7 +569,11 @@ export function AttendanceCalendar({
                 size="sm"
                 variant={userRSVP === "maybe" ? "default" : "outline"}
                 onClick={() => onRSVP("maybe")}
-                className={userRSVP === "maybe" ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                className={
+                  userRSVP === "maybe"
+                    ? "bg-yellow-500 hover:bg-yellow-600"
+                    : ""
+                }
               >
                 <AlertCircle className="mr-1 h-3 w-3" />
                 Maybe
@@ -559,7 +583,9 @@ export function AttendanceCalendar({
                 variant={userRSVP === "not-attending" ? "default" : "outline"}
                 onClick={() => onRSVP("not-attending")}
                 className={
-                  userRSVP === "not-attending" ? "bg-red-500 hover:bg-red-600" : ""
+                  userRSVP === "not-attending"
+                    ? "bg-red-500 hover:bg-red-600"
+                    : ""
                 }
               >
                 <XCircle className="mr-1 h-3 w-3" />
@@ -616,7 +642,10 @@ export function AttendanceCalendar({
             <h5 className="text-sm font-medium">RSVPs by Group</h5>
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
               {groupedRsvps.map(([unitLabel, unitRsvps]) => (
-                <div key={`${event.id}-${unitLabel}`} className="rounded border p-2">
+                <div
+                  key={`${event.id}-${unitLabel}`}
+                  className="rounded border p-2"
+                >
                   <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                     {unitLabel}
                   </p>
@@ -626,12 +655,20 @@ export function AttendanceCalendar({
                         (a) => a.userId === rsvp.userId
                       );
                       return (
-                        <div key={rsvp.id} className="flex items-center justify-between gap-2">
-                          <span className="truncate text-xs">{rsvp.userName}</span>
+                        <div
+                          key={rsvp.id}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <span className="truncate text-xs">
+                            {rsvp.userName}
+                          </span>
                           <div className="flex shrink-0 items-center gap-1">
                             <Badge
                               variant="outline"
-                              className={cn("text-[10px]", getRSVPBadgeColor(rsvp.status))}
+                              className={cn(
+                                "text-[10px]",
+                                getRSVPBadgeColor(rsvp.status)
+                              )}
                             >
                               {rsvp.status.replace("-", " ")}
                             </Badge>
@@ -640,7 +677,9 @@ export function AttendanceCalendar({
                                 variant="outline"
                                 className={cn(
                                   "text-[10px]",
-                                  getAttendanceBadgeColor(attendanceRecord.status)
+                                  getAttendanceBadgeColor(
+                                    attendanceRecord.status
+                                  )
                                 )}
                               >
                                 {attendanceRecord.status}
@@ -669,7 +708,10 @@ export function AttendanceCalendar({
                   <span className="truncate">{attendance.userName}</span>
                   <Badge
                     variant="outline"
-                    className={cn("text-[10px]", getAttendanceBadgeColor(attendance.status))}
+                    className={cn(
+                      "text-[10px]",
+                      getAttendanceBadgeColor(attendance.status)
+                    )}
                   >
                     {attendance.status}
                   </Badge>
@@ -684,7 +726,10 @@ export function AttendanceCalendar({
         {userRSVP && (
           <div className="text-sm">
             <span className="font-medium">Your RSVP:</span>{" "}
-            <Badge variant="outline" className={cn(getRSVPBadgeColor(userRSVP))}>
+            <Badge
+              variant="outline"
+              className={cn(getRSVPBadgeColor(userRSVP))}
+            >
               {userRSVP.replace("-", " ")}
             </Badge>
           </div>
@@ -693,7 +738,10 @@ export function AttendanceCalendar({
         {userAttendance && (
           <div className="text-sm">
             <span className="font-medium">Your Attendance:</span>{" "}
-            <Badge variant="outline" className={cn(getAttendanceBadgeColor(userAttendance))}>
+            <Badge
+              variant="outline"
+              className={cn(getAttendanceBadgeColor(userAttendance))}
+            >
               {userAttendance}
             </Badge>
           </div>
@@ -860,7 +908,8 @@ export function AttendanceCalendar({
                                 isPast,
                                 userRSVP,
                                 userAttendance,
-                                onRSVP: (status) => handleMissionRSVP(mission, status),
+                                onRSVP: (status) =>
+                                  handleMissionRSVP(mission, status),
                               })}
                             </DialogContent>
                           </Dialog>
@@ -889,7 +938,8 @@ export function AttendanceCalendar({
                                 isPast,
                                 userRSVP,
                                 userAttendance,
-                                onRSVP: (status) => handleMissionRSVP(mission, status),
+                                onRSVP: (status) =>
+                                  handleMissionRSVP(mission, status),
                               })}
                             </PopoverContent>
                           </Popover>
@@ -932,7 +982,8 @@ export function AttendanceCalendar({
                                 isPast,
                                 userRSVP,
                                 userAttendance,
-                                onRSVP: (status) => handleTrainingRSVP(training, status),
+                                onRSVP: (status) =>
+                                  handleTrainingRSVP(training, status),
                               })}
                             </DialogContent>
                           </Dialog>
@@ -961,7 +1012,8 @@ export function AttendanceCalendar({
                                 isPast,
                                 userRSVP,
                                 userAttendance,
-                                onRSVP: (status) => handleTrainingRSVP(training, status),
+                                onRSVP: (status) =>
+                                  handleTrainingRSVP(training, status),
                               })}
                             </PopoverContent>
                           </Popover>

@@ -18,7 +18,5 @@ export function isLightModeEligibleRole(
   roles: UserRole[] | string[] | undefined
 ): boolean {
   if (!roles?.length) return false;
-  return roles.some((r) =>
-    LIGHT_MODE_ELIGIBLE_ROLES.includes(r as UserRole)
-  );
+  return roles.some((r) => LIGHT_MODE_ELIGIBLE_ROLES.includes(r as UserRole));
 }

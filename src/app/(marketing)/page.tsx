@@ -21,7 +21,8 @@ export default async function Home() {
   if (session?.user?.roles?.includes(UserRole.member)) {
     redirect("/dashboard");
   }
-  const defaultImage = "https://objectstorage.us-ashburn-1.oraclecloud.com/p/iLmoMrwA0_K72E-4Zhpr0pHNkbV06LFu10NzW8ZrDKj7gUS5by1WoD8eZpCSP4Xe/n/id8volxantwo/b/nswg1-bucket/o/backgrounds/home-backgroundArma3_x64_2025-12-06_12-24-53_6102.png";
+  const defaultImage =
+    "https://objectstorage.us-ashburn-1.oraclecloud.com/p/iLmoMrwA0_K72E-4Zhpr0pHNkbV06LFu10NzW8ZrDKj7gUS5by1WoD8eZpCSP4Xe/n/id8volxantwo/b/nswg1-bucket/o/backgrounds/home-backgroundArma3_x64_2025-12-06_12-24-53_6102.png";
   const heroImageSrc = defaultImage;
   return (
     <main className="min-h-screen bg-zinc-900">
@@ -43,7 +44,13 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-zinc-900"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/10 to-transparent"></div>
           {/* Subtle radial vignette */}
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 50%, transparent 50%, rgba(0,0,0,0.4) 100%)' }}></div>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at 30% 50%, transparent 50%, rgba(0,0,0,0.4) 100%)",
+            }}
+          ></div>
         </div>
 
         <div className="container mx-auto px-4 z-10 pt-20">
@@ -54,7 +61,10 @@ export default async function Home() {
                 <div className="hidden md:block flex-shrink-0">
                   <div
                     className="relative w-32 h-32 lg:w-40 lg:h-40"
-                    style={{ filter: 'drop-shadow(0 0 20px rgba(var(--accent-color), 0.2))' }}
+                    style={{
+                      filter:
+                        "drop-shadow(0 0 20px rgba(var(--accent-color), 0.2))",
+                    }}
                   >
                     <Image
                       src="/images/nswg1-emblem.png"
@@ -68,7 +78,9 @@ export default async function Home() {
 
                 {/* Hero Content */}
                 <div className="flex-1">
-                  <p className="section-label mb-4">{"Naval Special Warfare"}</p>
+                  <p className="section-label mb-4">
+                    {"Naval Special Warfare"}
+                  </p>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-2 leading-[1.1] text-white uppercase tracking-wide">
                     <span className="text-accent">NAVAL</span> SPECIAL
                     <br />
@@ -110,7 +122,9 @@ export default async function Home() {
 
         {/* Bottom scroll indicator */}
         <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
-          <span className="text-xs text-zinc-500 uppercase tracking-widest">Scroll</span>
+          <span className="text-xs text-zinc-500 uppercase tracking-widest">
+            Scroll
+          </span>
           <div className="animate-bounce">
             <ChevronRight className="h-6 w-6 text-accent/70 rotate-90" />
           </div>
@@ -178,13 +192,13 @@ export default async function Home() {
                 <div className="h-1 w-24 bg-accent mb-8"></div>
                 <p className="text-lg text-zinc-300 mb-6 leading-relaxed">
                   Naval Special Warfare Group One (NSWG-1) conducts
-                  realism-focused operations emphasizing disciplined
-                  small-unit tactics and precise mission planning.
+                  realism-focused operations emphasizing disciplined small-unit
+                  tactics and precise mission planning.
                 </p>
                 <p className="text-lg text-zinc-300 leading-relaxed">
                   The unit operates with coordinated execution, controlled
-                  communications, and strict adherence to operational standards across all mission sets.
-
+                  communications, and strict adherence to operational standards
+                  across all mission sets.
                 </p>
               </div>
             </FadeIn>
@@ -192,7 +206,9 @@ export default async function Home() {
             {/* Video Floating Box */}
             <FadeIn delay={200}>
               <div className="h-full bg-zinc-900/70 backdrop-blur-md border-2 border-accent/60 rounded-lg p-4 shadow-[0_0_30px_rgba(var(--accent-color),0.08)] hover:shadow-[0_0_40px_rgba(var(--accent-color),0.15)] transition-all duration-500 flex flex-col">
-                <p className="section-label mb-3 px-2">{"Operations Overview"}</p>
+                <p className="section-label mb-3 px-2">
+                  {"Operations Overview"}
+                </p>
                 <div className="flex-1">
                   <YouTubePlayer
                     videoId="LyKKQ4Ocowg"

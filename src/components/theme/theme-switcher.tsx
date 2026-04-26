@@ -101,7 +101,9 @@ export function DashboardThemeToolbar({
             type="button"
             onClick={toggleMode}
             className={iconBtnClass}
-            title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={
+              mode === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             {mode === "dark" ? (
               <Sun className="h-4 w-4" aria-hidden />

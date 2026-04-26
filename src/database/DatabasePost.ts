@@ -486,13 +486,7 @@ export class DatabasePost {
     const result = await this.client.query<any>(
       `INSERT INTO perscom_notifications (target_perscom_id, event, type, label, message)
        VALUES (?, ?, ?, ?, ?)`,
-      [
-        data.targetPerscomId,
-        data.event,
-        data.type,
-        data.label,
-        data.message,
-      ]
+      [data.targetPerscomId, data.event, data.type, data.label, data.message]
     );
     return result.insertId;
   }
@@ -574,7 +568,12 @@ export class DatabasePost {
   }
 
   async bulkDirectives(
-    data: { label: string; description?: string; assignedBy: string; dueDate?: string },
+    data: {
+      label: string;
+      description?: string;
+      assignedBy: string;
+      dueDate?: string;
+    },
     userIds: string[]
   ): Promise<void> {
     const values = userIds.map(() => "(?, ?, ?, ?, ?)").join(", ");
@@ -631,7 +630,10 @@ export class DatabasePost {
     return result.insertId;
   }
 
-  async attachDocumentToMission(docId: number, missionId: string): Promise<void> {
+  async attachDocumentToMission(
+    docId: number,
+    missionId: string
+  ): Promise<void> {
     await this.client.query(
       `INSERT IGNORE INTO operation_document_missions (document_id, mission_id) VALUES (?, ?)`,
       [docId, missionId]
@@ -670,7 +672,12 @@ export class DatabasePost {
       ]
     );
     const id = result.insertId as number;
-    await this.replaceDocumentScopes(id, data.tags || [], data.allowedRoles || [], data.allowedUsers || []);
+    await this.replaceDocumentScopes(
+      id,
+      data.tags || [],
+      data.allowedRoles || [],
+      data.allowedUsers || []
+    );
     return id;
   }
 
@@ -680,54 +687,84 @@ export class DatabasePost {
     allowedRoles: string[],
     allowedUsers: string[]
   ): Promise<void> {
-    await this.client.query(`DELETE FROM document_tags WHERE document_id = ?`, [documentId]);
-    await this.client.query(`DELETE FROM document_allowed_roles WHERE document_id = ?`, [documentId]);
-    await this.client.query(`DELETE FROM document_allowed_users WHERE document_id = ?`, [documentId]);
+    await this.client.query(`DELETE FROM document_tags WHERE document_id = ?`, [
+      documentId,
+    ]);
+    await this.client.query(
+      `DELETE FROM document_allowed_roles WHERE document_id = ?`,
+      [documentId]
+    );
+    await this.client.query(
+      `DELETE FROM document_allowed_users WHERE document_id = ?`,
+      [documentId]
+    );
 
     for (const tag of tags) {
       const clean = tag.trim();
       if (!clean) continue;
-      await this.client.query(`INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`, [documentId, clean]);
+      await this.client.query(
+        `INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`,
+        [documentId, clean]
+      );
     }
     for (const role of allowedRoles) {
       const clean = role.trim();
       if (!clean) continue;
-      await this.client.query(`INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`, [documentId, clean]);
+      await this.client.query(
+        `INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`,
+        [documentId, clean]
+      );
     }
     for (const userId of allowedUsers) {
       const clean = userId.trim();
       if (!clean) continue;
-      await this.client.query(`INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`, [documentId, clean]);
+      await this.client.query(
+        `INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`,
+        [documentId, clean]
+      );
     }
   }
 
-  async attachDocumentToTraining(trainingId: string, documentId: number): Promise<void> {
+  async attachDocumentToTraining(
+    trainingId: string,
+    documentId: number
+  ): Promise<void> {
     await this.client.query(
       `INSERT IGNORE INTO training_documents (training_id, document_id) VALUES (?, ?)`,
       [trainingId, documentId]
     );
   }
 
-  async replaceTrainingAllowlist(trainingId: string, roles: string[], userIds: string[]): Promise<void> {
-    await this.client.query(`DELETE FROM training_allowed_roles WHERE training_id = ?`, [trainingId]);
-    await this.client.query(`DELETE FROM training_allowed_users WHERE training_id = ?`, [trainingId]);
+  async replaceTrainingAllowlist(
+    trainingId: string,
+    roles: string[],
+    userIds: string[]
+  ): Promise<void> {
+    await this.client.query(
+      `DELETE FROM training_allowed_roles WHERE training_id = ?`,
+      [trainingId]
+    );
+    await this.client.query(
+      `DELETE FROM training_allowed_users WHERE training_id = ?`,
+      [trainingId]
+    );
 
     for (const role of roles) {
       const clean = role.trim();
       if (!clean) continue;
-      await this.client.query(`INSERT INTO training_allowed_roles (training_id, role) VALUES (?, ?)`, [
-        trainingId,
-        clean,
-      ]);
+      await this.client.query(
+        `INSERT INTO training_allowed_roles (training_id, role) VALUES (?, ?)`,
+        [trainingId, clean]
+      );
     }
 
     for (const userId of userIds) {
       const clean = userId.trim();
       if (!clean) continue;
-      await this.client.query(`INSERT INTO training_allowed_users (training_id, user_id) VALUES (?, ?)`, [
-        trainingId,
-        clean,
-      ]);
+      await this.client.query(
+        `INSERT INTO training_allowed_users (training_id, user_id) VALUES (?, ?)`,
+        [trainingId, clean]
+      );
     }
   }
 
@@ -826,7 +863,14 @@ export class DatabasePost {
       await this.client.query(
         `INSERT INTO operation_intel (campaign_id, mission_id, type, title, description, image_url, minimum_role, created_by)
          VALUES (?, ?, ?, ?, ?, NULL, 'member', ?)`,
-        [campaignId, missionId, intelType, title, description || null, createdBy]
+        [
+          campaignId,
+          missionId,
+          intelType,
+          title,
+          description || null,
+          createdBy,
+        ]
       );
     }
   }
@@ -866,7 +910,10 @@ export class DatabasePost {
     for (const unit of data.units) {
       const u = String(unit).trim();
       if (!u) continue;
-      await this.client.query(`INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`, [id, u]);
+      await this.client.query(
+        `INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`,
+        [id, u]
+      );
     }
     return id;
   }

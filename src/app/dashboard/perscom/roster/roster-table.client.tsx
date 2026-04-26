@@ -172,9 +172,12 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
   const getStatusColor = (status: string) => {
     const lower = status.toLowerCase();
-    if (lower === "active duty") return "bg-green-500/20 text-green-400 border-green-500/30";
-    if (lower.includes("leave")) return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-    if (lower.includes("discharged") || lower.includes("inactive")) return "bg-red-500/20 text-red-400 border-red-500/30";
+    if (lower === "active duty")
+      return "bg-green-500/20 text-green-400 border-green-500/30";
+    if (lower.includes("leave"))
+      return "bg-amber-500/20 text-amber-400 border-amber-500/30";
+    if (lower.includes("discharged") || lower.includes("inactive"))
+      return "bg-red-500/20 text-red-400 border-red-500/30";
     return "bg-zinc-700/30 text-zinc-400 border-zinc-600/30";
   };
 

@@ -98,7 +98,11 @@ export async function POST() {
           continue;
         }
 
-        const status = getMissionStatusFromDate(finalDate, recurring.time, "scheduled");
+        const status = getMissionStatusFromDate(
+          finalDate,
+          recurring.time,
+          "scheduled"
+        );
         const trainingId = `training-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         await database.post.trainingRecord({
@@ -109,7 +113,8 @@ export async function POST() {
           time: recurring.time,
           location: recurring.location,
           instructor: recurring.instructor,
-          maxPersonnel: recurring.max_personnel !== null ? recurring.max_personnel : 40,
+          maxPersonnel:
+            recurring.max_personnel !== null ? recurring.max_personnel : 40,
           status,
           createdBy: "Auto-Scheduler",
         });

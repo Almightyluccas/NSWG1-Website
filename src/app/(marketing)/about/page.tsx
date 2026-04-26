@@ -284,4 +284,3 @@ function ValueCard({ icon, title, description, delay = 0 }: ValueCardProps) {
     </FadeIn>
   );
 }
-

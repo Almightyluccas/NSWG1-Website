@@ -43,9 +43,9 @@ const ThemeContext = createContext<ThemeContextType>({
   themeUserCustomizationEnabled: THEME_USER_CUSTOMIZATION_ENABLED,
 });
 
-const DashboardRouteContext = createContext<
-  ((allows: boolean) => void) | null
->(null);
+const DashboardRouteContext = createContext<((allows: boolean) => void) | null>(
+  null
+);
 
 export const useTheme = () => useContext(ThemeContext);
 
@@ -121,10 +121,7 @@ export function ThemeProvider({
     const pref = session?.user?.preferences?.mode;
     if (pref === "light" || pref === "dark") {
       setMode(pref);
-      if (
-        THEME_USER_CUSTOMIZATION_ENABLED &&
-        typeof window !== "undefined"
-      ) {
+      if (THEME_USER_CUSTOMIZATION_ENABLED && typeof window !== "undefined") {
         localStorage.setItem("theme-mode", pref);
       }
       return;
@@ -135,9 +132,7 @@ export function ThemeProvider({
     }
 
     const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("theme-mode")
-        : null;
+      typeof window !== "undefined" ? localStorage.getItem("theme-mode") : null;
     if (stored === "light" || stored === "dark") {
       setMode(stored);
     }

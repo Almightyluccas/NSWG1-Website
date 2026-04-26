@@ -67,7 +67,10 @@ export function DashboardHeader() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(event.target as Node)
+      ) {
         setIsAlertsOpen(false);
       }
     }
@@ -109,8 +112,12 @@ export function DashboardHeader() {
           {isAlertsOpen && (
             <div className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
               <div className="border-b border-zinc-100 dark:border-zinc-800/80 p-3 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-between">
-                <span className="text-[10px] font-black tracking-widest uppercase text-zinc-700 dark:text-zinc-300">Active Alerts</span>
-                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500">{visibleAlerts.length} ALERTS</span>
+                <span className="text-[10px] font-black tracking-widest uppercase text-zinc-700 dark:text-zinc-300">
+                  Active Alerts
+                </span>
+                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500">
+                  {visibleAlerts.length} ALERTS
+                </span>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {visibleAlerts.length === 0 ? (
@@ -124,10 +131,15 @@ export function DashboardHeader() {
                         key={alertKey(alert)}
                         className="p-3 border-b border-zinc-100 dark:border-zinc-800/40 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 relative group transition-colors text-left flex justify-between items-start gap-2"
                       >
-                        <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${
-                          alert.type === "priority" ? "bg-red-500" :
-                          alert.type === "warning" ? "bg-amber-500" : "bg-accent"
-                        }`} />
+                        <div
+                          className={`absolute left-0 top-0 bottom-0 w-[3px] ${
+                            alert.type === "priority"
+                              ? "bg-red-500"
+                              : alert.type === "warning"
+                                ? "bg-amber-500"
+                                : "bg-accent"
+                          }`}
+                        />
                         <div className="pl-3 flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1.5">
                             {alert.type === "priority" ? (
@@ -137,10 +149,15 @@ export function DashboardHeader() {
                             ) : (
                               <Info className="h-3 w-3 text-accent" />
                             )}
-                            <span className={`text-[9px] font-black uppercase tracking-widest ${
-                              alert.type === "priority" ? "text-red-400" :
-                              alert.type === "warning" ? "text-amber-400" : "text-accent"
-                            }`}>
+                            <span
+                              className={`text-[9px] font-black uppercase tracking-widest ${
+                                alert.type === "priority"
+                                  ? "text-red-400"
+                                  : alert.type === "warning"
+                                    ? "text-amber-400"
+                                    : "text-accent"
+                              }`}
+                            >
                               {alert.label}
                             </span>
                           </div>

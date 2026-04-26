@@ -42,7 +42,7 @@ function resolveMimeType(filePath: string): string {
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ path: string[] }> },
+  context: { params: Promise<{ path: string[] }> }
 ) {
   // Deprecated endpoint retained for backwards compatibility with legacy links.
   // New document records should use /api/documents/[id]/download.
@@ -159,7 +159,7 @@ export async function GET(
 
 export async function HEAD(
   request: Request,
-  context: { params: Promise<{ path: string[] }> },
+  context: { params: Promise<{ path: string[] }> }
 ) {
   const response = await GET(request, context);
   if (!response.ok) {

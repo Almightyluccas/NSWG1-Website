@@ -90,12 +90,12 @@ export class DatabasePut {
 
   async userPerscomId(id: string, perscomId: number): Promise<void> {
     await this.client.query(
-        `
+      `
             UPDATE users
             SET perscom_id = ?
             WHERE id = ?
         `,
-        [perscomId, id]
+      [perscomId, id]
     );
   }
   async userProfilePicture(s3Key: string, userId: string): Promise<void> {
@@ -366,10 +366,10 @@ export class DatabasePut {
   // ── Alerts ──
 
   async alertStatus(alertId: number, isActive: boolean): Promise<void> {
-    await this.client.query(
-      `UPDATE alerts SET is_active = ? WHERE id = ?`,
-      [isActive, alertId]
-    );
+    await this.client.query(`UPDATE alerts SET is_active = ? WHERE id = ?`, [
+      isActive,
+      alertId,
+    ]);
   }
 
   // ── SSE Items ──
@@ -425,7 +425,10 @@ export class DatabasePut {
     updates.push("updated_at = NOW()");
     values.push(sseId);
 
-    await this.client.query(`UPDATE sse_items SET ${updates.join(", ")} WHERE id = ?`, values);
+    await this.client.query(
+      `UPDATE sse_items SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
   }
 
   // ── Directives ──
@@ -605,34 +608,53 @@ export class DatabasePut {
     if (updates.length > 0) {
       updates.push("updated_at = NOW()");
       values.push(documentId);
-      await this.client.query(`UPDATE documents SET ${updates.join(", ")} WHERE id = ?`, values);
+      await this.client.query(
+        `UPDATE documents SET ${updates.join(", ")} WHERE id = ?`,
+        values
+      );
     }
 
-    if (data.tags !== undefined || data.allowedRoles !== undefined || data.allowedUsers !== undefined) {
-      await this.client.query(`DELETE FROM document_tags WHERE document_id = ?`, [documentId]);
-      await this.client.query(`DELETE FROM document_allowed_roles WHERE document_id = ?`, [documentId]);
-      await this.client.query(`DELETE FROM document_allowed_users WHERE document_id = ?`, [documentId]);
+    if (
+      data.tags !== undefined ||
+      data.allowedRoles !== undefined ||
+      data.allowedUsers !== undefined
+    ) {
+      await this.client.query(
+        `DELETE FROM document_tags WHERE document_id = ?`,
+        [documentId]
+      );
+      await this.client.query(
+        `DELETE FROM document_allowed_roles WHERE document_id = ?`,
+        [documentId]
+      );
+      await this.client.query(
+        `DELETE FROM document_allowed_users WHERE document_id = ?`,
+        [documentId]
+      );
 
       for (const tag of data.tags || []) {
         const clean = tag.trim();
         if (!clean) continue;
-        await this.client.query(`INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`, [documentId, clean]);
+        await this.client.query(
+          `INSERT INTO document_tags (document_id, tag) VALUES (?, ?)`,
+          [documentId, clean]
+        );
       }
       for (const role of data.allowedRoles || []) {
         const clean = role.trim();
         if (!clean) continue;
-        await this.client.query(`INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`, [
-          documentId,
-          clean,
-        ]);
+        await this.client.query(
+          `INSERT INTO document_allowed_roles (document_id, role) VALUES (?, ?)`,
+          [documentId, clean]
+        );
       }
       for (const userId of data.allowedUsers || []) {
         const clean = userId.trim();
         if (!clean) continue;
-        await this.client.query(`INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`, [
-          documentId,
-          clean,
-        ]);
+        await this.client.query(
+          `INSERT INTO document_allowed_users (document_id, user_id) VALUES (?, ?)`,
+          [documentId, clean]
+        );
       }
     }
   }
@@ -685,26 +707,35 @@ export class DatabasePut {
     }
 
     if (data.units !== undefined) {
-      await this.client.query(`DELETE FROM gallery_media_units WHERE media_id = ?`, [mediaId]);
+      await this.client.query(
+        `DELETE FROM gallery_media_units WHERE media_id = ?`,
+        [mediaId]
+      );
       for (const unit of data.units) {
         const u = String(unit).trim();
         if (!u) continue;
-        await this.client.query(`INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`, [
-          mediaId,
-          u,
-        ]);
+        await this.client.query(
+          `INSERT INTO gallery_media_units (media_id, unit) VALUES (?, ?)`,
+          [mediaId, u]
+        );
       }
     }
 
     if (updates.length > 0) {
       values.push(mediaId);
-      await this.client.query(`UPDATE gallery_media SET ${updates.join(", ")} WHERE id = ?`, values);
+      await this.client.query(
+        `UPDATE gallery_media SET ${updates.join(", ")} WHERE id = ?`,
+        values
+      );
     }
   }
 
   async galleryMediaOrder(orderedIds: number[]): Promise<void> {
     for (let i = 0; i < orderedIds.length; i++) {
-      await this.client.query(`UPDATE gallery_media SET display_order = ? WHERE id = ?`, [i, orderedIds[i]]);
+      await this.client.query(
+        `UPDATE gallery_media SET display_order = ? WHERE id = ?`,
+        [i, orderedIds[i]]
+      );
     }
   }
 

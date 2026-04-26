@@ -39,7 +39,10 @@ export async function GET(
 
   const key = String(row.file_key ?? "");
   if (!key) {
-    return NextResponse.json({ error: "Document key missing" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Document key missing" },
+      { status: 400 }
+    );
   }
 
   const url = await objectStorageService.getSignedUrl(key);

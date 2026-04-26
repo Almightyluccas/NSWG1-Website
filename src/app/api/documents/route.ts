@@ -43,9 +43,15 @@ export async function GET(request: NextRequest) {
 
     const search = request.nextUrl.searchParams.get("search") || undefined;
     const unit = request.nextUrl.searchParams.get("unit") || undefined;
-    const classification = request.nextUrl.searchParams.get("classification") || undefined;
+    const classification =
+      request.nextUrl.searchParams.get("classification") || undefined;
     const tag = request.nextUrl.searchParams.get("tag") || undefined;
-    const rows = await database.get.documents({ search, unit, classification, tag });
+    const rows = await database.get.documents({
+      search,
+      unit,
+      classification,
+      tag,
+    });
     const mapped = await Promise.all(rows.map(mapDocument));
     const filtered = mapped.filter((doc) =>
       canAccessDocument(
@@ -60,7 +66,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(filtered);
   } catch (error) {
     console.error("Failed to list documents:", error);
-    return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load documents" },
+      { status: 500 }
+    );
   }
 }
 
@@ -76,7 +85,10 @@ export async function POST(request: NextRequest) {
     const fileKey = String(body.fileKey ?? "").trim();
     const fileType = String(body.fileType ?? "").trim();
     if (!name || !fileKey || !fileType) {
-      return NextResponse.json({ error: "name, fileKey, and fileType are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "name, fileKey, and fileType are required" },
+        { status: 400 }
+      );
     }
 
     const id = await database.post.document({
@@ -91,8 +103,12 @@ export async function POST(request: NextRequest) {
       minimumRole: String(body.minimumRole ?? UserRole.member),
       uploadedBy: session.user.id,
       tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
-      allowedRoles: Array.isArray(body.allowedRoles) ? body.allowedRoles.map(String) : [],
-      allowedUsers: Array.isArray(body.allowedUsers) ? body.allowedUsers.map(String) : [],
+      allowedRoles: Array.isArray(body.allowedRoles)
+        ? body.allowedRoles.map(String)
+        : [],
+      allowedUsers: Array.isArray(body.allowedUsers)
+        ? body.allowedUsers.map(String)
+        : [],
     });
 
     const row = await database.get.documentById(id);
@@ -100,6 +116,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, item }, { status: 201 });
   } catch (error) {
     console.error("Failed to create document:", error);
-    return NextResponse.json({ error: "Failed to create document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create document" },
+      { status: 500 }
+    );
   }
 }

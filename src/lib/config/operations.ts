@@ -97,8 +97,9 @@ export const OP_STATUSES: OpStatusConfig[] = [
   },
 ];
 
-export const OP_STATUS_MAP: Record<string, OpStatusConfig> =
-  Object.fromEntries(OP_STATUSES.map((s) => [s.key, s]));
+export const OP_STATUS_MAP: Record<string, OpStatusConfig> = Object.fromEntries(
+  OP_STATUSES.map((s) => [s.key, s])
+);
 
 export function getOpStatus(key: string): OpStatusConfig {
   return OP_STATUS_MAP[key] ?? OP_STATUSES[0];
@@ -109,12 +110,48 @@ export function getOpStatus(key: string): OpStatusConfig {
 // ─────────────────────────────────────────────────────────
 
 export const SSE_CATEGORIES: SseCategoryConfig[] = [
-  { key: "DOCUMENT", label: "DOCUMENT", iconName: "FileText", iconColor: "text-emerald-400", sortOrder: 0 },
-  { key: "MEDIA", label: "MEDIA", iconName: "Terminal", iconColor: "text-cyan-400", sortOrder: 1 },
-  { key: "WEAPONS", label: "WEAPONS", iconName: "Target", iconColor: "text-amber-400", sortOrder: 2 },
-  { key: "ELECTRONICS", label: "ELECTRONICS", iconName: "Zap", iconColor: "text-purple-400", sortOrder: 3 },
-  { key: "BIOMETRICS", label: "BIOMETRICS", iconName: "Fingerprint", iconColor: "text-blue-400", sortOrder: 4 },
-  { key: "OTHER", label: "OTHER", iconName: "Box", iconColor: "text-zinc-400", sortOrder: 5 },
+  {
+    key: "DOCUMENT",
+    label: "DOCUMENT",
+    iconName: "FileText",
+    iconColor: "text-emerald-400",
+    sortOrder: 0,
+  },
+  {
+    key: "MEDIA",
+    label: "MEDIA",
+    iconName: "Terminal",
+    iconColor: "text-cyan-400",
+    sortOrder: 1,
+  },
+  {
+    key: "WEAPONS",
+    label: "WEAPONS",
+    iconName: "Target",
+    iconColor: "text-amber-400",
+    sortOrder: 2,
+  },
+  {
+    key: "ELECTRONICS",
+    label: "ELECTRONICS",
+    iconName: "Zap",
+    iconColor: "text-purple-400",
+    sortOrder: 3,
+  },
+  {
+    key: "BIOMETRICS",
+    label: "BIOMETRICS",
+    iconName: "Fingerprint",
+    iconColor: "text-blue-400",
+    sortOrder: 4,
+  },
+  {
+    key: "OTHER",
+    label: "OTHER",
+    iconName: "Box",
+    iconColor: "text-zinc-400",
+    sortOrder: 5,
+  },
 ];
 
 export const SSE_CATEGORY_MAP: Record<string, SseCategoryConfig> =
@@ -125,10 +162,30 @@ export const SSE_CATEGORY_MAP: Record<string, SseCategoryConfig> =
 // ─────────────────────────────────────────────────────────
 
 export const SSE_STATUSES: SseStatusConfig[] = [
-  { key: "LOGGED", label: "LOGGED / PENDING", text: "text-zinc-300", sortOrder: 0 },
-  { key: "ANALYZING", label: "ANALYSIS IN PROGRESS", text: "text-amber-400", sortOrder: 1 },
-  { key: "RELEASED", label: "CLEARED / RELEASED", text: "text-emerald-400", sortOrder: 2 },
-  { key: "LOCKED", label: "LOCKED / SECURED", text: "text-red-400", sortOrder: 3 },
+  {
+    key: "LOGGED",
+    label: "LOGGED / PENDING",
+    text: "text-zinc-300",
+    sortOrder: 0,
+  },
+  {
+    key: "ANALYZING",
+    label: "ANALYSIS IN PROGRESS",
+    text: "text-amber-400",
+    sortOrder: 1,
+  },
+  {
+    key: "RELEASED",
+    label: "CLEARED / RELEASED",
+    text: "text-emerald-400",
+    sortOrder: 2,
+  },
+  {
+    key: "LOCKED",
+    label: "LOCKED / SECURED",
+    text: "text-red-400",
+    sortOrder: 3,
+  },
 ];
 
 export const SSE_STATUS_MAP: Record<string, SseStatusConfig> =
@@ -158,7 +215,7 @@ export function getRedactedName(
   viewerClearance: string
 ): string {
   if (person.name === "[REDACTED]") return "██████████";
-  
+
   // Either we use the new minimum_role mapping or the old minClearance
   const required = person.minimum_role || person.minClearance || "LEVEL_1";
   if (hasMinClearance(viewerClearance, required)) return person.name;

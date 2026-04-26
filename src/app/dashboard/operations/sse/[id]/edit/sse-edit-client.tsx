@@ -32,7 +32,9 @@ export function SseEditClient({ id }: { id: string }) {
           type: String(row.type ?? ""),
           classification: String(row.classification ?? ""),
           status: String(row.status ?? ""),
-          collectedDate: row.collected_date ? String(row.collected_date).slice(0, 10) : "",
+          collectedDate: row.collected_date
+            ? String(row.collected_date).slice(0, 10)
+            : "",
           description: String(row.description ?? ""),
         });
       }
@@ -58,18 +60,51 @@ export function SseEditClient({ id }: { id: string }) {
   return (
     <form className="max-w-3xl space-y-4" onSubmit={submit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" />
-        <Input value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} placeholder="Type" />
-        <Input value={form.classification} onChange={(e) => setForm((p) => ({ ...p, classification: e.target.value }))} placeholder="Classification" />
-        <Input value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} placeholder="Status" />
-        <Input type="date" value={form.collectedDate} onChange={(e) => setForm((p) => ({ ...p, collectedDate: e.target.value }))} />
+        <Input
+          value={form.title}
+          onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+          placeholder="Title"
+        />
+        <Input
+          value={form.type}
+          onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+          placeholder="Type"
+        />
+        <Input
+          value={form.classification}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, classification: e.target.value }))
+          }
+          placeholder="Classification"
+        />
+        <Input
+          value={form.status}
+          onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+          placeholder="Status"
+        />
+        <Input
+          type="date"
+          value={form.collectedDate}
+          onChange={(e) =>
+            setForm((p) => ({ ...p, collectedDate: e.target.value }))
+          }
+        />
       </div>
-      <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
+      <Textarea
+        value={form.description}
+        onChange={(e) =>
+          setForm((p) => ({ ...p, description: e.target.value }))
+        }
+      />
       <div className="flex gap-2 justify-end">
         <Button asChild variant="outline">
           <Link href={`/dashboard/operations/${form.campaignId}`}>Cancel</Link>
         </Button>
-        <Button type="submit" className="bg-accent hover:bg-accent/80 text-black" disabled={saving}>
+        <Button
+          type="submit"
+          className="bg-accent hover:bg-accent/80 text-black"
+          disabled={saving}
+        >
           {saving ? "Saving..." : "Save"}
         </Button>
       </div>

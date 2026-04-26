@@ -18,4 +18,3 @@ export default async function TrainingManagePage({
 
   return <TrainingManageClient id={id} />;
 }
-

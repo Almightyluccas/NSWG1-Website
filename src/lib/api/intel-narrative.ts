@@ -22,8 +22,12 @@ export function mergeIntelNarrativeRows(
   const stamps = rows
     .map((r) => new Date((r.updated_at || r.created_at) as string).getTime())
     .filter((t) => !Number.isNaN(t));
-  const updatedAt = stamps.length ? new Date(Math.max(...stamps)).toISOString() : "";
-  const updatedBy = (operational?.created_by || regional?.created_by || "") as string;
+  const updatedAt = stamps.length
+    ? new Date(Math.max(...stamps)).toISOString()
+    : "";
+  const updatedBy = (operational?.created_by ||
+    regional?.created_by ||
+    "") as string;
 
   const base = {
     regionalIntel: regional?.description ?? "",

@@ -1,8 +1,4 @@
-import type {
-  RefreshTokenRow,
-  User,
-  UserFullInfo,
-} from "@/types/database";
+import type { RefreshTokenRow, User, UserFullInfo } from "@/types/database";
 import type { DatabaseClient } from "./DatabaseClient";
 import type {
   RecurringTraining,
@@ -383,7 +379,10 @@ export class DatabaseGet {
     const roles = await this.trainingAllowedRolesByUser(userId);
     return rows.filter((row) => {
       const roleSet = new Set(roles);
-      return roleSet.has(`training:${row.id}:open`) || roleSet.has(`training:${row.id}:allowed`);
+      return (
+        roleSet.has(`training:${row.id}:open`) ||
+        roleSet.has(`training:${row.id}:allowed`)
+      );
     });
   }
 
@@ -416,7 +415,10 @@ export class DatabaseGet {
     return rows;
   }
 
-  async userTrainingRsvpStatus(trainingId: string, userId: string): Promise<string | null> {
+  async userTrainingRsvpStatus(
+    trainingId: string,
+    userId: string
+  ): Promise<string | null> {
     const rows = await this.client.query<{ status: string }[]>(
       `SELECT status FROM training_rsvps WHERE training_id = ? AND user_id = ? LIMIT 1`,
       [trainingId, userId]
@@ -424,7 +426,9 @@ export class DatabaseGet {
     return rows[0]?.status ?? null;
   }
 
-  async trainingAllowlist(trainingId: string): Promise<{ roles: string[]; userIds: string[] }> {
+  async trainingAllowlist(
+    trainingId: string
+  ): Promise<{ roles: string[]; userIds: string[] }> {
     const roleRows = await this.client.query<{ role: string }[]>(
       `SELECT role FROM training_allowed_roles WHERE training_id = ?`,
       [trainingId]
@@ -439,7 +443,11 @@ export class DatabaseGet {
     };
   }
 
-  async canUserAccessTraining(trainingId: string, userId: string, userRoles: string[]): Promise<boolean> {
+  async canUserAccessTraining(
+    trainingId: string,
+    userId: string,
+    userRoles: string[]
+  ): Promise<boolean> {
     const allowlist = await this.trainingAllowlist(trainingId);
     if (allowlist.roles.length === 0 && allowlist.userIds.length === 0) {
       return true;
@@ -912,7 +920,12 @@ export class DatabaseGet {
         description: row.description || "",
         thumbnail: row.thumbnail || undefined,
         videoId: row.video_id || undefined,
-        videoType: type === "youtube" ? "youtube" : type === "video" ? "local" : undefined,
+        videoType:
+          type === "youtube"
+            ? "youtube"
+            : type === "video"
+              ? "local"
+              : undefined,
       };
       return item;
     });
@@ -932,7 +945,9 @@ export class DatabaseGet {
 
     if (targetRoles && targetRoles.length > 0) {
       // Return alerts that target any of the user's roles, or alerts with no target (all)
-      const placeholders = targetRoles.map(() => "a.target_roles LIKE ?").join(" OR ");
+      const placeholders = targetRoles
+        .map(() => "a.target_roles LIKE ?")
+        .join(" OR ");
       query += ` AND (a.target_roles IS NULL OR ${placeholders})`;
       for (const role of targetRoles) {
         params.push(`%${role}%`);
@@ -1226,12 +1241,14 @@ export class DatabaseGet {
     return rows.map((r) => r.mission_id);
   }
 
-  async documents(filters: {
-    search?: string;
-    unit?: string;
-    classification?: string;
-    tag?: string;
-  } = {}): Promise<any[]> {
+  async documents(
+    filters: {
+      search?: string;
+      unit?: string;
+      classification?: string;
+      tag?: string;
+    } = {}
+  ): Promise<any[]> {
     const where: string[] = [];
     const params: any[] = [];
 
@@ -1248,7 +1265,9 @@ export class DatabaseGet {
       params.push(filters.classification);
     }
     if (filters.tag) {
-      where.push(`EXISTS (SELECT 1 FROM document_tags dt2 WHERE dt2.document_id = d.id AND dt2.tag = ?)`);
+      where.push(
+        `EXISTS (SELECT 1 FROM document_tags dt2 WHERE dt2.document_id = d.id AND dt2.tag = ?)`
+      );
       params.push(filters.tag);
     }
 
@@ -1363,7 +1382,10 @@ export class DatabaseGet {
 
   // ── After Action Reports ──
 
-  async afterActionReports(campaignId?: string, missionId?: string): Promise<any[]> {
+  async afterActionReports(
+    campaignId?: string,
+    missionId?: string
+  ): Promise<any[]> {
     let query = `
       SELECT aar.*, c.name as campaign_name, m.name as mission_name,
              u.name as submitter_name, r.name as reviewer_name

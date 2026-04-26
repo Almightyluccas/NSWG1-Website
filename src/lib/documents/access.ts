@@ -23,15 +23,23 @@ export function canAccessDocument(
     return true;
   }
 
-  if (!hasMinRole(viewer.roles, (doc.minimumRole || UserRole.member) as UserRole)) {
+  if (
+    !hasMinRole(viewer.roles, (doc.minimumRole || UserRole.member) as UserRole)
+  ) {
     return false;
   }
 
-  if (doc.allowedRoles.length > 0 && !doc.allowedRoles.some((role) => viewer.roles.includes(role))) {
+  if (
+    doc.allowedRoles.length > 0 &&
+    !doc.allowedRoles.some((role) => viewer.roles.includes(role))
+  ) {
     return false;
   }
 
-  if (doc.allowedUsers.length > 0 && !doc.allowedUsers.includes(viewer.userId)) {
+  if (
+    doc.allowedUsers.length > 0 &&
+    !doc.allowedUsers.includes(viewer.userId)
+  ) {
     return false;
   }
 

@@ -46,7 +46,10 @@ export function hasAnyRole(userRoles: string[], roles: UserRole[]): boolean {
   return roles.some((role) => userRoles.includes(role));
 }
 
-export function hasMinRole(userRoles: string[], minimumRole: UserRole): boolean {
+export function hasMinRole(
+  userRoles: string[],
+  minimumRole: UserRole
+): boolean {
   const userLevel = Math.max(0, ...userRoles.map((r) => roleHierarchy[r] || 0));
   const requiredLevel = roleHierarchy[minimumRole] || Infinity;
   return userLevel >= requiredLevel;

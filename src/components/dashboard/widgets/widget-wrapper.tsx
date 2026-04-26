@@ -18,7 +18,9 @@ export function WidgetWrapper({ config, children }: WidgetWrapperProps) {
             {config.title}
           </span>
         </div>
-        <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-950/30 flex-1">{children}</div>
+        <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-950/30 flex-1">
+          {children}
+        </div>
       </div>
     </div>
   );

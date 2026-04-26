@@ -57,16 +57,29 @@ export async function PUT(
     const sseId = parseInt(id, 10);
     const existing = await database.get.sseItemById(sseId);
     if (!existing) {
-      return NextResponse.json({ error: "SSE item not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "SSE item not found" },
+        { status: 404 }
+      );
     }
 
     await database.put.sseItem(sseId, {
       status: body.status !== undefined ? String(body.status) : undefined,
-      name: body.name !== undefined ? String(body.name) : body.title !== undefined ? String(body.title) : undefined,
-      description: body.description !== undefined ? String(body.description) : undefined,
+      name:
+        body.name !== undefined
+          ? String(body.name)
+          : body.title !== undefined
+            ? String(body.title)
+            : undefined,
+      description:
+        body.description !== undefined ? String(body.description) : undefined,
       type: body.type !== undefined ? String(body.type) : undefined,
       classification:
-        body.classification !== undefined ? (body.classification ? String(body.classification) : null) : undefined,
+        body.classification !== undefined
+          ? body.classification
+            ? String(body.classification)
+            : null
+          : undefined,
       collectedDate:
         body.collectedDate !== undefined
           ? body.collectedDate
@@ -104,7 +117,10 @@ export async function DELETE(
     const sseId = parseInt(id, 10);
     const existing = await database.get.sseItemById(sseId);
     if (!existing) {
-      return NextResponse.json({ error: "SSE item not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "SSE item not found" },
+        { status: 404 }
+      );
     }
     await database.delete.sseItem(sseId);
     await postAdminAlert({

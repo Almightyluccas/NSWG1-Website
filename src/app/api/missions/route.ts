@@ -43,10 +43,20 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json();
-    
+
     // Validate required fields
-    if (!data.campaignId || !data.name || !data.description || !data.date || !data.time || !data.location) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !data.campaignId ||
+      !data.name ||
+      !data.description ||
+      !data.date ||
+      !data.time ||
+      !data.location
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     const missionId = `mission-${Date.now()}`;

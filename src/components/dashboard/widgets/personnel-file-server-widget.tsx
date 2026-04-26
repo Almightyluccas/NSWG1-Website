@@ -1,8 +1,18 @@
 import { perscom } from "@/lib/perscom/api";
 import { PersonnelFileWidget } from "./personnel-file-widget";
-import { Award, Qualification, Rank, AssignmentRecord, PerscomUserResponse } from "@/types/api/perscomApi";
+import {
+  Award,
+  Qualification,
+  Rank,
+  AssignmentRecord,
+  PerscomUserResponse,
+} from "@/types/api/perscomApi";
 
-export default async function PersonnelFileServerWidget({ user }: { user: PerscomUserResponse }) {
+export default async function PersonnelFileServerWidget({
+  user,
+}: {
+  user: PerscomUserResponse;
+}) {
   const allAwards: Award[] = await perscom.get.awards();
   const allQualifications: Qualification[] = await perscom.get.qualifications();
   const allRanks: Rank[] = await perscom.get.ranks();

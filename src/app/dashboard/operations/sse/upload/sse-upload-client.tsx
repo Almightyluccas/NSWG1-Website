@@ -16,7 +16,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
-import { FileDropZone, type UploadQueuedFile } from "@/components/operations/upload/file-drop-zone";
+import {
+  FileDropZone,
+  type UploadQueuedFile,
+} from "@/components/operations/upload/file-drop-zone";
 
 type OperationOption = {
   id: string;
@@ -58,8 +61,12 @@ export function SseUploadClient({
   const [error, setError] = useState<string | null>(null);
   const [ops, setOps] = useState<OperationOption[]>([]);
   const [missions, setMissions] = useState<MissionOption[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState(initialCampaignId ?? "");
-  const [selectedMissionId, setSelectedMissionId] = useState(initialMissionId ?? "");
+  const [selectedCampaignId, setSelectedCampaignId] = useState(
+    initialCampaignId ?? ""
+  );
+  const [selectedMissionId, setSelectedMissionId] = useState(
+    initialMissionId ?? ""
+  );
   const [dumpNote, setDumpNote] = useState("");
   const [collectedDate, setCollectedDate] = useState(getTodayIsoDate());
   const [queuedImages, setQueuedImages] = useState<QueuedImage[]>([]);
@@ -89,7 +96,7 @@ export function SseUploadClient({
               id: String(op.id),
               name: String(op.name ?? ""),
               codename: op.codename ?? null,
-            })),
+            }))
           );
         } else {
           setOps([]);
@@ -137,12 +144,16 @@ export function SseUploadClient({
       return;
     }
 
-    const stillExists = missions.some((mission) => mission.id === selectedMissionId);
+    const stillExists = missions.some(
+      (mission) => mission.id === selectedMissionId
+    );
     if (!stillExists) {
       const prefilledExists = initialMissionId
         ? missions.some((mission) => mission.id === initialMissionId)
         : false;
-      setSelectedMissionId(prefilledExists ? initialMissionId! : missions[0].id);
+      setSelectedMissionId(
+        prefilledExists ? initialMissionId! : missions[0].id
+      );
     }
   }, [missions, selectedMissionId, initialMissionId]);
 
@@ -178,7 +189,10 @@ export function SseUploadClient({
   };
 
   const uploadOne = async (entry: QueuedImage) => {
-    const compressedFile = await imageCompression(entry.file, IMAGE_COMPRESSION_OPTIONS);
+    const compressedFile = await imageCompression(
+      entry.file,
+      IMAGE_COMPRESSION_OPTIONS
+    );
 
     const presignRes = await fetch("/api/object-storage/generate-upload-url", {
       method: "POST",
@@ -239,22 +253,30 @@ export function SseUploadClient({
       for (const entry of queuedImages) {
         setQueuedImages((prev) =>
           prev.map((item) =>
-            item.id === entry.id ? { ...item, status: "uploading", error: undefined } : item,
-          ),
+            item.id === entry.id
+              ? { ...item, status: "uploading", error: undefined }
+              : item
+          )
         );
         try {
           await uploadOne(entry);
           setQueuedImages((prev) =>
-            prev.map((item) => (item.id === entry.id ? { ...item, status: "done" } : item)),
+            prev.map((item) =>
+              item.id === entry.id ? { ...item, status: "done" } : item
+            )
           );
           setTransferCount((prev) => prev + 1);
         } catch (entryError: any) {
           setQueuedImages((prev) =>
             prev.map((item) =>
               item.id === entry.id
-                ? { ...item, status: "failed", error: entryError?.message || "Upload failed" }
-                : item,
-            ),
+                ? {
+                    ...item,
+                    status: "failed",
+                    error: entryError?.message || "Upload failed",
+                  }
+                : item
+            )
           );
           setTransferErrors((prev) => prev + 1);
         }
@@ -276,18 +298,23 @@ export function SseUploadClient({
       <div className="flex flex-col items-center justify-center py-32 bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.02)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
         <div className="relative z-10 text-center flex flex-col items-center">
-            <div className="relative mb-6">
-                <div className="absolute inset-0 animate-ping opacity-20 bg-emerald-500 rounded-full" />
-                <CheckCircle2 className="h-20 w-20 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-            </div>
-            <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-[0.2em] mb-3">Payload Transfer Complete</h2>
-            <p className="text-zinc-400 text-sm uppercase tracking-widest max-w-md">
-              {transferCount} frame(s) ingested. {transferErrors > 0 ? `${transferErrors} failed.` : "All transfers successful."}
-            </p>
-            <div className="mt-8 flex items-center gap-2 text-emerald-500/50 text-[10px] uppercase font-bold tracking-widest">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Redirecting...
-            </div>
+          <div className="relative mb-6">
+            <div className="absolute inset-0 animate-ping opacity-20 bg-emerald-500 rounded-full" />
+            <CheckCircle2 className="h-20 w-20 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+          </div>
+          <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-[0.2em] mb-3">
+            Payload Transfer Complete
+          </h2>
+          <p className="text-zinc-400 text-sm uppercase tracking-widest max-w-md">
+            {transferCount} frame(s) ingested.{" "}
+            {transferErrors > 0
+              ? `${transferErrors} failed.`
+              : "All transfers successful."}
+          </p>
+          <div className="mt-8 flex items-center gap-2 text-emerald-500/50 text-[10px] uppercase font-bold tracking-widest">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Redirecting...
+          </div>
         </div>
       </div>
     );
@@ -296,7 +323,7 @@ export function SseUploadClient({
   return (
     <div className="space-y-4 max-w-4xl relative z-10">
       <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800/80">
-        <Link 
+        <Link
           href="/dashboard/operations/sse"
           className="inline-flex items-center text-[10px] font-bold text-zinc-500 hover:text-accent transition-colors uppercase tracking-widest"
         >
@@ -313,7 +340,10 @@ export function SseUploadClient({
             Field Terminal // SD Card Ingest
           </p>
           <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 leading-relaxed font-mono uppercase tracking-wider">
-            Drops auto-log as <span className="text-accent font-bold">PENDING REVIEW</span>. Uploaded material is tied to selected operation/mission and uploader identity.
+            Drops auto-log as{" "}
+            <span className="text-accent font-bold">PENDING REVIEW</span>.
+            Uploaded material is tied to selected operation/mission and uploader
+            identity.
           </p>
         </div>
       </div>
@@ -344,7 +374,9 @@ export function SseUploadClient({
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Source Operation (Required)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Source Operation (Required)
+                </label>
                 <select
                   required
                   className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold tracking-wider rounded-lg px-3 py-2 h-10 flex items-center focus:border-accent/80 focus:ring-1 focus:ring-accent/50 outline-none transition-all appearance-none cursor-pointer"
@@ -354,15 +386,21 @@ export function SseUploadClient({
                     setSelectedMissionId("");
                   }}
                 >
-                  <option value="" disabled className="text-zinc-600">Assign Operation...</option>
+                  <option value="" disabled className="text-zinc-600">
+                    Assign Operation...
+                  </option>
                   {ops.map((op) => (
-                    <option key={op.id} value={op.id}>{op.codename || op.name}</option>
+                    <option key={op.id} value={op.id}>
+                      {op.codename || op.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Mission (Required)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Mission (Required)
+                </label>
                 <select
                   required
                   disabled={!selectedCampaignId}
@@ -370,15 +408,21 @@ export function SseUploadClient({
                   value={selectedMissionId}
                   onChange={(e) => setSelectedMissionId(e.target.value)}
                 >
-                  <option value="" disabled>Select mission...</option>
+                  <option value="" disabled>
+                    Select mission...
+                  </option>
                   {missions.map((mission) => (
-                    <option key={mission.id} value={mission.id}>{mission.name}</option>
+                    <option key={mission.id} value={mission.id}>
+                      {mission.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Collected Date (Optional)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Collected Date (Optional)
+                </label>
                 <Input
                   type="date"
                   value={collectedDate}
@@ -389,7 +433,9 @@ export function SseUploadClient({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Dump Note (Optional)</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Dump Note (Optional)
+              </label>
               <Textarea
                 value={dumpNote}
                 onChange={(e) => setDumpNote(e.target.value)}
@@ -399,7 +445,9 @@ export function SseUploadClient({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Drop Screenshots (Required)</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Drop Screenshots (Required)
+              </label>
               <FileDropZone
                 files={queuedImages}
                 onFilesAdded={handleFileInput}
@@ -416,18 +464,36 @@ export function SseUploadClient({
             </div>
 
             <div className="pt-5 border-t border-zinc-200 dark:border-zinc-800/80 flex flex-col md:flex-row justify-end gap-3">
-              <Link href="/dashboard/operations/sse" className="w-full md:w-auto">
-                <Button type="button" variant="outline" className="w-full rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest h-10 px-8 transition-colors">
+              <Link
+                href="/dashboard/operations/sse"
+                className="w-full md:w-auto"
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest h-10 px-8 transition-colors"
+                >
                   CANCEL
                 </Button>
               </Link>
-              <Button type="submit" disabled={isSubmitting || !selectedCampaignId || !selectedMissionId || queuedImages.length === 0} className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent/80 text-black font-black uppercase tracking-widest h-10 px-8 shadow-[0_0_15px_rgba(var(--accent),0.2)] hover:shadow-[0_0_25px_rgba(var(--accent),0.6)] transition-all disabled:opacity-70 disabled:pointer-events-none">
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  !selectedCampaignId ||
+                  !selectedMissionId ||
+                  queuedImages.length === 0
+                }
+                className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent/80 text-black font-black uppercase tracking-widest h-10 px-8 shadow-[0_0_15px_rgba(var(--accent),0.2)] hover:shadow-[0_0_25px_rgba(var(--accent),0.6)] transition-all disabled:opacity-70 disabled:pointer-events-none"
+              >
                 {isSubmitting ? (
-                    <span className="flex items-center gap-2 text-[10px]">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        TRANSFERRING FRAMES...
-                    </span>
-                ) : "INGEST SD DUMP"}
+                  <span className="flex items-center gap-2 text-[10px]">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    TRANSFERRING FRAMES...
+                  </span>
+                ) : (
+                  "INGEST SD DUMP"
+                )}
               </Button>
             </div>
           </form>

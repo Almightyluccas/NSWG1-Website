@@ -11,4 +11,3 @@ export default async function NewTrainingPage() {
 
   return <NewTrainingClient />;
 }
-

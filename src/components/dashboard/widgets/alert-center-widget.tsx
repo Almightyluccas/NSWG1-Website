@@ -86,15 +86,21 @@ export function AlertCenterWidget() {
             )}
             <p
               className={`text-[9px] font-mono ${
-                isPriority ? "text-red-500 dark:text-red-400/90" : "text-accent/70"
+                isPriority
+                  ? "text-red-500 dark:text-red-400/90"
+                  : "text-accent/70"
               } mb-1 tracking-wider flex items-center gap-2 flex-wrap`}
             >
               <span>{alert.label}</span>
               {alert.source === "perscom" && (
-                <span className="text-[8px] text-violet-400 font-black">PERSCOM</span>
+                <span className="text-[8px] text-violet-400 font-black">
+                  PERSCOM
+                </span>
               )}
             </p>
-            <p className="text-xs text-zinc-700 dark:text-zinc-300">{alert.message}</p>
+            <p className="text-xs text-zinc-700 dark:text-zinc-300">
+              {alert.message}
+            </p>
           </div>
         );
       })}

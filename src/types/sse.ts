@@ -4,7 +4,13 @@ export interface SseItem {
   id: number;
   campaign_id: string;
   campaign_name?: string;
-  type: "DOCUMENT" | "ELECTRONICS" | "WEAPONS" | "MEDIA" | "BIOMETRICS" | "OTHER";
+  type:
+    | "DOCUMENT"
+    | "ELECTRONICS"
+    | "WEAPONS"
+    | "MEDIA"
+    | "BIOMETRICS"
+    | "OTHER";
   name: string;
   description: string;
   status: "LOGGED" | "ANALYZING" | "LOCKED" | "RELEASED";

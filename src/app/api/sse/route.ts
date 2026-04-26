@@ -46,7 +46,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(items);
   } catch (error) {
     console.error("Error fetching SSE items:", error);
-    return NextResponse.json({ error: "Failed to fetch SSE items" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch SSE items" },
+      { status: 500 }
+    );
   }
 }
 
@@ -76,14 +79,19 @@ export async function POST(request: NextRequest) {
       if (!campaignId && missionIdRaw) {
         const cid = await database.get.missionCampaignId(missionIdRaw);
         if (!cid) {
-          return NextResponse.json({ error: "Mission not found" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Mission not found" },
+            { status: 400 }
+          );
         }
         campaignId = cid;
       }
 
       if (!campaignId) {
         return NextResponse.json(
-          { error: "campaignId is required (or missionId to resolve campaign)" },
+          {
+            error: "campaignId is required (or missionId to resolve campaign)",
+          },
           { status: 400 }
         );
       }
@@ -102,7 +110,8 @@ export async function POST(request: NextRequest) {
         status: String(body.status ?? "LOGGED"),
         minimumRole: UserRole.member,
         imageUrl: String(body.imageUrl ?? ""),
-        classification: body.classification != null ? String(body.classification) : null,
+        classification:
+          body.classification != null ? String(body.classification) : null,
         collectedDate,
         uploadedBy: session.user.id!,
       });
@@ -137,6 +146,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
     console.error("Error creating SSE item:", error);
-    return NextResponse.json({ error: "Failed to create SSE item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create SSE item" },
+      { status: 500 }
+    );
   }
 }

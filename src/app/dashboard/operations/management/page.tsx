@@ -1,7 +1,13 @@
 import { getAuthSession } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Target, GraduationCap, Database, Plus, ChevronRight } from "lucide-react";
+import {
+  Target,
+  GraduationCap,
+  Database,
+  Plus,
+  ChevronRight,
+} from "lucide-react";
 import { UserRole } from "@/types/database";
 
 export default async function OperationsManagementPage() {
@@ -29,8 +35,14 @@ export default async function OperationsManagementPage() {
           title="Campaigns"
           description="Create, edit, and manage tactical campaigns and their missions."
           actions={[
-            { label: "View All", href: "/dashboard/operations/management/campaigns" },
-            { label: "New Campaign", href: "/dashboard/operations/management/campaigns/new" },
+            {
+              label: "View All",
+              href: "/dashboard/operations/management/campaigns",
+            },
+            {
+              label: "New Campaign",
+              href: "/dashboard/operations/management/campaigns/new",
+            },
           ]}
         />
 
@@ -40,8 +52,14 @@ export default async function OperationsManagementPage() {
           title="Training"
           description="Schedule and manage training sessions, track attendance."
           actions={[
-            { label: "View All", href: "/dashboard/operations/management/training" },
-            { label: "New Training", href: "/dashboard/operations/management/training/new" },
+            {
+              label: "View All",
+              href: "/dashboard/operations/management/training",
+            },
+            {
+              label: "New Training",
+              href: "/dashboard/operations/management/training/new",
+            },
           ]}
         />
 
@@ -93,7 +111,9 @@ function ManageCard({
             href={action.href}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-accent border border-zinc-200 dark:border-zinc-800 hover:border-accent/40 transition-all"
           >
-            {action.label === "New Campaign" || action.label === "New Training" || action.label === "Upload" ? (
+            {action.label === "New Campaign" ||
+            action.label === "New Training" ||
+            action.label === "Upload" ? (
               <Plus className="h-3 w-3" />
             ) : (
               <ChevronRight className="h-3 w-3" />

@@ -16,7 +16,11 @@ export function verifyPerscomSignature(
     .update(rawBody, "utf8")
     .digest();
 
-  const normalize = (s: string) => s.trim().replace(/^sha256=/i, "").trim();
+  const normalize = (s: string) =>
+    s
+      .trim()
+      .replace(/^sha256=/i, "")
+      .trim();
   const sig = normalize(signatureHeader);
 
   const tryHex = (hex: string): boolean => {

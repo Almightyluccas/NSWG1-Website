@@ -11,7 +11,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.roles.includes(UserRole.admin)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -19,18 +19,27 @@ export async function POST(
   const { id: missionId } = await params;
 
   if (!missionId) {
-    return NextResponse.json({ error: "Mission ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mission ID is required" },
+      { status: 400 }
+    );
   }
 
   try {
     const data = await req.json();
-    
+
     if (!data.userId || !data.userName || !data.status) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     if (!["present", "absent", "late", "excused"].includes(data.status)) {
-      return NextResponse.json({ error: "Invalid attendance status" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid attendance status" },
+        { status: 400 }
+      );
     }
 
     const attendanceId = `att-${missionId}-${data.userId}`;

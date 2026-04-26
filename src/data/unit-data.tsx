@@ -67,16 +67,14 @@ export const units: Record<string, UnitData> = {
       },
     ],
     contentSections: [
-
       {
         title: "Overview",
         content: (
           <ul className="list-disc pl-5 space-y-2">
+            <li>Providing aviation support for special operations missions.</li>
             <li>
-              Providing aviation support for special operations missions.
-            </li>
-            <li>
-              Conducting insertions and extractions of special operations forces.
+              Conducting insertions and extractions of special operations
+              forces.
             </li>
             <li>Executing precision strikes and close air support.</li>
             <li>Performing reconnaissance and surveillance operations.</li>
@@ -95,7 +93,8 @@ export const units: Record<string, UnitData> = {
             missions requiring precision and skill.
           </p>
         ),
-      }, {
+      },
+      {
         title: "Requirements",
         content: (
           <ul className="list-disc pl-6 space-y-2">
@@ -109,12 +108,12 @@ export const units: Record<string, UnitData> = {
             </li>
             <li>Must have a working Microphone (No static, echo, etc).</li>
             <li>
-              Must be willing to learn advanced flight techniques and procedures.
+              Must be willing to learn advanced flight techniques and
+              procedures.
             </li>
           </ul>
         ),
       },
-
     ],
     pipelineSteps: [
       "Application Approval",
@@ -169,8 +168,8 @@ export const units: Record<string, UnitData> = {
         title: "What You Can Expect",
         content: (
           <p>
-            As a green team graduate you will be a operational member of the unit
-            and will be constantly evaluated on your skills but are fully
+            As a green team graduate you will be a operational member of the
+            unit and will be constantly evaluated on your skills but are fully
             responsible for any operational missions that you get tasked for.
             Along with that, there is a lot of advancement in the operational
             side of TACDEV one of the first operational tasks will be to become
@@ -198,11 +197,7 @@ export const units: Record<string, UnitData> = {
         ),
       },
     ],
-    pipelineSteps: [
-      "Application Approval",
-      "Interview",
-      "Green Team",
-    ],
+    pipelineSteps: ["Application Approval", "Interview", "Green Team"],
     careerPaths: [
       { role: "SO/SEAL", description: "Special Operator" },
       { role: "EOD", description: "Explosive Ordinance Disposal" },

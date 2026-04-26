@@ -17,7 +17,7 @@ export default function AlertsPage() {
           Priority directives, warnings, and system communications.
         </p>
       </div>
-      
+
       <AlertsClient />
     </div>
   );

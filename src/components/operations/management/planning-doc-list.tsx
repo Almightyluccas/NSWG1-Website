@@ -42,7 +42,8 @@ export function PlanningDocList({
     date: "",
   });
 
-  const query = ownerType === "campaign" ? `campaignId=${ownerId}` : `missionId=${ownerId}`;
+  const query =
+    ownerType === "campaign" ? `campaignId=${ownerId}` : `missionId=${ownerId}`;
 
   const load = async () => {
     try {
@@ -68,7 +69,9 @@ export function PlanningDocList({
     setSubmitting(true);
     try {
       const payload =
-        ownerType === "campaign" ? { campaignId: ownerId, ...form } : { missionId: ownerId, ...form };
+        ownerType === "campaign"
+          ? { campaignId: ownerId, ...form }
+          : { missionId: ownerId, ...form };
       const res = await fetch("/api/docs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,7 +107,9 @@ export function PlanningDocList({
             <Label>Title</Label>
             <Input
               value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, title: e.target.value }))
+              }
               placeholder="CONOP // Operation Trident"
             />
           </div>
@@ -112,7 +117,9 @@ export function PlanningDocList({
             <Label>Doc Type</Label>
             <Input
               value={form.docType}
-              onChange={(e) => setForm((p) => ({ ...p, docType: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, docType: e.target.value }))
+              }
               placeholder="CONOP / WARNO / FRAGO"
             />
           </div>
@@ -120,7 +127,9 @@ export function PlanningDocList({
             <Label>Classification</Label>
             <Input
               value={form.classification}
-              onChange={(e) => setForm((p) => ({ ...p, classification: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, classification: e.target.value }))
+              }
               placeholder="UNCLASSIFIED / SECRET"
             />
           </div>
@@ -136,7 +145,9 @@ export function PlanningDocList({
             <Label>Placeholder File URL</Label>
             <Input
               value={form.fileUrl}
-              onChange={(e) => setForm((p) => ({ ...p, fileUrl: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, fileUrl: e.target.value }))
+              }
               placeholder="https://placeholder.local/conop.pdf"
             />
           </div>
@@ -144,7 +155,9 @@ export function PlanningDocList({
             <Label>Description</Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, description: e.target.value }))
+              }
               className="min-h-[84px]"
             />
           </div>
@@ -159,14 +172,20 @@ export function PlanningDocList({
             onClick={submit}
             disabled={submitting || !form.title}
           >
-            {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Plus className="h-4 w-4 mr-1.5" />}
+            {submitting ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4 mr-1.5" />
+            )}
             Add Planning Doc
           </Button>
         </div>
 
         <div className="space-y-2">
           {loading ? (
-            <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">Loading docs...</p>
+            <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">
+              Loading docs...
+            </p>
           ) : items.length === 0 ? (
             <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.2em] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950/40">
               No planning docs yet.
@@ -183,7 +202,9 @@ export function PlanningDocList({
                       <FileText className="h-4 w-4 text-accent" />
                       {item.title}
                     </p>
-                    <p className="text-xs text-zinc-500 mt-1">{item.description}</p>
+                    <p className="text-xs text-zinc-500 mt-1">
+                      {item.description}
+                    </p>
                   </div>
                   <Badge variant="outline" className="text-[10px] uppercase">
                     {item.docType}
@@ -192,7 +213,9 @@ export function PlanningDocList({
                 <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
                   <Badge variant="outline">{item.classification}</Badge>
                   {item.date && <Badge variant="outline">{item.date}</Badge>}
-                  {item.fileUrl && <Badge variant="outline">URL Attached</Badge>}
+                  {item.fileUrl && (
+                    <Badge variant="outline">URL Attached</Badge>
+                  )}
                 </div>
               </div>
             ))

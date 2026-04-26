@@ -52,7 +52,10 @@ export async function PUT(
     }
 
     if (!canReview(session.user.roles)) {
-      return NextResponse.json({ error: "Insufficient role to review AARs" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient role to review AARs" },
+        { status: 403 }
+      );
     }
 
     const { id } = await params;
@@ -67,7 +70,10 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("PUT /api/aar/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update AAR" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update AAR" },
+      { status: 500 }
+    );
   }
 }
 
@@ -87,6 +93,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/aar/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete AAR" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete AAR" },
+      { status: 500 }
+    );
   }
 }

@@ -8,7 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileDropZone, type UploadQueuedFile } from "@/components/operations/upload/file-drop-zone";
+import {
+  FileDropZone,
+  type UploadQueuedFile,
+} from "@/components/operations/upload/file-drop-zone";
 import { UserRole } from "@/types/database";
 import { useDocumentUpload } from "@/lib/documents/useDocumentUpload";
 
@@ -30,11 +33,19 @@ export function DocumentsUploadClient() {
   const [error, setError] = useState<string | null>(null);
 
   const tags = useMemo(
-    () => tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
+    () =>
+      tagsInput
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
     [tagsInput]
   );
   const allowedUsers = useMemo(
-    () => allowedUsersInput.split(",").map((u) => u.trim()).filter(Boolean),
+    () =>
+      allowedUsersInput
+        .split(",")
+        .map((u) => u.trim())
+        .filter(Boolean),
     [allowedUsersInput]
   );
 
@@ -47,10 +58,13 @@ export function DocumentsUploadClient() {
     setFiles((prev) => [...prev, ...queued]);
   };
 
-  const removeFile = (id: string) => setFiles((prev) => prev.filter((f) => f.id !== id));
+  const removeFile = (id: string) =>
+    setFiles((prev) => prev.filter((f) => f.id !== id));
 
   const toggleAllowedRole = (role: string) => {
-    setAllowedRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+    setAllowedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,20 +119,44 @@ export function DocumentsUploadClient() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Document name" />
-            <Input value={docType} onChange={(e) => setDocType(e.target.value)} placeholder="Doc type" />
-            <Input value={classification} onChange={(e) => setClassification(e.target.value)} placeholder="Classification" />
-            <Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Unit" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Document name"
+            />
+            <Input
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              placeholder="Doc type"
+            />
+            <Input
+              value={classification}
+              onChange={(e) => setClassification(e.target.value)}
+              placeholder="Classification"
+            />
+            <Input
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              placeholder="Unit"
+            />
             <select
               value={minimumRole}
-              onChange={(e) => setMinimumRole(e.target.value as typeof minimumRole)}
+              onChange={(e) =>
+                setMinimumRole(e.target.value as typeof minimumRole)
+              }
               className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 h-10 px-3 text-sm"
             >
               {roleOptions.map((role) => (
-                <option key={role} value={role}>{role}</option>
+                <option key={role} value={role}>
+                  {role}
+                </option>
               ))}
             </select>
-            <Input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="Tags (comma-separated)" />
+            <Input
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="Tags (comma-separated)"
+            />
           </div>
 
           <Textarea

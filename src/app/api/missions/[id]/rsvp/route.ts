@@ -17,12 +17,15 @@ export async function POST(
   const { id: missionId } = await params;
 
   if (!missionId) {
-    return NextResponse.json({ error: "Mission ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mission ID is required" },
+      { status: 400 }
+    );
   }
 
   try {
     const data = await req.json();
-    
+
     if (!["attending", "not-attending", "maybe"].includes(data.status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }

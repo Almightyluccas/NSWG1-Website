@@ -62,17 +62,26 @@ export async function PUT(
   const body = await request.json();
   await database.put.document(Number(id), {
     name: body.name !== undefined ? String(body.name) : undefined,
-    description: body.description !== undefined ? String(body.description) : undefined,
+    description:
+      body.description !== undefined ? String(body.description) : undefined,
     docType: body.docType !== undefined ? String(body.docType) : undefined,
-    classification: body.classification !== undefined ? String(body.classification) : undefined,
+    classification:
+      body.classification !== undefined
+        ? String(body.classification)
+        : undefined,
     unit: body.unit !== undefined ? String(body.unit) : undefined,
     fileKey: body.fileKey !== undefined ? String(body.fileKey) : undefined,
     fileType: body.fileType !== undefined ? String(body.fileType) : undefined,
     fileSize: body.fileSize !== undefined ? Number(body.fileSize) : undefined,
-    minimumRole: body.minimumRole !== undefined ? String(body.minimumRole) : undefined,
+    minimumRole:
+      body.minimumRole !== undefined ? String(body.minimumRole) : undefined,
     tags: Array.isArray(body.tags) ? body.tags.map(String) : undefined,
-    allowedRoles: Array.isArray(body.allowedRoles) ? body.allowedRoles.map(String) : undefined,
-    allowedUsers: Array.isArray(body.allowedUsers) ? body.allowedUsers.map(String) : undefined,
+    allowedRoles: Array.isArray(body.allowedRoles)
+      ? body.allowedRoles.map(String)
+      : undefined,
+    allowedUsers: Array.isArray(body.allowedUsers)
+      ? body.allowedUsers.map(String)
+      : undefined,
   });
   const row = await database.get.documentById(Number(id));
   if (!row) {

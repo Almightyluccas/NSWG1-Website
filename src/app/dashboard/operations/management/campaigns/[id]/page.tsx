@@ -17,4 +17,3 @@ export default async function CampaignManagePage({
 
   redirect(`/dashboard/operations/management/campaigns/${id}/missions`);
 }
-

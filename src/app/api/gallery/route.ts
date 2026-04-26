@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
     console.error("Error creating gallery item:", error);
-    return NextResponse.json({ error: "Failed to create gallery item" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create gallery item" },
+      { status: 500 }
+    );
   }
 }

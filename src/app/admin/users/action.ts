@@ -25,11 +25,11 @@ export async function updateUserName(name: string, userId: string) {
 }
 
 export async function updateUserPerscomId(perscomId: number, userId: string) {
-    try {
-        await database.put.userPerscomId(userId, perscomId);
-        revalidatePath("/admin/users");
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: "Failed to update roles" };
-    }
+  try {
+    await database.put.userPerscomId(userId, perscomId);
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update roles" };
+  }
 }

@@ -20,14 +20,17 @@ export function useDocumentUpload() {
   const uploadDocument = async (file: File, payload: UploadPayload) => {
     setIsUploading(true);
     try {
-      const presignRes = await fetch("/api/object-storage/generate-upload-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uploadType: "document",
-          contentType: file.type || "application/octet-stream",
-        }),
-      });
+      const presignRes = await fetch(
+        "/api/object-storage/generate-upload-url",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uploadType: "document",
+            contentType: file.type || "application/octet-stream",
+          }),
+        }
+      );
       if (!presignRes.ok) {
         const data = await presignRes.json().catch(() => ({}));
         throw new Error(data.error || "Failed to generate upload URL");

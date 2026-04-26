@@ -7,7 +7,12 @@ import { sanitizeHtmlClient } from "@/lib/sanitize/sanitizeHtmlClient";
 
 interface PersonnelFileWidgetProps {
   awardRecords: any[];
-  awardImages: { id: number; imageUrl: string | null; name: string; order: number }[];
+  awardImages: {
+    id: number;
+    imageUrl: string | null;
+    name: string;
+    order: number;
+  }[];
   qualificationRecords: any[];
   qualificationData: { id: number; name: string; received: string }[];
   rankHistory: {
@@ -39,8 +44,18 @@ interface PersonnelFileWidgetProps {
 
 // Keywords that identify insignia / badges (worn above ribbons)
 const INSIGNIA_KEYWORDS = [
-  "trident", "warfare", "insignia", "badge", "tab", "wings",
-  "parachutist", "diver", "seal", "budweiser", "pin", "device",
+  "trident",
+  "warfare",
+  "insignia",
+  "badge",
+  "tab",
+  "wings",
+  "parachutist",
+  "diver",
+  "seal",
+  "budweiser",
+  "pin",
+  "device",
 ];
 
 function isInsignia(name: string): boolean {
@@ -96,8 +111,10 @@ export function PersonnelFileWidget({
 
   // Sort all award records by precedence order (lower = higher precedence)
   const sortedAwardRecords = [...awardRecords].sort((a, b) => {
-    const orderA = awardImages.find((img) => img.id === a.award_id)?.order ?? 999;
-    const orderB = awardImages.find((img) => img.id === b.award_id)?.order ?? 999;
+    const orderA =
+      awardImages.find((img) => img.id === a.award_id)?.order ?? 999;
+    const orderB =
+      awardImages.find((img) => img.id === b.award_id)?.order ?? 999;
     return orderA - orderB;
   });
 
@@ -125,14 +142,16 @@ export function PersonnelFileWidget({
             style={{
               background:
                 "linear-gradient(145deg, #6B5B3E 0%, #8B7355 15%, #C4A265 30%, #D4AF37 50%, #C4A265 70%, #8B7355 85%, #6B5B3E 100%)",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(212, 175, 55, 0.2)",
+              boxShadow:
+                "0 4px 20px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(212, 175, 55, 0.2)",
             }}
           >
             {/* Dark felt surface */}
             <div
               className="w-full rounded-[2px] px-4 py-5 flex flex-col items-center"
               style={{
-                background: "linear-gradient(180deg, #111 0%, #0a0a0a 50%, #050505 100%)",
+                background:
+                  "linear-gradient(180deg, #111 0%, #0a0a0a 50%, #050505 100%)",
                 boxShadow: "inset 0 2px 12px rgba(0, 0, 0, 0.95)",
               }}
             >
@@ -140,7 +159,9 @@ export function PersonnelFileWidget({
               {insigniaRecords.length > 0 && (
                 <div className="flex justify-center gap-4 mb-3">
                   {insigniaRecords.map((record, i) => {
-                    const img = awardImages.find((a) => a.id === record.award_id);
+                    const img = awardImages.find(
+                      (a) => a.id === record.award_id
+                    );
                     return (
                       <button
                         key={`insignia-${i}`}
@@ -164,12 +185,11 @@ export function PersonnelFileWidget({
               {/* ── Ribbon Rows (Navy reg: 3 per row, remainder centered on top) ── */}
               <div className="flex flex-col items-center gap-0">
                 {ribbonRows.map((row, rowIdx) => (
-                  <div
-                    key={`row-${rowIdx}`}
-                    className="flex justify-center"
-                  >
+                  <div key={`row-${rowIdx}`} className="flex justify-center">
                     {row.map((record, i) => {
-                      const img = awardImages.find((a) => a.id === record.award_id);
+                      const img = awardImages.find(
+                        (a) => a.id === record.award_id
+                      );
                       return (
                         <button
                           key={`ribbon-${rowIdx}-${i}`}

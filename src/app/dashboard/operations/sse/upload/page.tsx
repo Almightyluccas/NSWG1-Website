@@ -20,7 +20,9 @@ export default async function SseUploadPage({
       </div>
 
       <Suspense
-        fallback={<Skeleton className="h-[600px] w-full max-w-4xl rounded-lg" />}
+        fallback={
+          <Skeleton className="h-[600px] w-full max-w-4xl rounded-lg" />
+        }
       >
         <SseUploadClient
           initialCampaignId={params.campaignId}

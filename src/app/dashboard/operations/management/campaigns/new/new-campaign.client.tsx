@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CampaignForm, type CampaignFormValues } from "@/components/operations/management/campaign-form";
+import {
+  CampaignForm,
+  type CampaignFormValues,
+} from "@/components/operations/management/campaign-form";
 
 export function NewCampaignClient() {
   const router = useRouter();
@@ -33,4 +36,3 @@ export function NewCampaignClient() {
     </div>
   );
 }
-

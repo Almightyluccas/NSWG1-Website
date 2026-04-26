@@ -32,7 +32,9 @@ export default async function DashboardUserProfilePage({
       user.id
     );
     if (!userProfilePicture?.includes("https")) {
-      user.profile_photo_url = await createUrlProfilePicture(userProfilePicture!);
+      user.profile_photo_url = await createUrlProfilePicture(
+        userProfilePicture!
+      );
     } else {
       user.profile_photo_url = userProfilePicture!;
     }
@@ -53,8 +55,8 @@ export default async function DashboardUserProfilePage({
     ? {
         id: user.rank.id,
         imageUrl:
-          allRanks.find((rank) => rank.id === user.rank?.id)?.image?.image_url ||
-          null,
+          allRanks.find((rank) => rank.id === user.rank?.id)?.image
+            ?.image_url || null,
         name: user.rank.name,
       }
     : null;
@@ -74,7 +76,9 @@ export default async function DashboardUserProfilePage({
     : [];
   const rankHistory = user?.rank_records
     ? user.rank_records.map((record) => {
-        const rank = allRanks.find((existingRank) => existingRank.id === record.rank_id);
+        const rank = allRanks.find(
+          (existingRank) => existingRank.id === record.rank_id
+        );
         return {
           id: record.rank_id,
           recordId: record.id,
@@ -88,7 +92,8 @@ export default async function DashboardUserProfilePage({
 
   const assignmentHistory = user?.assignment_records
     ? user.assignment_records.map((record) => {
-        const unit = allAssignments.find((a) => a.unit_id === record.unit_id)?.unit || {
+        const unit = allAssignments.find((a) => a.unit_id === record.unit_id)
+          ?.unit || {
           name: `Unknown Unit (ID: ${record.unit_id})`,
         };
         const position = allAssignments.find(
@@ -121,7 +126,9 @@ export default async function DashboardUserProfilePage({
     return (
       <div className="w-full px-4 pb-12 pt-24 md:px-8">
         <div className="py-12 text-center">
-          <h2 className="text-xl font-semibold text-zinc-100">User not found</h2>
+          <h2 className="text-xl font-semibold text-zinc-100">
+            User not found
+          </h2>
           <p className="mt-2 text-zinc-400">
             The requested user profile could not be found.
           </p>

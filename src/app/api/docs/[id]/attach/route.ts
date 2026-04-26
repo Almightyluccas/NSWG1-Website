@@ -24,12 +24,18 @@ export async function POST(
     const body = await request.json();
     const missionId = String(body.missionId ?? "").trim();
     if (!missionId) {
-      return NextResponse.json({ error: "missionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "missionId is required" },
+        { status: 400 }
+      );
     }
 
     const docCampaignId = await database.get.operationDocumentCampaignId(docId);
     if (!docCampaignId) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Document not found" },
+        { status: 404 }
+      );
     }
     const missionCampaignId = await database.get.missionCampaignId(missionId);
     if (!missionCampaignId) {
@@ -51,7 +57,10 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error attaching document to mission:", error);
-    return NextResponse.json({ error: "Failed to attach document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to attach document" },
+      { status: 500 }
+    );
   }
 }
 
@@ -67,9 +76,14 @@ export async function DELETE(
 
     const { id } = await params;
     const docId = Number(id);
-    const missionId = String(request.nextUrl.searchParams.get("missionId") ?? "").trim();
+    const missionId = String(
+      request.nextUrl.searchParams.get("missionId") ?? ""
+    ).trim();
     if (!Number.isInteger(docId) || !missionId) {
-      return NextResponse.json({ error: "Invalid id or missionId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid id or missionId" },
+        { status: 400 }
+      );
     }
 
     await database.delete.detachDocumentFromMission(docId, missionId);
@@ -81,6 +95,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error detaching document from mission:", error);
-    return NextResponse.json({ error: "Failed to detach document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to detach document" },
+      { status: 500 }
+    );
   }
 }

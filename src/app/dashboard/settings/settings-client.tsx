@@ -69,7 +69,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const hasChanges = useMemo(
     () =>
       displayName !== (session?.user.name ?? user.name ?? "") ||
-      (themeUserCustomizationEnabled && pendingAccent.name !== currentAccent.name) ||
+      (themeUserCustomizationEnabled &&
+        pendingAccent.name !== currentAccent.name) ||
       (themeUserCustomizationEnabled &&
         canUseLightMode &&
         pendingMode !== (mode === "light" ? "light" : "dark")),
@@ -122,7 +123,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
     const updatedFields = [];
 
     if (themeUserCustomizationEnabled) {
-      if (canUseLightMode && pendingMode !== (mode === "light" ? "light" : "dark")) {
+      if (
+        canUseLightMode &&
+        pendingMode !== (mode === "light" ? "light" : "dark")
+      ) {
         await setMode(pendingMode);
         updatedFields.push("Appearance");
       }
@@ -191,7 +195,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
               </div>
               <div className="flex-1 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+                  <Label
+                    htmlFor="email"
+                    className="font-mono text-xs uppercase tracking-widest text-zinc-400"
+                  >
                     Email
                   </Label>
                   <Input
@@ -203,7 +210,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="displayName" className="font-mono text-xs uppercase tracking-widest text-zinc-400">
+                  <Label
+                    htmlFor="displayName"
+                    className="font-mono text-xs uppercase tracking-widest text-zinc-400"
+                  >
                     Display Name
                   </Label>
                   <Input
@@ -319,7 +329,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   Accent color and mode are unit-controlled for your account.
                 </p>
                 <p className="mt-2 text-xs text-zinc-500">
-                  Current accent: <span className="text-accent">{currentAccent.name}</span>
+                  Current accent:{" "}
+                  <span className="text-accent">{currentAccent.name}</span>
                 </p>
               </div>
             )}

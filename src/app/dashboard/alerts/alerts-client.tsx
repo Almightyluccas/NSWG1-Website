@@ -115,7 +115,9 @@ export function AlertsClient() {
             <BellRing className="h-3 w-3 text-accent" />
             Active Alerts Log
           </span>
-          <span className="text-[9px] font-mono text-zinc-500">{filteredAlerts.length} ENTRIES</span>
+          <span className="text-[9px] font-mono text-zinc-500">
+            {filteredAlerts.length} ENTRIES
+          </span>
         </div>
 
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800/40">
@@ -129,15 +131,20 @@ export function AlertsClient() {
             </div>
           ) : (
             filteredAlerts.map((alert) => (
-              <div 
+              <div
                 key={alertKey(alert)}
                 className="relative flex flex-col md:flex-row md:items-center gap-3 p-4 hover:bg-zinc-100 dark:hover:bg-zinc-800/20 transition-colors group"
               >
                 {/* Left classification strip */}
-                <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${
-                  alert.type === "priority" ? "bg-red-500" :
-                  alert.type === "warning" ? "bg-amber-500" : "bg-accent"
-                }`} />
+                <div
+                  className={`absolute left-0 top-0 bottom-0 w-[3px] ${
+                    alert.type === "priority"
+                      ? "bg-red-500"
+                      : alert.type === "warning"
+                        ? "bg-amber-500"
+                        : "bg-accent"
+                  }`}
+                />
 
                 <div className="flex items-start gap-4 flex-1 min-w-0 pl-1">
                   <div className="shrink-0 mt-0.5">
@@ -149,13 +156,18 @@ export function AlertsClient() {
                       <Info className="h-4 w-4 text-accent drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                     )}
                   </div>
-                  
+
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 flex-wrap mb-1.5">
-                      <h4 className={`text-[13px] font-black tracking-widest uppercase ${
-                        alert.type === "priority" ? "text-red-400" :
-                        alert.type === "warning" ? "text-amber-400" : "text-accent"
-                      }`}>
+                      <h4
+                        className={`text-[13px] font-black tracking-widest uppercase ${
+                          alert.type === "priority"
+                            ? "text-red-400"
+                            : alert.type === "warning"
+                              ? "text-amber-400"
+                              : "text-accent"
+                        }`}
+                      >
                         {alert.label}
                       </h4>
                       {alert.source === "perscom" && (
@@ -171,10 +183,16 @@ export function AlertsClient() {
                       {alert.message}
                     </p>
                     <div className="flex items-center gap-3 mt-3">
-                      <Badge variant="outline" className={`text-[9px] font-black px-1.5 py-0 leading-tight uppercase tracking-widest ${
-                        alert.type === "priority" ? "border-red-500/30 text-red-500" :
-                        alert.type === "warning" ? "border-amber-500/30 text-amber-500" : "border-accent/30 text-accent"
-                      }`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] font-black px-1.5 py-0 leading-tight uppercase tracking-widest ${
+                          alert.type === "priority"
+                            ? "border-red-500/30 text-red-500"
+                            : alert.type === "warning"
+                              ? "border-amber-500/30 text-amber-500"
+                              : "border-accent/30 text-accent"
+                        }`}
+                      >
                         {alert.type.toUpperCase()}
                       </Badge>
                       <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-widest">

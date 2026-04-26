@@ -85,7 +85,10 @@ export class DatabaseDelete {
     ]);
   }
 
-  async detachDocumentFromMission(docId: number, missionId: string): Promise<void> {
+  async detachDocumentFromMission(
+    docId: number,
+    missionId: string
+  ): Promise<void> {
     await this.client.query(
       `DELETE FROM operation_document_missions WHERE document_id = ? AND mission_id = ?`,
       [docId, missionId]
@@ -96,7 +99,10 @@ export class DatabaseDelete {
     await this.client.query(`DELETE FROM documents WHERE id = ?`, [documentId]);
   }
 
-  async detachDocumentFromTraining(trainingId: string, documentId: number): Promise<void> {
+  async detachDocumentFromTraining(
+    trainingId: string,
+    documentId: number
+  ): Promise<void> {
     await this.client.query(
       `DELETE FROM training_documents WHERE training_id = ? AND document_id = ?`,
       [trainingId, documentId]
@@ -106,7 +112,9 @@ export class DatabaseDelete {
   // ── Marketing gallery_media ──
 
   async galleryMedia(mediaId: number): Promise<void> {
-    await this.client.query(`DELETE FROM gallery_media WHERE id = ?`, [mediaId]);
+    await this.client.query(`DELETE FROM gallery_media WHERE id = ?`, [
+      mediaId,
+    ]);
   }
 
   // ── Operation Intel ──

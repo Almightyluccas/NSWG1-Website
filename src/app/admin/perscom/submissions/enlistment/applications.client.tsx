@@ -181,7 +181,11 @@ export const ApplicationsTable = ({
     <>
       <RoleGuard
         roles={session?.user?.roles || []}
-        allowedRoles={[UserRole.admin, UserRole.superAdmin, UserRole.instructor]}
+        allowedRoles={[
+          UserRole.admin,
+          UserRole.superAdmin,
+          UserRole.instructor,
+        ]}
       >
         <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 shadow-sm">
           <div className="p-6 border-b border-gray-200 dark:border-zinc-700 flex flex-col sm:flex-row gap-4">

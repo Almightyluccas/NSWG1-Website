@@ -16,5 +16,10 @@ export default async function DocsAttachPage({
   if (!params.campaignId || !params.missionId) {
     redirect("/dashboard/operations/management");
   }
-  return <DocsAttachClient campaignId={params.campaignId} missionId={params.missionId} />;
+  return (
+    <DocsAttachClient
+      campaignId={params.campaignId}
+      missionId={params.missionId}
+    />
+  );
 }

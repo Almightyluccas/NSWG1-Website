@@ -23,7 +23,7 @@ const PERSCOM_DEFAULT_REVALIDATE_SEC = 1800;
 const PERSCOM_SUBMISSIONS_REVALIDATE_SEC = 300;
 
 export class PerscomGet {
-  constructor(private client: PerscomClient) { }
+  constructor(private client: PerscomClient) {}
 
   private async fetchPaginated<T>(
     endpoint: string,
@@ -42,14 +42,13 @@ export class PerscomGet {
         return `?${params.toString()}`;
       };
 
-      const mergedOptions =
-        options ?? {
-          cache: "force-cache",
-          next: {
-            revalidate: PERSCOM_DEFAULT_REVALIDATE_SEC,
-            tags: [PERSCOM_DATA_TAG],
-          },
-        };
+      const mergedOptions = options ?? {
+        cache: "force-cache",
+        next: {
+          revalidate: PERSCOM_DEFAULT_REVALIDATE_SEC,
+          tags: [PERSCOM_DATA_TAG],
+        },
+      };
 
       const finalOptions: RequestInit & { next?: NextFetchRequestConfig } = {
         method: "GET",
@@ -91,10 +90,21 @@ export class PerscomGet {
 
   async users(): Promise<PerscomUserResponse[]> {
     const includes = [
-      "assignment_records", "attachments", "award_records", "combat_records",
-      "fields", "position", "primary_assignment_records", "qualification_records",
-      "rank", "rank_records", "secondary_assignment_records", "service_records",
-      "specialty", "status", "unit",
+      "assignment_records",
+      "attachments",
+      "award_records",
+      "combat_records",
+      "fields",
+      "position",
+      "primary_assignment_records",
+      "qualification_records",
+      "rank",
+      "rank_records",
+      "secondary_assignment_records",
+      "service_records",
+      "specialty",
+      "status",
+      "unit",
     ];
     return this.fetchPaginated<PerscomUserResponse>("/users", includes);
   }
@@ -128,10 +138,18 @@ export class PerscomGet {
 
   async assignments(): Promise<AssignmentRecord[]> {
     const includes = [
-      "author", "position", "specialty", "status",
-      "unit", "user", "document",
+      "author",
+      "position",
+      "specialty",
+      "status",
+      "unit",
+      "user",
+      "document",
     ];
-    return this.fetchPaginated<AssignmentRecord>("/assignment-records", includes);
+    return this.fetchPaginated<AssignmentRecord>(
+      "/assignment-records",
+      includes
+    );
   }
 
   async qualifications(): Promise<Qualification[]> {

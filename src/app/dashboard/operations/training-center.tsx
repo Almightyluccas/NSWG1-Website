@@ -62,7 +62,7 @@ export function TrainingCenter() {
 
   const filteredTrainings = useMemo(
     () => trainings.filter((t) => t.status === activeTab),
-    [trainings, activeTab],
+    [trainings, activeTab]
   );
 
   if (loading) {
@@ -90,7 +90,8 @@ export function TrainingCenter() {
               Training Command
             </CardTitle>
             <p className="mt-1 text-[11px] text-zinc-400">
-              Upcoming ranges, sims, and mandatory evolutions for the task force.
+              Upcoming ranges, sims, and mandatory evolutions for the task
+              force.
             </p>
           </div>
           <Tabs

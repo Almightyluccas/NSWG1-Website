@@ -19,14 +19,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const campaignId = request.nextUrl.searchParams.get("campaignId") || undefined;
-    const missionId = request.nextUrl.searchParams.get("missionId") || undefined;
+    const campaignId =
+      request.nextUrl.searchParams.get("campaignId") || undefined;
+    const missionId =
+      request.nextUrl.searchParams.get("missionId") || undefined;
 
-    const reports = await database.get.afterActionReports(campaignId, missionId);
+    const reports = await database.get.afterActionReports(
+      campaignId,
+      missionId
+    );
     return NextResponse.json(reports);
   } catch (error) {
     console.error("GET /api/aar error:", error);
-    return NextResponse.json({ error: "Failed to fetch AARs" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch AARs" },
+      { status: 500 }
+    );
   }
 }
 
@@ -39,12 +47,18 @@ export async function POST(request: NextRequest) {
 
     // Instructor+ required to submit AARs
     if (!hasMinLevel(session.user.roles)) {
-      return NextResponse.json({ error: "Insufficient rank to submit AARs" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Insufficient rank to submit AARs" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
     if (!body.campaignId || !body.title || !body.summary) {
-      return NextResponse.json({ error: "campaignId, title, and summary are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "campaignId, title, and summary are required" },
+        { status: 400 }
+      );
     }
 
     const id = await database.post.afterActionReport({
@@ -61,6 +75,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
     console.error("POST /api/aar error:", error);
-    return NextResponse.json({ error: "Failed to create AAR" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create AAR" },
+      { status: 500 }
+    );
   }
 }

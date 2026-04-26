@@ -86,7 +86,9 @@ export function RepositoryPicker({
       </CardHeader>
       <CardContent className="p-4 space-y-3">
         {loading ? (
-          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">Loading repository...</p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">
+            Loading repository...
+          </p>
         ) : items.length === 0 ? (
           <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.2em] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950/40">
             No repository items available.

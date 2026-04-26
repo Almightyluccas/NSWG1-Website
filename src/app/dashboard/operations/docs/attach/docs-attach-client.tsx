@@ -34,7 +34,9 @@ export function DocsAttachClient({
       renderItem={(item) => (
         <div>
           <p className="text-sm font-semibold">{String(item.title ?? "")}</p>
-          <p className="text-xs text-zinc-500">{String(item.description ?? "")}</p>
+          <p className="text-xs text-zinc-500">
+            {String(item.description ?? "")}
+          </p>
         </div>
       )}
     />

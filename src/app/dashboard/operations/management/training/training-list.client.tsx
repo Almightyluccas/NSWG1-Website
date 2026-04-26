@@ -40,9 +40,11 @@ type Training = {
 };
 
 const statusColors: Record<string, string> = {
-  scheduled: "border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  scheduled:
+    "border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10",
   "in-progress": "border-accent/40 text-accent bg-accent/10",
-  completed: "border-zinc-400/40 text-zinc-500 dark:text-zinc-400 bg-zinc-500/10",
+  completed:
+    "border-zinc-400/40 text-zinc-500 dark:text-zinc-400 bg-zinc-500/10",
   cancelled: "border-red-400/40 text-red-500 dark:text-red-400 bg-red-500/10",
 };
 
@@ -72,7 +74,9 @@ export function TrainingListClient() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/training/${deleteId}`, { method: "DELETE" });
+      const res = await fetch(`/api/training/${deleteId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete training");
       setTrainings((prev) => prev.filter((t) => t.id !== deleteId));
       toast.success("Training deleted");
@@ -113,7 +117,9 @@ export function TrainingListClient() {
         </div>
       ) : trainings.length === 0 ? (
         <div className="py-16 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/30">
-          <p className="text-zinc-400 dark:text-zinc-500 text-sm">No training sessions yet.</p>
+          <p className="text-zinc-400 dark:text-zinc-500 text-sm">
+            No training sessions yet.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -159,7 +165,11 @@ export function TrainingListClient() {
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  onClick={() => router.push(`/dashboard/operations/management/training/${training.id}`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/operations/management/training/${training.id}`
+                    )
+                  }
                 >
                   <Edit className="h-3.5 w-3.5 mr-1.5" />
                   Edit
@@ -178,12 +188,16 @@ export function TrainingListClient() {
         </div>
       )}
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Training</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this training session. This action cannot be undone.
+              This will permanently delete this training session. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

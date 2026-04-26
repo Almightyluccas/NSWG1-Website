@@ -18,7 +18,10 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-import { type DocumentClassification, type DocumentItem } from "@/types/documents";
+import {
+  type DocumentClassification,
+  type DocumentItem,
+} from "@/types/documents";
 import { UserRole } from "@/types/database";
 
 type ClassificationLevel = DocumentClassification;
@@ -32,27 +35,33 @@ const classificationConfig: Record<
 > = {
   GENERAL: {
     label: "MEMBER",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
   UNIT_CONFIDENTIAL: {
     label: "TACDEVRON",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
   SECRET: {
     label: "160TH",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
   TOP_SECRET: {
     label: "J-2",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
   LEADERSHIP: {
     label: "LEADERSHIP",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
   GREEN_TEAM: {
     label: "GREENTEAM",
-    badgeClass: "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
+    badgeClass:
+      "border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300",
   },
 };
 
@@ -88,9 +97,12 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<string>("ALL");
-  const [selectedClassification, setSelectedClassification] = useState<string>("ALL");
+  const [selectedClassification, setSelectedClassification] =
+    useState<string>("ALL");
   const [selectedTag, setSelectedTag] = useState<string>("ALL");
-  const [sortBy, setSortBy] = useState<"nameAsc" | "nameDesc" | "modifiedNewest" | "modifiedOldest">("nameAsc");
+  const [sortBy, setSortBy] = useState<
+    "nameAsc" | "nameDesc" | "modifiedNewest" | "modifiedOldest"
+  >("nameAsc");
   const [pageSize, setPageSize] = useState<25 | 50 | 100>(25);
   const [page, setPage] = useState(1);
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(new Set());
@@ -115,7 +127,11 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
   const toggleUnit = (unit: string) => {
     setExpandedUnits((prev) => {
       const next = new Set(prev);
-      if (next.has(unit)) { next.delete(unit); } else { next.add(unit); }
+      if (next.has(unit)) {
+        next.delete(unit);
+      } else {
+        next.add(unit);
+      }
       return next;
     });
   };
@@ -140,27 +156,42 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
       doc.docNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesUnit = selectedUnit === "ALL" || doc.unit === selectedUnit;
     const matchesClassification =
-      selectedClassification === "ALL" || doc.classification === selectedClassification;
-    const matchesTag = selectedTag === "ALL" || (doc.tags ?? []).includes(selectedTag);
+      selectedClassification === "ALL" ||
+      doc.classification === selectedClassification;
+    const matchesTag =
+      selectedTag === "ALL" || (doc.tags ?? []).includes(selectedTag);
     return matchesSearch && matchesUnit && matchesClassification && matchesTag;
   });
 
   const sortedDocuments = useMemo(() => {
     const docs = [...filteredDocuments];
     if (sortBy === "nameAsc") docs.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortBy === "nameDesc") docs.sort((a, b) => b.name.localeCompare(a.name));
-    if (sortBy === "modifiedNewest") docs.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
-    if (sortBy === "modifiedOldest") docs.sort((a, b) => a.lastModified.localeCompare(b.lastModified));
+    if (sortBy === "nameDesc")
+      docs.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortBy === "modifiedNewest")
+      docs.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+    if (sortBy === "modifiedOldest")
+      docs.sort((a, b) => a.lastModified.localeCompare(b.lastModified));
     return docs;
   }, [filteredDocuments, sortBy]);
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, selectedUnit, selectedClassification, selectedTag, sortBy, pageSize]);
+  }, [
+    searchTerm,
+    selectedUnit,
+    selectedClassification,
+    selectedTag,
+    sortBy,
+    pageSize,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(sortedDocuments.length / pageSize));
   const boundedPage = Math.min(page, totalPages);
-  const pagedDocuments = sortedDocuments.slice((boundedPage - 1) * pageSize, boundedPage * pageSize);
+  const pagedDocuments = sortedDocuments.slice(
+    (boundedPage - 1) * pageSize,
+    boundedPage * pageSize
+  );
 
   const groupedByUnit = pagedDocuments.reduce<Record<string, DocumentItem[]>>(
     (acc, doc) => {
@@ -181,8 +212,8 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
             Controlled Information — Need to Know Basis
           </p>
           <p className="text-xs text-zinc-400 mt-1">
-            Access to documents is governed by your role, rank, and unit assignment.
-            Unauthorized disclosure is strictly prohibited.
+            Access to documents is governed by your role, rank, and unit
+            assignment. Unauthorized disclosure is strictly prohibited.
           </p>
         </div>
         {isPrivileged && (
@@ -219,7 +250,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
             >
               <option value="ALL">ALL UNITS</option>
               {allUnits.map((unit) => (
-                <option key={unit} value={unit}>{unit.toUpperCase()}</option>
+                <option key={unit} value={unit}>
+                  {unit.toUpperCase()}
+                </option>
               ))}
             </select>
 
@@ -243,7 +276,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
             >
               <option value="ALL">ALL TAGS</option>
               {allTags.map((tag) => (
-                <option key={tag} value={tag}>{tag.toUpperCase()}</option>
+                <option key={tag} value={tag}>
+                  {tag.toUpperCase()}
+                </option>
               ))}
             </select>
             <select
@@ -258,7 +293,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
             </select>
             <select
               value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value) as 25 | 50 | 100)}
+              onChange={(e) =>
+                setPageSize(Number(e.target.value) as 25 | 50 | 100)
+              }
               className="bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-lg px-3 py-2 cursor-pointer outline-none focus:border-accent/40 h-9 min-w-[120px]"
             >
               <option value={25}>25 / PAGE</option>
@@ -268,7 +305,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
           </div>
 
           {/* Active Filters */}
-          {(selectedUnit !== "ALL" || selectedClassification !== "ALL" || selectedTag !== "ALL") && (
+          {(selectedUnit !== "ALL" ||
+            selectedClassification !== "ALL" ||
+            selectedTag !== "ALL") && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800/60">
               <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 ACTIVE FILTERS:
@@ -288,7 +327,12 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
                   className="text-[10px] font-mono cursor-pointer hover:opacity-80 px-2 py-0 border-zinc-300 dark:border-zinc-600/60 text-zinc-600 dark:text-zinc-300"
                   onClick={() => setSelectedClassification("ALL")}
                 >
-                  {classificationConfig[selectedClassification as ClassificationLevel]?.label} ✕
+                  {
+                    classificationConfig[
+                      selectedClassification as ClassificationLevel
+                    ]?.label
+                  }{" "}
+                  ✕
                 </Badge>
               )}
               {selectedTag !== "ALL" && (
@@ -316,7 +360,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
       </Card>
 
       <div className="flex flex-wrap items-center gap-2 border border-zinc-200 dark:border-zinc-800/70 rounded-lg bg-white dark:bg-zinc-900/50 p-3">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">SECTION CONTROLS</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+          SECTION CONTROLS
+        </span>
         <Button
           size="sm"
           variant="outline"
@@ -341,7 +387,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {classificationLevels.map((level) => {
           const config = classificationConfig[level];
-          const count = documents.filter((d) => d.classification === level).length;
+          const count = documents.filter(
+            (d) => d.classification === level
+          ).length;
           const isSelected = selectedClassification === level;
           return (
             <button
@@ -359,7 +407,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
                 <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500">
                   {config.label}
                 </p>
-                <p className="text-lg font-black text-zinc-900 dark:text-zinc-100 mt-0.5">{count}</p>
+                <p className="text-lg font-black text-zinc-900 dark:text-zinc-100 mt-0.5">
+                  {count}
+                </p>
               </div>
             </button>
           );
@@ -370,7 +420,9 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
       {Object.keys(groupedByUnit).length === 0 ? (
         <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-700/50 rounded-lg text-center py-12">
           <FileText className="h-10 w-10 mx-auto mb-3 text-zinc-700" />
-          <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">NO DOCUMENTS ACQUIRED</p>
+          <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">
+            NO DOCUMENTS ACQUIRED
+          </p>
           <p className="text-[10px] text-zinc-600 mt-1 font-mono uppercase tracking-widest">
             Adjust your search criteria or classification node
           </p>
@@ -406,7 +458,10 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
               {expandedUnits.has(unit) && (
                 <div className="border-t border-zinc-200 dark:border-zinc-800/60">
                   {docs.map((doc) => {
-                    const clr = classificationConfig[doc.classification as ClassificationLevel];
+                    const clr =
+                      classificationConfig[
+                        doc.classification as ClassificationLevel
+                      ];
                     return (
                       <div
                         key={doc.id}
@@ -416,7 +471,11 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
                         <div className="flex items-start gap-4 flex-1 min-w-0 pl-1">
                           <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded border border-zinc-200 dark:border-zinc-700/70 bg-zinc-50 dark:bg-zinc-800/50">
                             <Image
-                              src={doc.previewPath ?? fallbackPreviewByType[doc.type] ?? "/document-previews/file.svg"}
+                              src={
+                                doc.previewPath ??
+                                fallbackPreviewByType[doc.type] ??
+                                "/document-previews/file.svg"
+                              }
                               alt={`${doc.name} preview`}
                               fill
                               sizes="48px"
@@ -440,8 +499,12 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
                                 <Clock className="h-3 w-3 text-zinc-600" />
                                 {doc.lastModified}
                               </span>
-                              <span className="text-[10px] font-mono text-zinc-500">{doc.size}</span>
-                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">By: {doc.author}</span>
+                              <span className="text-[10px] font-mono text-zinc-500">
+                                {doc.size}
+                              </span>
+                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                By: {doc.author}
+                              </span>
                               <Badge
                                 variant="outline"
                                 className={`text-[9px] font-black px-1.5 py-0 leading-tight uppercase tracking-widest ${
@@ -470,9 +533,16 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
                               variant="outline"
                               className="h-7 text-[10px] font-black uppercase tracking-widest px-3 rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-accent hover:border-accent/50 bg-transparent"
                               onClick={async () => {
-                                const res = await fetch(`/api/documents/${doc.id}/download`);
+                                const res = await fetch(
+                                  `/api/documents/${doc.id}/download`
+                                );
                                 const data = await res.json().catch(() => ({}));
-                                if (res.ok && data?.url) window.open(data.url, "_blank", "noopener,noreferrer");
+                                if (res.ok && data?.url)
+                                  window.open(
+                                    data.url,
+                                    "_blank",
+                                    "noopener,noreferrer"
+                                  );
                               }}
                             >
                               <Download className="h-3 w-3 mr-1" />
@@ -506,7 +576,8 @@ export function DocumentsClient({ roles }: { roles: string[] }) {
       {/* Footer */}
       <div className="text-center py-4 border-t border-zinc-200 dark:border-zinc-800/40">
         <p className="text-sm text-zinc-500 font-medium uppercase tracking-wider">
-          All documents are the property of Naval Special Warfare Group One — Unauthorized reproduction or distribution is prohibited
+          All documents are the property of Naval Special Warfare Group One —
+          Unauthorized reproduction or distribution is prohibited
         </p>
       </div>
 

@@ -130,10 +130,7 @@ const getUploadTypeLabel = (uploadType: UploadType): string => {
 };
 
 const getFileIcon = (file: File, uploadType: UploadType) => {
-  if (
-    uploadType === "profile" ||
-    uploadType === "gallery"
-  ) {
+  if (uploadType === "profile" || uploadType === "gallery") {
     return <ImageIcon className="h-8 w-8 text-accent" />;
   }
 

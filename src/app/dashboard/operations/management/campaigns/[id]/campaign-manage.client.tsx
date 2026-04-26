@@ -35,10 +35,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { CampaignForm, type CampaignFormValues } from "@/components/operations/management/campaign-form";
-import { MissionForm, type MissionFormValues } from "@/components/operations/management/mission-form";
+import {
+  CampaignForm,
+  type CampaignFormValues,
+} from "@/components/operations/management/campaign-form";
+import {
+  MissionForm,
+  type MissionFormValues,
+} from "@/components/operations/management/mission-form";
 import { IntelBlockForm } from "@/components/operations/management/intel-block-form";
 import { DocSummaryPanel } from "@/components/operations/management/doc-summary-panel";
 import { SseSummaryPanel } from "@/components/operations/management/sse-summary-panel";
@@ -48,7 +60,11 @@ import {
   primaryBtn,
   secondaryBtn,
 } from "@/components/operations/management/action-buttons";
-import { getUnitLabel, groupPersonnel, UNIT_GROUP } from "@/lib/config/personnel-groups";
+import {
+  getUnitLabel,
+  groupPersonnel,
+  UNIT_GROUP,
+} from "@/lib/config/personnel-groups";
 
 type DbRSVP = {
   id: string;
@@ -119,14 +135,14 @@ export function CampaignManageClient({
 
   const [deleteMission, setDeleteMission] = useState<DbMission | null>(null);
   const [attendanceMission, setAttendanceMission] = useState<DbMission | null>(
-    null,
+    null
   );
   const [users, setUsers] = useState<AttendanceUser[]>([]);
   const [roleLookup, setRoleLookup] = useState<Record<string, string>>({});
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [attendanceBusy, setAttendanceBusy] = useState<Record<string, string>>(
-    {},
+    {}
   );
 
   const load = async () => {
@@ -203,7 +219,7 @@ export function CampaignManageClient({
       list = list.filter(
         (u) =>
           u.name.toLowerCase().includes(q) ||
-          u.discord_username.toLowerCase().includes(q),
+          u.discord_username.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => a.name.localeCompare(b.name));
@@ -235,9 +251,7 @@ export function CampaignManageClient({
             <p className="text-sm text-zinc-200 font-semibold">
               Campaign not available
             </p>
-            {error && (
-              <p className="text-xs text-red-200 font-mono">{error}</p>
-            )}
+            {error && <p className="text-xs text-red-200 font-mono">{error}</p>}
             <Button variant="outline" asChild>
               <Link href="/dashboard/operations/management">Back</Link>
             </Button>
@@ -265,12 +279,23 @@ export function CampaignManageClient({
             <Link href="/dashboard/operations/management">Back</Link>
           </Button>
           <Button variant={view === "missions" ? "default" : "outline"} asChild>
-            <Link href={`/dashboard/operations/management/campaigns/${id}/missions`}>Missions</Link>
+            <Link
+              href={`/dashboard/operations/management/campaigns/${id}/missions`}
+            >
+              Missions
+            </Link>
           </Button>
           <Button variant={view === "campaign" ? "default" : "outline"} asChild>
-            <Link href={`/dashboard/operations/management/campaigns/${id}/campaign`}>Campaign Intel</Link>
+            <Link
+              href={`/dashboard/operations/management/campaigns/${id}/campaign`}
+            >
+              Campaign Intel
+            </Link>
           </Button>
-          <Button className={primaryBtn} onClick={() => setMissionDialog({ type: "create", open: true })}>
+          <Button
+            className={primaryBtn}
+            onClick={() => setMissionDialog({ type: "create", open: true })}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Mission
           </Button>
@@ -328,157 +353,174 @@ export function CampaignManageClient({
 
       {view === "missions" && (
         <Card className="glass-panel scan-lines accent-border-top border border-zinc-800/80 rounded-sm">
-        <CardHeader className="border-b border-zinc-800/80 pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="text-xs font-bold text-zinc-300 uppercase tracking-[0.2em]">
-            Missions
-          </CardTitle>
-          <Badge variant="outline" className="text-[10px] border-zinc-700">
-            {missions.length}
-          </Badge>
-        </CardHeader>
-        <CardContent className="p-4 space-y-3">
-          {missions.length === 0 ? (
-            <div className="py-10 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.22em] border border-dashed border-zinc-700/80 rounded-sm bg-zinc-950/40">
-              No missions configured yet.
-            </div>
-          ) : (
-            missions.map((m) => {
-              const rsvps = m.rsvps ?? [];
-              const attendance = m.attendance ?? [];
-              const attending = rsvps.filter((r) => r.status === "attending")
-                .length;
-              const maybe = rsvps.filter((r) => r.status === "maybe").length;
-              const cant = rsvps.filter((r) => r.status === "not-attending")
-                .length;
+          <CardHeader className="border-b border-zinc-800/80 pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-xs font-bold text-zinc-300 uppercase tracking-[0.2em]">
+              Missions
+            </CardTitle>
+            <Badge variant="outline" className="text-[10px] border-zinc-700">
+              {missions.length}
+            </Badge>
+          </CardHeader>
+          <CardContent className="p-4 space-y-3">
+            {missions.length === 0 ? (
+              <div className="py-10 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.22em] border border-dashed border-zinc-700/80 rounded-sm bg-zinc-950/40">
+                No missions configured yet.
+              </div>
+            ) : (
+              missions.map((m) => {
+                const rsvps = m.rsvps ?? [];
+                const attendance = m.attendance ?? [];
+                const attending = rsvps.filter(
+                  (r) => r.status === "attending"
+                ).length;
+                const maybe = rsvps.filter((r) => r.status === "maybe").length;
+                const cant = rsvps.filter(
+                  (r) => r.status === "not-attending"
+                ).length;
 
-              return (
-                <div
-                  key={m.id}
-                  className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold text-zinc-100 uppercase tracking-[0.18em]">
-                        {m.name}
-                      </p>
-                      <p className="text-[11px] text-zinc-300 mt-1 line-clamp-2">
-                        {m.description}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-zinc-400">
-                        <Badge variant="outline" className="border-zinc-700">
-                          {m.date} @ {m.time}
-                        </Badge>
-                        <Badge variant="outline" className="border-zinc-700">
-                          {m.location}
-                        </Badge>
-                        {m.max_personnel && (
+                return (
+                  <div
+                    key={m.id}
+                    className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold text-zinc-100 uppercase tracking-[0.18em]">
+                          {m.name}
+                        </p>
+                        <p className="text-[11px] text-zinc-300 mt-1 line-clamp-2">
+                          {m.description}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-zinc-400">
                           <Badge variant="outline" className="border-zinc-700">
-                            Max {m.max_personnel}
+                            {m.date} @ {m.time}
                           </Badge>
-                        )}
+                          <Badge variant="outline" className="border-zinc-700">
+                            {m.location}
+                          </Badge>
+                          {m.max_personnel && (
+                            <Badge
+                              variant="outline"
+                              className="border-zinc-700"
+                            >
+                              Max {m.max_personnel}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={neutralBtn}
+                          onClick={() =>
+                            setAttendanceMission({ ...m, rsvps, attendance })
+                          }
+                        >
+                          <Users className="h-4 w-4 mr-2" />
+                          Attendance
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={secondaryBtn}
+                          onClick={() =>
+                            setMissionDialog({
+                              type: "edit",
+                              open: true,
+                              mission: m,
+                            })
+                          }
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className={secondaryBtn}
+                        >
+                          <Link
+                            href={`/dashboard/operations/management/campaigns/${id}/missions/${m.id}`}
+                          >
+                            Intel &amp; Attachments
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={destructiveBtn}
+                          onClick={() => setDeleteMission(m)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
+
+                    <div className="flex flex-wrap gap-2 text-[10px] text-zinc-400">
+                      <Badge
                         variant="outline"
-                        className={neutralBtn}
-                        onClick={() =>
-                          setAttendanceMission({ ...m, rsvps, attendance })
-                        }
+                        className="border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
                       >
-                        <Users className="h-4 w-4 mr-2" />
-                        Attendance
-                      </Button>
-                      <Button
-                        size="sm"
+                        {attending} Attending
+                      </Badge>
+                      <Badge
                         variant="outline"
-                        className={secondaryBtn}
-                        onClick={() =>
-                          setMissionDialog({ type: "edit", open: true, mission: m })
-                        }
+                        className="border-amber-500/30 text-amber-300 bg-amber-500/5"
                       >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                      <Button
-                        asChild
-                        size="sm"
+                        {maybe} Maybe
+                      </Badge>
+                      <Badge
                         variant="outline"
-                        className={secondaryBtn}
+                        className="border-red-500/30 text-red-300 bg-red-500/5"
                       >
-                        <Link href={`/dashboard/operations/management/campaigns/${id}/missions/${m.id}`}>
-                          Intel &amp; Attachments
-                        </Link>
-                      </Button>
-                      <Button
-                        size="sm"
+                        {cant} Can&apos;t Attend
+                      </Badge>
+                      <Badge
                         variant="outline"
-                        className={destructiveBtn}
-                        onClick={() => setDeleteMission(m)}
+                        className="border-blue-500/30 text-blue-200 bg-blue-500/5"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
+                        {attendance.length} attendance marked
+                      </Badge>
+                      {getRsvpUnitBreakdown(rsvps).map(([unit, count]) => (
+                        <Badge
+                          key={`${m.id}-${unit}`}
+                          variant="outline"
+                          className="border-zinc-700 text-zinc-300 bg-zinc-900/40"
+                        >
+                          {unit}: {count} RSVP
+                        </Badge>
+                      ))}
                     </div>
                   </div>
-
-                  <div className="flex flex-wrap gap-2 text-[10px] text-zinc-400">
-                    <Badge
-                      variant="outline"
-                      className="border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
-                    >
-                      {attending} Attending
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-amber-500/30 text-amber-300 bg-amber-500/5"
-                    >
-                      {maybe} Maybe
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-red-500/30 text-red-300 bg-red-500/5"
-                    >
-                      {cant} Can&apos;t Attend
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-blue-500/30 text-blue-200 bg-blue-500/5"
-                    >
-                      {attendance.length} attendance marked
-                    </Badge>
-                    {getRsvpUnitBreakdown(rsvps).map(([unit, count]) => (
-                      <Badge
-                        key={`${m.id}-${unit}`}
-                        variant="outline"
-                        className="border-zinc-700 text-zinc-300 bg-zinc-900/40"
-                      >
-                        {unit}: {count} RSVP
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </CardContent>
-      </Card>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
       )}
 
       <Dialog
         open={missionDialog.open}
-        onOpenChange={(open) => !open && setMissionDialog({ type: null, open: false })}
+        onOpenChange={(open) =>
+          !open && setMissionDialog({ type: null, open: false })
+        }
       >
         <DialogContent className="w-[95vw] md:w-[720px] !max-w-none">
           <DialogHeader>
             <DialogTitle>
-              {missionDialog.type === "edit" ? "Edit Mission" : "Create Mission"}
+              {missionDialog.type === "edit"
+                ? "Edit Mission"
+                : "Create Mission"}
             </DialogTitle>
           </DialogHeader>
           <MissionForm
             title="Mission Details"
-            submitLabel={missionDialog.type === "edit" ? "Save Mission" : "Create Mission"}
+            submitLabel={
+              missionDialog.type === "edit" ? "Save Mission" : "Create Mission"
+            }
             defaultValues={
               missionDialog.type === "edit"
                 ? {
@@ -513,11 +555,14 @@ export function CampaignManageClient({
               };
 
               if (missionDialog.type === "edit") {
-                const res = await fetch(`/api/missions/${missionDialog.mission.id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(payload),
-                });
+                const res = await fetch(
+                  `/api/missions/${missionDialog.mission.id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  }
+                );
                 if (!res.ok) throw new Error(await res.text());
               } else {
                 const res = await fetch("/api/missions", {
@@ -544,7 +589,8 @@ export function CampaignManageClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete mission</AlertDialogTitle>
             <AlertDialogDescription>
-              This will delete the mission and all RSVPs for it. Attendance records will be preserved.
+              This will delete the mission and all RSVPs for it. Attendance
+              records will be preserved.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -586,7 +632,8 @@ export function CampaignManageClient({
                   {attendanceMission.name}
                 </p>
                 <p className="text-[11px] text-zinc-400 mt-1">
-                  {attendanceMission.date} @ {attendanceMission.time} • {attendanceMission.location}
+                  {attendanceMission.date} @ {attendanceMission.time} •{" "}
+                  {attendanceMission.location}
                 </p>
               </div>
 
@@ -632,171 +679,195 @@ export function CampaignManageClient({
                     </div>
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
                       {group.users.map((u) => {
-                  const rsvp = (attendanceMission.rsvps ?? []).find(
-                    (r) => r.user_id === u.id,
-                  );
-                  const att = (attendanceMission.attendance ?? []).find(
-                    (a) => a.user_id === u.id,
-                  );
-                  const busy = attendanceBusy[u.id];
+                        const rsvp = (attendanceMission.rsvps ?? []).find(
+                          (r) => r.user_id === u.id
+                        );
+                        const att = (attendanceMission.attendance ?? []).find(
+                          (a) => a.user_id === u.id
+                        );
+                        const busy = attendanceBusy[u.id];
 
-                  return (
-                    <div
-                      key={u.id}
-                      className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-zinc-100 truncate">
-                          {u.name}
-                        </p>
-                        <p className="text-[11px] text-zinc-400 truncate">
-                          {u.discord_username}
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-zinc-400">
-                          <Badge variant="outline" className="border-zinc-700">
-                            {u.primaryRole}
-                          </Badge>
-                          {rsvp && (
-                            <Badge
-                              variant="outline"
-                              className={
-                                rsvp.status === "attending"
-                                  ? "border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
-                                  : rsvp.status === "maybe"
-                                    ? "border-amber-500/30 text-amber-300 bg-amber-500/5"
-                                    : "border-red-500/30 text-red-300 bg-red-500/5"
-                              }
-                            >
-                              RSVP: {rsvp.status}
-                            </Badge>
-                          )}
-                          {att && (
-                            <Badge variant="outline" className="border-blue-500/30 text-blue-200 bg-blue-500/5">
-                              Attendance: {att.status}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
+                        return (
+                          <div
+                            key={u.id}
+                            className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-zinc-100 truncate">
+                                {u.name}
+                              </p>
+                              <p className="text-[11px] text-zinc-400 truncate">
+                                {u.discord_username}
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-zinc-400">
+                                <Badge
+                                  variant="outline"
+                                  className="border-zinc-700"
+                                >
+                                  {u.primaryRole}
+                                </Badge>
+                                {rsvp && (
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      rsvp.status === "attending"
+                                        ? "border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
+                                        : rsvp.status === "maybe"
+                                          ? "border-amber-500/30 text-amber-300 bg-amber-500/5"
+                                          : "border-red-500/30 text-red-300 bg-red-500/5"
+                                    }
+                                  >
+                                    RSVP: {rsvp.status}
+                                  </Badge>
+                                )}
+                                {att && (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-blue-500/30 text-blue-200 bg-blue-500/5"
+                                  >
+                                    Attendance: {att.status}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy === "present"}
-                          className="bg-transparent hover:bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
-                          onClick={async () => {
-                            setAttendanceBusy((p) => ({ ...p, [u.id]: "present" }));
-                            try {
-                              const res = await fetch(
-                                `/api/missions/${attendanceMission.id}/attendance`,
-                                {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    userId: u.id,
-                                    userName: u.name,
-                                    status: "present",
-                                  }),
-                                },
-                              );
-                              if (!res.ok) throw new Error(await res.text());
-                              await load();
-                            } finally {
-                              setAttendanceBusy((p) => {
-                                const n = { ...p };
-                                delete n[u.id];
-                                return n;
-                              });
-                            }
-                          }}
-                        >
-                          {busy === "present" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <CheckCircle className="h-4 w-4 mr-1.5" />
-                          )}
-                          Present
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy === "absent"}
-                          className="bg-transparent hover:bg-red-500/15 border-red-500/40 text-red-300"
-                          onClick={async () => {
-                            setAttendanceBusy((p) => ({ ...p, [u.id]: "absent" }));
-                            try {
-                              const res = await fetch(
-                                `/api/missions/${attendanceMission.id}/attendance`,
-                                {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    userId: u.id,
-                                    userName: u.name,
-                                    status: "absent",
-                                  }),
-                                },
-                              );
-                              if (!res.ok) throw new Error(await res.text());
-                              await load();
-                            } finally {
-                              setAttendanceBusy((p) => {
-                                const n = { ...p };
-                                delete n[u.id];
-                                return n;
-                              });
-                            }
-                          }}
-                        >
-                          {busy === "absent" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <XCircle className="h-4 w-4 mr-1.5" />
-                          )}
-                          Absent
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy === "late"}
-                          className="bg-transparent hover:bg-amber-500/15 border-amber-500/40 text-amber-200"
-                          onClick={async () => {
-                            setAttendanceBusy((p) => ({ ...p, [u.id]: "late" }));
-                            try {
-                              const res = await fetch(
-                                `/api/missions/${attendanceMission.id}/attendance`,
-                                {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    userId: u.id,
-                                    userName: u.name,
-                                    status: "late",
-                                  }),
-                                },
-                              );
-                              if (!res.ok) throw new Error(await res.text());
-                              await load();
-                            } finally {
-                              setAttendanceBusy((p) => {
-                                const n = { ...p };
-                                delete n[u.id];
-                                return n;
-                              });
-                            }
-                          }}
-                        >
-                          {busy === "late" ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 mr-1.5" />
-                          )}
-                          Late
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={busy === "present"}
+                                className="bg-transparent hover:bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                                onClick={async () => {
+                                  setAttendanceBusy((p) => ({
+                                    ...p,
+                                    [u.id]: "present",
+                                  }));
+                                  try {
+                                    const res = await fetch(
+                                      `/api/missions/${attendanceMission.id}/attendance`,
+                                      {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          userId: u.id,
+                                          userName: u.name,
+                                          status: "present",
+                                        }),
+                                      }
+                                    );
+                                    if (!res.ok)
+                                      throw new Error(await res.text());
+                                    await load();
+                                  } finally {
+                                    setAttendanceBusy((p) => {
+                                      const n = { ...p };
+                                      delete n[u.id];
+                                      return n;
+                                    });
+                                  }
+                                }}
+                              >
+                                {busy === "present" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 mr-1.5" />
+                                )}
+                                Present
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={busy === "absent"}
+                                className="bg-transparent hover:bg-red-500/15 border-red-500/40 text-red-300"
+                                onClick={async () => {
+                                  setAttendanceBusy((p) => ({
+                                    ...p,
+                                    [u.id]: "absent",
+                                  }));
+                                  try {
+                                    const res = await fetch(
+                                      `/api/missions/${attendanceMission.id}/attendance`,
+                                      {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          userId: u.id,
+                                          userName: u.name,
+                                          status: "absent",
+                                        }),
+                                      }
+                                    );
+                                    if (!res.ok)
+                                      throw new Error(await res.text());
+                                    await load();
+                                  } finally {
+                                    setAttendanceBusy((p) => {
+                                      const n = { ...p };
+                                      delete n[u.id];
+                                      return n;
+                                    });
+                                  }
+                                }}
+                              >
+                                {busy === "absent" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 mr-1.5" />
+                                )}
+                                Absent
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={busy === "late"}
+                                className="bg-transparent hover:bg-amber-500/15 border-amber-500/40 text-amber-200"
+                                onClick={async () => {
+                                  setAttendanceBusy((p) => ({
+                                    ...p,
+                                    [u.id]: "late",
+                                  }));
+                                  try {
+                                    const res = await fetch(
+                                      `/api/missions/${attendanceMission.id}/attendance`,
+                                      {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          userId: u.id,
+                                          userName: u.name,
+                                          status: "late",
+                                        }),
+                                      }
+                                    );
+                                    if (!res.ok)
+                                      throw new Error(await res.text());
+                                    await load();
+                                  } finally {
+                                    setAttendanceBusy((p) => {
+                                      const n = { ...p };
+                                      delete n[u.id];
+                                      return n;
+                                    });
+                                  }
+                                }}
+                              >
+                                {busy === "late" ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 mr-1.5" />
+                                )}
+                                Late
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -811,8 +882,6 @@ export function CampaignManageClient({
           )}
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
-

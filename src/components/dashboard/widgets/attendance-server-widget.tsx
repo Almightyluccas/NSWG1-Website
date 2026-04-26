@@ -1,7 +1,11 @@
 import { database } from "@/database";
 import { AttendanceWidget } from "./attendance-widget";
 
-export default async function AttendanceServerWidget({ userId }: { userId: string }) {
+export default async function AttendanceServerWidget({
+  userId,
+}: {
+  userId: string;
+}) {
   let attendanceRecords: any[] = [];
   try {
     if (userId) {

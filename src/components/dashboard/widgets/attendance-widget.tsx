@@ -27,19 +27,37 @@ export function AttendanceWidget({ records }: AttendanceWidgetProps) {
   const recentRecords = records.slice(0, 5);
 
   const statusColor: Record<string, string> = {
-    present: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30",
+    present:
+      "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30",
     absent: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30",
     late: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-    excused: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+    excused:
+      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
   };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <StatBox label="PRESENT" value={present} accent="text-green-600 dark:text-green-400" />
-        <StatBox label="ABSENT" value={absent} accent="text-red-600 dark:text-red-400" />
-        <StatBox label="LATE" value={late} accent="text-amber-600 dark:text-amber-400" />
-        <StatBox label="EXCUSED" value={excused} accent="text-blue-600 dark:text-blue-400" />
+        <StatBox
+          label="PRESENT"
+          value={present}
+          accent="text-green-600 dark:text-green-400"
+        />
+        <StatBox
+          label="ABSENT"
+          value={absent}
+          accent="text-red-600 dark:text-red-400"
+        />
+        <StatBox
+          label="LATE"
+          value={late}
+          accent="text-amber-600 dark:text-amber-400"
+        />
+        <StatBox
+          label="EXCUSED"
+          value={excused}
+          accent="text-blue-600 dark:text-blue-400"
+        />
       </div>
 
       <div className="bg-zinc-100 dark:bg-black/40 border border-zinc-200 dark:border-zinc-800/50 rounded-lg p-2.5 shadow-inner">
@@ -75,10 +93,10 @@ export function AttendanceWidget({ records }: AttendanceWidgetProps) {
                     record.status === "present"
                       ? "bg-green-500"
                       : record.status === "absent"
-                      ? "bg-red-500"
-                      : record.status === "late"
-                      ? "bg-amber-500"
-                      : "bg-blue-500"
+                        ? "bg-red-500"
+                        : record.status === "late"
+                          ? "bg-amber-500"
+                          : "bg-blue-500"
                   }`}
                 />
                 <span className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
@@ -92,7 +110,8 @@ export function AttendanceWidget({ records }: AttendanceWidgetProps) {
                 <Badge
                   variant="outline"
                   className={`text-[8px] font-mono px-1 py-0 rounded-md ${
-                    statusColor[record.status] || "text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700"
+                    statusColor[record.status] ||
+                    "text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700"
                   }`}
                 >
                   {record.status.toUpperCase()}

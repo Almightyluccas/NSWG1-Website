@@ -148,7 +148,9 @@ export const authOptions: NextAuthOptions = {
           preferences: token.preferences ?? {
             activeThemeName: "Gold",
           },
-          customThemes: Array.isArray(token.customThemes) ? token.customThemes : [],
+          customThemes: Array.isArray(token.customThemes)
+            ? token.customThemes
+            : [],
           roles: Array.isArray(token.roles) ? token.roles : [],
         };
       }

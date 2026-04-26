@@ -114,7 +114,9 @@ export function SseAttachmentList({
             <Label>Title</Label>
             <Input
               value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, title: e.target.value }))
+              }
               placeholder="Captured radio handset"
             />
           </div>
@@ -130,14 +132,18 @@ export function SseAttachmentList({
             <Label>Classification</Label>
             <Input
               value={form.classification}
-              onChange={(e) => setForm((p) => ({ ...p, classification: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, classification: e.target.value }))
+              }
             />
           </div>
           <div className="space-y-2">
             <Label>Status</Label>
             <Input
               value={form.status}
-              onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, status: e.target.value }))
+              }
               placeholder="LOGGED / ANALYZING / LOCKED"
             />
           </div>
@@ -146,14 +152,18 @@ export function SseAttachmentList({
             <Input
               type="date"
               value={form.collectedDate}
-              onChange={(e) => setForm((p) => ({ ...p, collectedDate: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, collectedDate: e.target.value }))
+              }
             />
           </div>
           <div className="space-y-2">
             <Label>Image URL (placeholder)</Label>
             <Input
               value={form.imageUrl}
-              onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, imageUrl: e.target.value }))
+              }
               placeholder="https://placeholder.local/sse-image.jpg"
             />
           </div>
@@ -161,7 +171,9 @@ export function SseAttachmentList({
             <Label>Description</Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, description: e.target.value }))
+              }
               className="min-h-[84px]"
             />
           </div>
@@ -176,13 +188,19 @@ export function SseAttachmentList({
             onClick={submit}
             disabled={submitting || !form.title}
           >
-            {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Plus className="h-4 w-4 mr-1.5" />}
+            {submitting ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4 mr-1.5" />
+            )}
             Add SSE Return
           </Button>
         </div>
 
         {loading ? (
-          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">Loading SSE returns...</p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">
+            Loading SSE returns...
+          </p>
         ) : items.length === 0 ? (
           <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.2em] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950/40">
             No SSE returns yet.
@@ -204,13 +222,19 @@ export function SseAttachmentList({
                   />
                 </div>
                 <div className="p-3">
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.title}</p>
-                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{item.description}</p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                    {item.description}
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
                     <Badge variant="outline">{item.type}</Badge>
                     <Badge variant="outline">{item.classification}</Badge>
                     <Badge variant="outline">{item.status}</Badge>
-                    {item.collectedDate && <Badge variant="outline">{item.collectedDate}</Badge>}
+                    {item.collectedDate && (
+                      <Badge variant="outline">{item.collectedDate}</Badge>
+                    )}
                   </div>
                 </div>
               </div>

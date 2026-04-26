@@ -35,7 +35,8 @@ export function DocSummaryPanel({
   const [items, setItems] = useState<PlanningDocItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const query = ownerType === "campaign" ? `campaignId=${ownerId}` : `missionId=${ownerId}`;
+  const query =
+    ownerType === "campaign" ? `campaignId=${ownerId}` : `missionId=${ownerId}`;
 
   const load = async () => {
     try {
@@ -55,7 +56,9 @@ export function DocSummaryPanel({
 
   const detach = async (docId: string) => {
     if (ownerType !== "mission") return;
-    const res = await fetch(`/api/docs/${docId}/attach?missionId=${ownerId}`, { method: "DELETE" });
+    const res = await fetch(`/api/docs/${docId}/attach?missionId=${ownerId}`, {
+      method: "DELETE",
+    });
     if (res.ok) void load();
   };
 
@@ -85,7 +88,9 @@ export function DocSummaryPanel({
               </Button>
               {ownerType === "mission" && (
                 <Button asChild variant="outline" className={secondaryBtn}>
-                  <Link href={`/dashboard/operations/docs/attach?campaignId=${campaignId}&missionId=${ownerId}`}>
+                  <Link
+                    href={`/dashboard/operations/docs/attach?campaignId=${campaignId}&missionId=${ownerId}`}
+                  >
                     Attach Existing
                   </Link>
                 </Button>
@@ -96,46 +101,64 @@ export function DocSummaryPanel({
       </CardHeader>
       <CardContent className="p-4 space-y-3">
         {loading ? (
-          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">Loading docs...</p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">
+            Loading docs...
+          </p>
         ) : items.length === 0 ? (
           <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.2em] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950/40">
             No docs linked.
           </div>
         ) : (
           items.map((item) => (
-            <div key={item.id} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+            <div
+              key={item.id}
+              className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold flex items-center gap-2">
                     <FileText className="h-4 w-4 text-accent" />
                     {item.title}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">{item.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {item.description}
+                  </p>
                   <div className="mt-2 flex gap-2 flex-wrap">
-                    {item.docType && <Badge variant="outline">{item.docType}</Badge>}
-                    {item.classification && <Badge variant="outline">{item.classification}</Badge>}
+                    {item.docType && (
+                      <Badge variant="outline">{item.docType}</Badge>
+                    )}
+                    {item.classification && (
+                      <Badge variant="outline">{item.classification}</Badge>
+                    )}
                     {item.date && <Badge variant="outline">{item.date}</Badge>}
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" className={secondaryBtn} onClick={() => void download(item.id)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={secondaryBtn}
+                    onClick={() => void download(item.id)}
+                  >
                     <Download className="h-3.5 w-3.5 mr-1" />
                     Download
                   </Button>
                   {isAdmin && (
                     <Button asChild variant="outline" className={secondaryBtn}>
-                      <Link href={`/dashboard/operations/docs/${item.id}/edit`}>Edit</Link>
+                      <Link href={`/dashboard/operations/docs/${item.id}/edit`}>
+                        Edit
+                      </Link>
                     </Button>
                   )}
                   {isAdmin && ownerType === "mission" && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={destructiveBtn}
-                        onClick={() => void detach(item.id)}
-                      >
-                        Detach
-                      </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={destructiveBtn}
+                      onClick={() => void detach(item.id)}
+                    >
+                      Detach
+                    </Button>
                   )}
                 </div>
               </div>

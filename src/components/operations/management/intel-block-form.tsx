@@ -22,7 +22,8 @@ export function IntelBlockForm({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const basePath = ownerType === "campaign" ? "/api/intel/campaign" : "/api/intel/mission";
+  const basePath =
+    ownerType === "campaign" ? "/api/intel/campaign" : "/api/intel/mission";
   const ownerKey = ownerType === "campaign" ? "campaignId" : "missionId";
 
   useEffect(() => {
@@ -122,7 +123,11 @@ export function IntelBlockForm({
             onClick={save}
             disabled={saving || loading}
           >
-            {saving ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
+            {saving ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-1.5" />
+            )}
             Save Intel
           </Button>
         </div>

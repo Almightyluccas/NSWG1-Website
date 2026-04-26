@@ -27,7 +27,10 @@ export async function GET(
 
   const raw = String(row.file_url ?? "");
   if (!raw) {
-    return NextResponse.json({ error: "Document has no file" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Document has no file" },
+      { status: 404 }
+    );
   }
 
   if (/^https?:\/\//i.test(raw)) {

@@ -356,7 +356,9 @@ export function Navbar() {
                           <Link
                             href="/dashboard/operations/management"
                             className="block py-2 text-accent"
-                            onClick={() => setIsMobileOperationCenterOpen(false)}
+                            onClick={() =>
+                              setIsMobileOperationCenterOpen(false)
+                            }
                           >
                             Op Management
                           </Link>

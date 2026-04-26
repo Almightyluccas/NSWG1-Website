@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, CheckCircle, Loader2, Trash2, Users, XCircle } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  Trash2,
+  Users,
+  XCircle,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +45,11 @@ import {
   TrainingForm,
   type TrainingFormValues,
 } from "@/components/operations/management/training-form";
-import { getUnitLabel, groupPersonnel, UNIT_GROUP } from "@/lib/config/personnel-groups";
+import {
+  getUnitLabel,
+  groupPersonnel,
+  UNIT_GROUP,
+} from "@/lib/config/personnel-groups";
 import { AllowedPersonnelPicker } from "@/components/documents/allowed-personnel-picker";
 import { UserRole } from "@/types/database";
 import { useDocumentUpload } from "@/lib/documents/useDocumentUpload";
@@ -104,13 +115,15 @@ export function TrainingManageClient({ id }: { id: string }) {
   const [userSearch, setUserSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [attendanceBusy, setAttendanceBusy] = useState<Record<string, string>>(
-    {},
+    {}
   );
   const [allowRoles, setAllowRoles] = useState<string[]>([]);
   const [allowUsers, setAllowUsers] = useState<string[]>([]);
   const [allowlistSaving, setAllowlistSaving] = useState(false);
   const [trainingDocs, setTrainingDocs] = useState<TrainingDocument[]>([]);
-  const [repositoryDocs, setRepositoryDocs] = useState<Array<{ id: string; name: string }>>([]);
+  const [repositoryDocs, setRepositoryDocs] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [selectedRepoDoc, setSelectedRepoDoc] = useState<string>("");
   const [newDocFile, setNewDocFile] = useState<File | null>(null);
 
@@ -194,7 +207,10 @@ export function TrainingManageClient({ id }: { id: string }) {
         if (!res.ok) return;
         const data = await res.json();
         const docs = Array.isArray(data)
-          ? data.map((doc) => ({ id: String(doc.id), name: String(doc.name ?? `Doc ${doc.id}`) }))
+          ? data.map((doc) => ({
+              id: String(doc.id),
+              name: String(doc.name ?? `Doc ${doc.id}`),
+            }))
           : [];
         setRepositoryDocs(docs);
       } catch {
@@ -227,7 +243,7 @@ export function TrainingManageClient({ id }: { id: string }) {
       list = list.filter(
         (u) =>
           u.name.toLowerCase().includes(q) ||
-          u.discord_username.toLowerCase().includes(q),
+          u.discord_username.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => a.name.localeCompare(b.name));
@@ -239,11 +255,17 @@ export function TrainingManageClient({ id }: { id: string }) {
   }, [filteredUsers]);
 
   const toggleAllowRole = (role: string) => {
-    setAllowRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+    setAllowRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
   };
 
   const toggleAllowUser = (userId: string) => {
-    setAllowUsers((prev) => (prev.includes(userId) ? prev.filter((u) => u !== userId) : [...prev, userId]));
+    setAllowUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((u) => u !== userId)
+        : [...prev, userId]
+    );
   };
 
   if (loading) {
@@ -282,12 +304,15 @@ export function TrainingManageClient({ id }: { id: string }) {
   const attending = rsvps.filter((r) => r.status === "attending").length;
   const maybe = rsvps.filter((r) => r.status === "maybe").length;
   const cant = rsvps.filter((r) => r.status === "not-attending").length;
-  const rsvpUnitBreakdown = rsvps.reduce<Record<string, number>>((acc, rsvp) => {
-    const role = roleLookup[rsvp.userId] || "member";
-    const unit = getUnitLabel(role);
-    acc[unit] = (acc[unit] || 0) + 1;
-    return acc;
-  }, {});
+  const rsvpUnitBreakdown = rsvps.reduce<Record<string, number>>(
+    (acc, rsvp) => {
+      const role = roleLookup[rsvp.userId] || "member";
+      const unit = getUnitLabel(role);
+      acc[unit] = (acc[unit] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
 
   return (
     <div className="max-w-5xl mx-auto space-y-4">
@@ -421,18 +446,28 @@ export function TrainingManageClient({ id }: { id: string }) {
               onClick={async () => {
                 setAllowlistSaving(true);
                 try {
-                  const res = await fetch(`/api/training/${record.id}/allowlist`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ roles: allowRoles, userIds: allowUsers }),
-                  });
+                  const res = await fetch(
+                    `/api/training/${record.id}/allowlist`,
+                    {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        roles: allowRoles,
+                        userIds: allowUsers,
+                      }),
+                    }
+                  );
                   if (!res.ok) throw new Error(await res.text());
                 } finally {
                   setAllowlistSaving(false);
                 }
               }}
             >
-              {allowlistSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Allowlist"}
+              {allowlistSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Save Allowlist"
+              )}
             </Button>
           </div>
         </CardContent>
@@ -509,23 +544,36 @@ export function TrainingManageClient({ id }: { id: string }) {
                 }
               }}
             >
-              {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Upload New & Attach"}
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Upload New & Attach"
+              )}
             </Button>
           </div>
 
           <div className="space-y-2">
             {trainingDocs.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between rounded-sm border border-zinc-800 p-2">
+              <div
+                key={doc.id}
+                className="flex items-center justify-between rounded-sm border border-zinc-800 p-2"
+              >
                 <div>
-                  <p className="text-sm text-zinc-100 font-semibold">{doc.name}</p>
-                  <p className="text-xs text-zinc-400">{doc.docType} • {doc.classification}</p>
+                  <p className="text-sm text-zinc-100 font-semibold">
+                    {doc.name}
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    {doc.docType} • {doc.classification}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={async () => {
-                      const res = await fetch(`/api/documents/${doc.id}/download`);
+                      const res = await fetch(
+                        `/api/documents/${doc.id}/download`
+                      );
                       const data = await res.json().catch(() => ({}));
                       if (res.ok && data?.url) {
                         window.open(data.url, "_blank", "noopener,noreferrer");
@@ -539,7 +587,10 @@ export function TrainingManageClient({ id }: { id: string }) {
                     variant="outline"
                     className="text-red-300 hover:text-red-200"
                     onClick={async () => {
-                      const res = await fetch(`/api/training/${record.id}/docs/${doc.id}`, { method: "DELETE" });
+                      const res = await fetch(
+                        `/api/training/${record.id}/docs/${doc.id}`,
+                        { method: "DELETE" }
+                      );
                       if (res.ok) await loadTrainingDocs();
                     }}
                   >
@@ -549,7 +600,9 @@ export function TrainingManageClient({ id }: { id: string }) {
               </div>
             ))}
             {trainingDocs.length === 0 && (
-              <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.18em]">No documents attached.</p>
+              <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.18em]">
+                No documents attached.
+              </p>
             )}
           </div>
         </CardContent>
@@ -632,193 +685,204 @@ export function TrainingManageClient({ id }: { id: string }) {
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-300">
                       {group.label}
                     </p>
-                    <Badge variant="outline" className="border-zinc-700 text-zinc-400 text-[10px]">
+                    <Badge
+                      variant="outline"
+                      className="border-zinc-700 text-zinc-400 text-[10px]"
+                    >
                       {group.users.length}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
                     {group.users.map((u) => {
-                const rsvp = (record.rsvps ?? []).find((r) => r.userId === u.id);
-                const att = (record.attendance ?? []).find(
-                  (a) => a.userId === u.id,
-                );
-                const busy = attendanceBusy[u.id];
+                      const rsvp = (record.rsvps ?? []).find(
+                        (r) => r.userId === u.id
+                      );
+                      const att = (record.attendance ?? []).find(
+                        (a) => a.userId === u.id
+                      );
+                      const busy = attendanceBusy[u.id];
 
-                return (
-                  <div
-                    key={u.id}
-                    className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-100 truncate">
-                        {u.name}
-                      </p>
-                      <p className="text-[11px] text-zinc-400 truncate">
-                        {u.discord_username}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-zinc-400">
-                        <Badge variant="outline" className="border-zinc-700">
-                          {u.primaryRole}
-                        </Badge>
-                        {rsvp && (
-                          <Badge
-                            variant="outline"
-                            className={
-                              rsvp.status === "attending"
-                                ? "border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
-                                : rsvp.status === "maybe"
-                                  ? "border-amber-500/30 text-amber-300 bg-amber-500/5"
-                                  : "border-red-500/30 text-red-300 bg-red-500/5"
-                            }
-                          >
-                            RSVP: {rsvp.status}
-                          </Badge>
-                        )}
-                        {att && (
-                          <Badge
-                            variant="outline"
-                            className="border-blue-500/30 text-blue-200 bg-blue-500/5"
-                          >
-                            Attendance: {att.status}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+                      return (
+                        <div
+                          key={u.id}
+                          className="rounded-sm border border-zinc-800/80 bg-zinc-950/50 p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-zinc-100 truncate">
+                              {u.name}
+                            </p>
+                            <p className="text-[11px] text-zinc-400 truncate">
+                              {u.discord_username}
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-zinc-400">
+                              <Badge
+                                variant="outline"
+                                className="border-zinc-700"
+                              >
+                                {u.primaryRole}
+                              </Badge>
+                              {rsvp && (
+                                <Badge
+                                  variant="outline"
+                                  className={
+                                    rsvp.status === "attending"
+                                      ? "border-emerald-500/30 text-emerald-300 bg-emerald-500/5"
+                                      : rsvp.status === "maybe"
+                                        ? "border-amber-500/30 text-amber-300 bg-amber-500/5"
+                                        : "border-red-500/30 text-red-300 bg-red-500/5"
+                                  }
+                                >
+                                  RSVP: {rsvp.status}
+                                </Badge>
+                              )}
+                              {att && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-blue-500/30 text-blue-200 bg-blue-500/5"
+                                >
+                                  Attendance: {att.status}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busy === "present"}
-                        className="bg-transparent hover:bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
-                        onClick={async () => {
-                          setAttendanceBusy((p) => ({
-                            ...p,
-                            [u.id]: "present",
-                          }));
-                          try {
-                            const res = await fetch(
-                              `/api/training/${record.id}/attendance`,
-                              {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                  userId: u.id,
-                                  userName: u.name,
-                                  status: "present",
-                                }),
-                              },
-                            );
-                            if (!res.ok) throw new Error(await res.text());
-                            await loadRecord();
-                          } finally {
-                            setAttendanceBusy((p) => {
-                              const n = { ...p };
-                              delete n[u.id];
-                              return n;
-                            });
-                          }
-                        }}
-                      >
-                        {busy === "present" ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <CheckCircle className="h-4 w-4 mr-1.5" />
-                        )}
-                        Present
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busy === "absent"}
-                        className="bg-transparent hover:bg-red-500/15 border-red-500/40 text-red-300"
-                        onClick={async () => {
-                          setAttendanceBusy((p) => ({
-                            ...p,
-                            [u.id]: "absent",
-                          }));
-                          try {
-                            const res = await fetch(
-                              `/api/training/${record.id}/attendance`,
-                              {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                  userId: u.id,
-                                  userName: u.name,
-                                  status: "absent",
-                                }),
-                              },
-                            );
-                            if (!res.ok) throw new Error(await res.text());
-                            await loadRecord();
-                          } finally {
-                            setAttendanceBusy((p) => {
-                              const n = { ...p };
-                              delete n[u.id];
-                              return n;
-                            });
-                          }
-                        }}
-                      >
-                        {busy === "absent" ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <XCircle className="h-4 w-4 mr-1.5" />
-                        )}
-                        Absent
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busy === "late"}
-                        className="bg-transparent hover:bg-amber-500/15 border-amber-500/40 text-amber-200"
-                        onClick={async () => {
-                          setAttendanceBusy((p) => ({
-                            ...p,
-                            [u.id]: "late",
-                          }));
-                          try {
-                            const res = await fetch(
-                              `/api/training/${record.id}/attendance`,
-                              {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                  userId: u.id,
-                                  userName: u.name,
-                                  status: "late",
-                                }),
-                              },
-                            );
-                            if (!res.ok) throw new Error(await res.text());
-                            await loadRecord();
-                          } finally {
-                            setAttendanceBusy((p) => {
-                              const n = { ...p };
-                              delete n[u.id];
-                              return n;
-                            });
-                          }
-                        }}
-                      >
-                        {busy === "late" ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 mr-1.5" />
-                        )}
-                        Late
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={busy === "present"}
+                              className="bg-transparent hover:bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+                              onClick={async () => {
+                                setAttendanceBusy((p) => ({
+                                  ...p,
+                                  [u.id]: "present",
+                                }));
+                                try {
+                                  const res = await fetch(
+                                    `/api/training/${record.id}/attendance`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        userId: u.id,
+                                        userName: u.name,
+                                        status: "present",
+                                      }),
+                                    }
+                                  );
+                                  if (!res.ok)
+                                    throw new Error(await res.text());
+                                  await loadRecord();
+                                } finally {
+                                  setAttendanceBusy((p) => {
+                                    const n = { ...p };
+                                    delete n[u.id];
+                                    return n;
+                                  });
+                                }
+                              }}
+                            >
+                              {busy === "present" ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="h-4 w-4 mr-1.5" />
+                              )}
+                              Present
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={busy === "absent"}
+                              className="bg-transparent hover:bg-red-500/15 border-red-500/40 text-red-300"
+                              onClick={async () => {
+                                setAttendanceBusy((p) => ({
+                                  ...p,
+                                  [u.id]: "absent",
+                                }));
+                                try {
+                                  const res = await fetch(
+                                    `/api/training/${record.id}/attendance`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        userId: u.id,
+                                        userName: u.name,
+                                        status: "absent",
+                                      }),
+                                    }
+                                  );
+                                  if (!res.ok)
+                                    throw new Error(await res.text());
+                                  await loadRecord();
+                                } finally {
+                                  setAttendanceBusy((p) => {
+                                    const n = { ...p };
+                                    delete n[u.id];
+                                    return n;
+                                  });
+                                }
+                              }}
+                            >
+                              {busy === "absent" ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <XCircle className="h-4 w-4 mr-1.5" />
+                              )}
+                              Absent
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={busy === "late"}
+                              className="bg-transparent hover:bg-amber-500/15 border-amber-500/40 text-amber-200"
+                              onClick={async () => {
+                                setAttendanceBusy((p) => ({
+                                  ...p,
+                                  [u.id]: "late",
+                                }));
+                                try {
+                                  const res = await fetch(
+                                    `/api/training/${record.id}/attendance`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        userId: u.id,
+                                        userName: u.name,
+                                        status: "late",
+                                      }),
+                                    }
+                                  );
+                                  if (!res.ok)
+                                    throw new Error(await res.text());
+                                  await loadRecord();
+                                } finally {
+                                  setAttendanceBusy((p) => {
+                                    const n = { ...p };
+                                    delete n[u.id];
+                                    return n;
+                                  });
+                                }
+                              }}
+                            >
+                              {busy === "late" ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <AlertCircle className="h-4 w-4 mr-1.5" />
+                              )}
+                              Late
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -835,4 +899,3 @@ export function TrainingManageClient({ id }: { id: string }) {
     </div>
   );
 }
-

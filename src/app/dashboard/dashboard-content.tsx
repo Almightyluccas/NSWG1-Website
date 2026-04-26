@@ -48,7 +48,12 @@ const WIDGET_LAYOUT: WidgetConfig[] = [
   { id: "alerts", title: "Alert Center", icon: Bell, size: "sm" },
   { id: "directives", title: "Active Directives", icon: Target, size: "sm" },
   { id: "upcoming-ops", title: "Upcoming Ops", icon: CalendarDays, size: "sm" },
-  { id: "attendance", title: "Attendance Summary", icon: BarChart3, size: "md" },
+  {
+    id: "attendance",
+    title: "Attendance Summary",
+    icon: BarChart3,
+    size: "md",
+  },
   { id: "personnel-file", title: "Awards Rack", icon: FolderOpen, size: "sm" },
 ];
 
@@ -80,7 +85,7 @@ export function DashboardContent({
 
   const createdDate = new Date(user.created_at);
   const now = new Date();
-  
+
   // Time in Service (TIS)
   const tisMonthsTotal = differenceInMonths(now, createdDate);
   const tisYears = Math.floor(tisMonthsTotal / 12);
@@ -88,8 +93,8 @@ export function DashboardContent({
   const tisString = `${tisYears}Y ${tisMonths}M`;
 
   // Time in Position (TIP)
-  const assignmentDate = user.last_assignment_change_date 
-    ? new Date(user.last_assignment_change_date) 
+  const assignmentDate = user.last_assignment_change_date
+    ? new Date(user.last_assignment_change_date)
     : createdDate;
   const tipMonthsTotal = differenceInMonths(now, assignmentDate);
   const tipYears = Math.floor(tipMonthsTotal / 12);
@@ -150,9 +155,13 @@ export function DashboardContent({
                   />
                 </div>
                 <div className="mt-2 text-[10px] font-mono tracking-widest text-zinc-500 dark:text-zinc-400 text-center uppercase border-t border-zinc-200 dark:border-zinc-800/80 pt-1 w-full relative">
-                  <span className="bg-zinc-100 dark:bg-zinc-950 px-1 relative -top-[10px]">GRADE</span>
+                  <span className="bg-zinc-100 dark:bg-zinc-950 px-1 relative -top-[10px]">
+                    GRADE
+                  </span>
                   <br />
-                  <span className="text-zinc-800 dark:text-zinc-200 font-bold relative -top-1">{paygrade}</span>
+                  <span className="text-zinc-800 dark:text-zinc-200 font-bold relative -top-1">
+                    {paygrade}
+                  </span>
                 </div>
               </div>
             </div>
@@ -162,7 +171,9 @@ export function DashboardContent({
                 <div>
                   <div className="text-zinc-400 dark:text-zinc-500 text-[9px] font-mono tracking-widest uppercase mb-1 flex items-center gap-2">
                     <span className="text-accent">IDENTIFICATION CARD</span>
-                    <span className="hidden sm:inline">{"// ARMED FORCES OF THE UNITED STATES"}</span>
+                    <span className="hidden sm:inline">
+                      {"// ARMED FORCES OF THE UNITED STATES"}
+                    </span>
                   </div>
                   <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
                     {user.name}
@@ -174,56 +185,75 @@ export function DashboardContent({
                     OPERATOR ID
                   </div>
                   <div className="font-mono text-sm tracking-widest text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-black/60 px-3 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700/60 inline-block shadow-inner">
-                    {(currentUserId || user.id.toString()).slice(0, 10).padStart(10, "0")}
+                    {(currentUserId || user.id.toString())
+                      .slice(0, 10)
+                      .padStart(10, "0")}
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 bg-zinc-50 dark:bg-black/30 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800/50 shadow-inner w-full flex-1">
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-0.5">Status</span>
-                  <Badge variant="outline" className="w-fit bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30 px-2 py-0.5 font-mono uppercase tracking-widest text-[10px] rounded-md">
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-0.5">
+                    Status
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="w-fit bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30 px-2 py-0.5 font-mono uppercase tracking-widest text-[10px] rounded-md"
+                  >
                     {user.status?.name || "ACTIVE"}
                   </Badge>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Rank</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Rank
+                  </span>
                   <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 uppercase tracking-widest truncate">
                     {user.rank?.name || "UNASSIGNED"}
                   </span>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Unit</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Unit
+                  </span>
                   <span className="text-xs font-mono text-accent italic tracking-widest uppercase truncate break-words">
                     {user.unit?.name || "UNASSIGNED"}
                   </span>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Position</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Position
+                  </span>
                   <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 tracking-widest uppercase truncate">
                     {user.position?.name || "UNASSIGNED"}
                   </span>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Service</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Time in Service
+                  </span>
                   <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
                     {tisString}
                   </span>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Position</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Time in Position
+                  </span>
                   <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
                     {tipString}
                   </span>
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">Time in Grade</span>
+                  <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono tracking-widest uppercase mb-1">
+                    Time in Grade
+                  </span>
                   <span className="text-xs font-mono text-zinc-700 dark:text-zinc-200 tracking-widest uppercase">
                     {tigString}
                   </span>

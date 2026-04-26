@@ -5,7 +5,6 @@ import { createUrlProfilePicture } from "@/app/dashboard/perscom/user/[id]/actio
 import { database } from "@/database";
 import { DashboardContent } from "./dashboard-content";
 
-
 export default async function DashboardPage() {
   const session = await getAuthSession();
 
@@ -17,8 +16,9 @@ export default async function DashboardPage() {
             Account Not Linked
           </h2>
           <p className="text-zinc-400 leading-relaxed text-sm mb-6">
-            Your Discord account has not been linked to a PERSCOM profile yet. 
-            Please contact an administrator or designated personnel to complete your registration.
+            Your Discord account has not been linked to a PERSCOM profile yet.
+            Please contact an administrator or designated personnel to complete
+            your registration.
           </p>
           <div className="text-xs text-zinc-600 uppercase tracking-widest font-mono">
             ACCESS DENIED - NODE_5.2
@@ -55,9 +55,7 @@ export default async function DashboardPage() {
     user.id
   );
   if (!userProfilePicture?.includes("https")) {
-    user.profile_photo_url = await createUrlProfilePicture(
-      userProfilePicture!
-    );
+    user.profile_photo_url = await createUrlProfilePicture(userProfilePicture!);
   } else {
     user.profile_photo_url = userProfilePicture!;
   }

@@ -16,5 +16,10 @@ export default async function SseAttachPage({
   if (!params.campaignId || !params.missionId) {
     redirect("/dashboard/operations/management");
   }
-  return <SseAttachClient campaignId={params.campaignId} missionId={params.missionId} />;
+  return (
+    <SseAttachClient
+      campaignId={params.campaignId}
+      missionId={params.missionId}
+    />
+  );
 }

@@ -41,78 +41,78 @@ export function MissionForm({
     <ManagementFormShell title={title}>
       <ManagementFormError error={error} />
 
+      <div className="space-y-2">
+        <Label htmlFor="mname">Mission Name</Label>
+        <Input
+          id="mname"
+          value={values.name}
+          onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="mdesc">Description</Label>
+        <Textarea
+          id="mdesc"
+          value={values.description}
+          onChange={(e) =>
+            setValues((p) => ({ ...p, description: e.target.value }))
+          }
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="mname">Mission Name</Label>
+          <Label htmlFor="mdate">Date</Label>
           <Input
-            id="mname"
-            value={values.name}
-            onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))}
+            id="mdate"
+            type="date"
+            value={values.date}
+            onChange={(e) => setValues((p) => ({ ...p, date: e.target.value }))}
             required
           />
         </div>
-
         <div className="space-y-2">
-          <Label htmlFor="mdesc">Description</Label>
-          <Textarea
-            id="mdesc"
-            value={values.description}
-            onChange={(e) =>
-              setValues((p) => ({ ...p, description: e.target.value }))
-            }
+          <Label htmlFor="mtime">Time</Label>
+          <Input
+            id="mtime"
+            type="time"
+            value={values.time}
+            onChange={(e) => setValues((p) => ({ ...p, time: e.target.value }))}
             required
           />
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="mdate">Date</Label>
-            <Input
-              id="mdate"
-              type="date"
-              value={values.date}
-              onChange={(e) => setValues((p) => ({ ...p, date: e.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="mtime">Time</Label>
-            <Input
-              id="mtime"
-              type="time"
-              value={values.time}
-              onChange={(e) => setValues((p) => ({ ...p, time: e.target.value }))}
-              required
-            />
-          </div>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="mloc">Location</Label>
+        <Input
+          id="mloc"
+          value={values.location}
+          onChange={(e) =>
+            setValues((p) => ({ ...p, location: e.target.value }))
+          }
+          required
+        />
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="mloc">Location</Label>
-          <Input
-            id="mloc"
-            value={values.location}
-            onChange={(e) =>
-              setValues((p) => ({ ...p, location: e.target.value }))
-            }
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="mmax">Max Personnel (optional)</Label>
-          <Input
-            id="mmax"
-            type="number"
-            value={values.maxPersonnel ?? ""}
-            onChange={(e) =>
-              setValues((p) => ({
-                ...p,
-                maxPersonnel:
-                  e.target.value === "" ? null : Number.parseInt(e.target.value),
-              }))
-            }
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="mmax">Max Personnel (optional)</Label>
+        <Input
+          id="mmax"
+          type="number"
+          value={values.maxPersonnel ?? ""}
+          onChange={(e) =>
+            setValues((p) => ({
+              ...p,
+              maxPersonnel:
+                e.target.value === "" ? null : Number.parseInt(e.target.value),
+            }))
+          }
+        />
+      </div>
 
       <ManagementFormActions
         submitting={submitting}
@@ -141,4 +141,3 @@ export function MissionForm({
     </ManagementFormShell>
   );
 }
-

@@ -14,7 +14,9 @@ export function SseAttachClient({
 
   useEffect(() => {
     async function load() {
-      const res = await fetch(`/api/sse?scope=management&missionId=${missionId}`);
+      const res = await fetch(
+        `/api/sse?scope=management&missionId=${missionId}`
+      );
       const data = await res.json();
       if (Array.isArray(data)) {
         setAttachedIds(new Set(data.map((x: { id: string }) => String(x.id))));
@@ -34,7 +36,9 @@ export function SseAttachClient({
       renderItem={(item) => (
         <div>
           <p className="text-sm font-semibold">{String(item.title ?? "")}</p>
-          <p className="text-xs text-zinc-500">{String(item.description ?? "")}</p>
+          <p className="text-xs text-zinc-500">
+            {String(item.description ?? "")}
+          </p>
         </div>
       )}
     />

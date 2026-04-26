@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
 
     const missionId = request.nextUrl.searchParams.get("missionId");
     if (!missionId) {
-      return NextResponse.json({ error: "missionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "missionId is required" },
+        { status: 400 }
+      );
     }
 
     const campaignId = await database.get.missionCampaignId(missionId);
@@ -22,11 +25,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Mission not found" }, { status: 404 });
     }
 
-    const rows = await database.get.operationIntelNarrativeRows(campaignId, missionId);
-    return NextResponse.json(mergeIntelNarrativeRows(rows, "missionId", missionId));
+    const rows = await database.get.operationIntelNarrativeRows(
+      campaignId,
+      missionId
+    );
+    return NextResponse.json(
+      mergeIntelNarrativeRows(rows, "missionId", missionId)
+    );
   } catch (error) {
     console.error("Error loading mission intel:", error);
-    return NextResponse.json({ error: "Failed to load intel" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load intel" },
+      { status: 500 }
+    );
   }
 }
 
@@ -40,7 +51,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const missionId = String(body.missionId ?? "").trim();
     if (!missionId) {
-      return NextResponse.json({ error: "missionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "missionId is required" },
+        { status: 400 }
+      );
     }
 
     await database.post.operationIntelUpsertBlock({
@@ -56,11 +70,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Mission not found" }, { status: 404 });
     }
 
-    const rows = await database.get.operationIntelNarrativeRows(campaignId, missionId);
+    const rows = await database.get.operationIntelNarrativeRows(
+      campaignId,
+      missionId
+    );
     const intel = mergeIntelNarrativeRows(rows, "missionId", missionId);
     return NextResponse.json({ success: true, intel });
   } catch (error) {
     console.error("Error saving mission intel:", error);
-    return NextResponse.json({ error: "Failed to save intel" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save intel" },
+      { status: 500 }
+    );
   }
 }

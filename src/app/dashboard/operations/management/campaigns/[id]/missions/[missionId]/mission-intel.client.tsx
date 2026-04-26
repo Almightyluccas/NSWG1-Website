@@ -17,7 +17,9 @@ export function MissionIntelClient({
   return (
     <div className="space-y-4">
       <Button asChild variant="outline">
-        <Link href={`/dashboard/operations/management/campaigns/${campaignId}/missions`}>
+        <Link
+          href={`/dashboard/operations/management/campaigns/${campaignId}/missions`}
+        >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to missions
         </Link>

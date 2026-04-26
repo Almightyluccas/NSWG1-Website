@@ -51,7 +51,9 @@ export function FileDropZone({
           <p className="text-[11px] font-black text-zinc-700 dark:text-zinc-300 uppercase tracking-widest drop-shadow-sm group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
             {label}
           </p>
-          <p className="text-[9px] text-zinc-500 font-mono mt-1.5 uppercase tracking-widest">{hint}</p>
+          <p className="text-[9px] text-zinc-500 font-mono mt-1.5 uppercase tracking-widest">
+            {hint}
+          </p>
         </div>
         <Input
           type="file"
@@ -78,7 +80,10 @@ export function FileDropZone({
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {files.map((entry) => (
-              <div key={entry.id} className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 space-y-2">
+              <div
+                key={entry.id}
+                className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 space-y-2"
+              >
                 {showImagePreviews ? (
                   <div className="relative aspect-video rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800">
                     {entry.previewUrl ? (
@@ -100,7 +105,9 @@ export function FileDropZone({
                     <FileText className="h-4 w-4 text-zinc-500" />
                   </div>
                 )}
-                <p className="text-[10px] text-zinc-500 font-mono truncate">{entry.file.name}</p>
+                <p className="text-[10px] text-zinc-500 font-mono truncate">
+                  {entry.file.name}
+                </p>
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                     {entry.status === "uploading"
@@ -112,12 +119,18 @@ export function FileDropZone({
                           : "Queued"}
                   </span>
                   {!isTransferring && !disabled && (
-                    <button type="button" onClick={() => onRemove(entry.id)} className="text-zinc-500 hover:text-red-400 transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => onRemove(entry.id)}
+                      className="text-zinc-500 hover:text-red-400 transition-colors"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   )}
                 </div>
-                {entry.error ? <p className="text-[9px] text-red-400">{entry.error}</p> : null}
+                {entry.error ? (
+                  <p className="text-[9px] text-red-400">{entry.error}</p>
+                ) : null}
               </div>
             ))}
           </div>

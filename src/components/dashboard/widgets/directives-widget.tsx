@@ -60,7 +60,9 @@ export function DirectivesWidget() {
               />
               <span
                 className={`text-xs ${
-                  isDone ? "text-zinc-400 dark:text-zinc-500 line-through" : "text-zinc-800 dark:text-zinc-200"
+                  isDone
+                    ? "text-zinc-400 dark:text-zinc-500 line-through"
+                    : "text-zinc-800 dark:text-zinc-200"
                 }`}
               >
                 {directive.label}

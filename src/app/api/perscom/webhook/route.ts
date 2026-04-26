@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
   const secret = process.env.PERSCOM_WEBHOOK_SECRET;
   if (!secret) {
     console.error("perscom-webhook: PERSCOM_WEBHOOK_SECRET is not configured");
-    return NextResponse.json(
-      { error: "Service unavailable" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
   }
 
   const rawBody = await request.text();

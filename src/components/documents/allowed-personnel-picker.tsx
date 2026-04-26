@@ -24,7 +24,9 @@ export function AllowedPersonnelPicker({
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Allowed Roles</p>
+        <p className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">
+          Allowed Roles
+        </p>
         <div className="flex flex-wrap gap-2">
           {roleOptions.map((role) => (
             <button
@@ -43,10 +45,15 @@ export function AllowedPersonnelPicker({
         </div>
       </div>
       <div className="space-y-1">
-        <p className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Allowed Users</p>
+        <p className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">
+          Allowed Users
+        </p>
         <div className="max-h-48 overflow-y-auto border border-zinc-800 rounded-sm p-2 space-y-1">
           {userOptions.map((user) => (
-            <label key={user.id} className="flex items-center gap-2 text-xs text-zinc-300">
+            <label
+              key={user.id}
+              className="flex items-center gap-2 text-xs text-zinc-300"
+            >
               <input
                 type="checkbox"
                 checked={selectedUserIds.includes(user.id)}
@@ -54,7 +61,9 @@ export function AllowedPersonnelPicker({
               />
               <span>{user.name}</span>
               {user.primaryRole && (
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest">({user.primaryRole})</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                  ({user.primaryRole})
+                </span>
               )}
             </label>
           ))}

@@ -54,92 +54,92 @@ export function TrainingForm({
     <ManagementFormShell title={title}>
       <ManagementFormError error={error} />
 
+      <div className="space-y-2">
+        <Label htmlFor="tname">Training Name</Label>
+        <Input
+          id="tname"
+          value={values.name}
+          onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="tdesc">Description</Label>
+        <Textarea
+          id="tdesc"
+          value={values.description}
+          onChange={(e) =>
+            setValues((p) => ({ ...p, description: e.target.value }))
+          }
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="tname">Training Name</Label>
+          <Label htmlFor="tdate">Date</Label>
           <Input
-            id="tname"
-            value={values.name}
-            onChange={(e) => setValues((p) => ({ ...p, name: e.target.value }))}
+            id="tdate"
+            type="date"
+            value={values.date}
+            onChange={(e) => setValues((p) => ({ ...p, date: e.target.value }))}
             required
           />
         </div>
-
         <div className="space-y-2">
-          <Label htmlFor="tdesc">Description</Label>
-          <Textarea
-            id="tdesc"
-            value={values.description}
-            onChange={(e) =>
-              setValues((p) => ({ ...p, description: e.target.value }))
-            }
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="tdate">Date</Label>
-            <Input
-              id="tdate"
-              type="date"
-              value={values.date}
-              onChange={(e) => setValues((p) => ({ ...p, date: e.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ttime">Time</Label>
-            <Input
-              id="ttime"
-              type="time"
-              value={values.time}
-              onChange={(e) => setValues((p) => ({ ...p, time: e.target.value }))}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="tloc">Location</Label>
+          <Label htmlFor="ttime">Time</Label>
           <Input
-            id="tloc"
-            value={values.location}
-            onChange={(e) =>
-              setValues((p) => ({ ...p, location: e.target.value }))
-            }
+            id="ttime"
+            type="time"
+            value={values.time}
+            onChange={(e) => setValues((p) => ({ ...p, time: e.target.value }))}
             required
           />
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="tinstructor">Instructor (optional)</Label>
-            <Input
-              id="tinstructor"
-              value={values.instructor ?? ""}
-              onChange={(e) =>
-                setValues((p) => ({ ...p, instructor: e.target.value }))
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tmax">Max Personnel (optional)</Label>
-            <Input
-              id="tmax"
-              type="number"
-              value={values.maxPersonnel ?? ""}
-              onChange={(e) =>
-                setValues((p) => ({
-                  ...p,
-                  maxPersonnel:
-                    e.target.value === ""
-                      ? null
-                      : Number.parseInt(e.target.value),
-                }))
-              }
-            />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="tloc">Location</Label>
+        <Input
+          id="tloc"
+          value={values.location}
+          onChange={(e) =>
+            setValues((p) => ({ ...p, location: e.target.value }))
+          }
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="tinstructor">Instructor (optional)</Label>
+          <Input
+            id="tinstructor"
+            value={values.instructor ?? ""}
+            onChange={(e) =>
+              setValues((p) => ({ ...p, instructor: e.target.value }))
+            }
+          />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="tmax">Max Personnel (optional)</Label>
+          <Input
+            id="tmax"
+            type="number"
+            value={values.maxPersonnel ?? ""}
+            onChange={(e) =>
+              setValues((p) => ({
+                ...p,
+                maxPersonnel:
+                  e.target.value === ""
+                    ? null
+                    : Number.parseInt(e.target.value),
+              }))
+            }
+          />
+        </div>
+      </div>
 
       <ManagementFormActions
         submitting={submitting}
@@ -168,4 +168,3 @@ export function TrainingForm({
     </ManagementFormShell>
   );
 }
-

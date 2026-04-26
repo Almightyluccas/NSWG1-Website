@@ -62,7 +62,9 @@ export default function GalleryContentClient() {
         if (!cancelled) {
           if (Array.isArray(data.items)) {
             const apiItems = data.items;
-            const seen = new Set(apiItems.map((item) => `${item.title}|${item.src}`));
+            const seen = new Set(
+              apiItems.map((item) => `${item.title}|${item.src}`)
+            );
             const mergedItems = [
               ...PUBLIC_FOLDER_GALLERY_ITEMS.filter(
                 (item) => !seen.has(`${item.title}|${item.src}`)
@@ -281,9 +283,7 @@ export default function GalleryContentClient() {
                     className="bg-white dark:bg-zinc-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                     onClick={() => setSelectedItem(item.id)}
                   >
-                    <div className="relative h-64">
-                      {renderGridThumb(item)}
-                    </div>
+                    <div className="relative h-64">{renderGridThumb(item)}</div>
                     <div className="p-4">
                       <div className="flex justify-between items-start mb-1">
                         <h3 className="text-lg font-bold">{item.title}</h3>

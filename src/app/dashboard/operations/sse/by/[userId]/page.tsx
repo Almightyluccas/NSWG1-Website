@@ -16,4 +16,3 @@ export default async function SseByUserPage({
   const { userId } = await params;
   return <SseByUserClient userId={userId} />;
 }
-

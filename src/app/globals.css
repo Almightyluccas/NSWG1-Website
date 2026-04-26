@@ -76,7 +76,11 @@
 }
 
 body {
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 16px;
   line-height: 1.6;
   color: rgb(var(--foreground-rgb));
@@ -160,7 +164,7 @@ body {
 }
 
 .section-label {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -169,17 +173,19 @@ body {
 }
 
 .scan-lines::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 4px);
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
   pointer-events: none;
   z-index: 1;
 }
@@ -197,16 +203,20 @@ body {
 .section-divider {
   position: relative;
   height: 1px;
-  background: linear-gradient(to right,
-      transparent,
-      rgb(var(--accent-color) / 0.3),
-      transparent);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgb(var(--accent-color) / 0.3),
+    transparent
+  );
 }
 
 .section-transition-dark {
-  background: linear-gradient(to bottom,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(24, 24, 27, 1) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(24, 24, 27, 1) 100%
+  );
 }
 
 .grain-overlay {
@@ -223,7 +233,6 @@ body {
 }
 
 @keyframes grain {
-
   0%,
   100% {
     transform: translate(0, 0);
@@ -399,7 +408,12 @@ body {
 }
 
 .animate-radar {
-  background: conic-gradient(from 0deg at 50% 50%, transparent 0%, rgba(var(--accent-color), 0.05) 10%, transparent 40%);
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0%,
+    rgba(var(--accent-color), 0.05) 10%,
+    transparent 40%
+  );
   animation: radar-sweep 8s linear infinite;
   border-radius: 50%;
   position: absolute;
@@ -431,16 +445,26 @@ body {
 }
 
 .glass-panel::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.05),
+    transparent
+  );
   z-index: 10;
 }
 
 .dark .glass-panel::before {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
 }

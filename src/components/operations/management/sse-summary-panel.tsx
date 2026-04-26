@@ -35,7 +35,10 @@ export function SseSummaryPanel({
   const [items, setItems] = useState<SseItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const query = ownerType === "campaign" ? `scope=management&campaignId=${ownerId}` : `scope=management&missionId=${ownerId}`;
+  const query =
+    ownerType === "campaign"
+      ? `scope=management&campaignId=${ownerId}`
+      : `scope=management&missionId=${ownerId}`;
 
   const load = async () => {
     try {
@@ -55,7 +58,9 @@ export function SseSummaryPanel({
 
   const detach = async (sseId: string) => {
     if (ownerType !== "mission") return;
-    const res = await fetch(`/api/sse/${sseId}/attach?missionId=${ownerId}`, { method: "DELETE" });
+    const res = await fetch(`/api/sse/${sseId}/attach?missionId=${ownerId}`, {
+      method: "DELETE",
+    });
     if (res.ok) void load();
   };
 
@@ -77,7 +82,9 @@ export function SseSummaryPanel({
               </Button>
               {ownerType === "mission" && (
                 <Button asChild variant="outline" className={secondaryBtn}>
-                  <Link href={`/dashboard/operations/sse/attach?campaignId=${campaignId}&missionId=${ownerId}`}>
+                  <Link
+                    href={`/dashboard/operations/sse/attach?campaignId=${campaignId}&missionId=${ownerId}`}
+                  >
                     Attach Existing
                   </Link>
                 </Button>
@@ -88,31 +95,44 @@ export function SseSummaryPanel({
       </CardHeader>
       <CardContent className="p-4 space-y-3">
         {loading ? (
-          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">Loading SSE...</p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-[0.16em]">
+            Loading SSE...
+          </p>
         ) : items.length === 0 ? (
           <div className="py-8 text-center text-zinc-500 text-xs font-mono uppercase tracking-[0.2em] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-950/40">
             No SSE linked.
           </div>
         ) : (
           items.map((item) => (
-            <div key={item.id} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+            <div
+              key={item.id}
+              className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold flex items-center gap-2">
                     <Camera className="h-4 w-4 text-accent" />
                     {item.title}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">{item.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {item.description}
+                  </p>
                   <div className="mt-2 flex gap-2 flex-wrap">
                     {item.type && <Badge variant="outline">{item.type}</Badge>}
-                    {item.classification && <Badge variant="outline">{item.classification}</Badge>}
-                    {item.status && <Badge variant="outline">{item.status}</Badge>}
+                    {item.classification && (
+                      <Badge variant="outline">{item.classification}</Badge>
+                    )}
+                    {item.status && (
+                      <Badge variant="outline">{item.status}</Badge>
+                    )}
                   </div>
                 </div>
                 {isAdmin && (
                   <div className="flex gap-2">
                     <Button asChild variant="outline" className={secondaryBtn}>
-                      <Link href={`/dashboard/operations/sse/${item.id}/edit`}>Edit</Link>
+                      <Link href={`/dashboard/operations/sse/${item.id}/edit`}>
+                        Edit
+                      </Link>
                     </Button>
                     {ownerType === "mission" && (
                       <Button

@@ -59,9 +59,11 @@ function SidebarContent({
     }
   };
 
-  const isAdmin = [UserRole.admin, UserRole.superAdmin, UserRole.instructor].some(
-    (role) => session?.user?.roles?.includes(role),
-  );
+  const isAdmin = [
+    UserRole.admin,
+    UserRole.superAdmin,
+    UserRole.instructor,
+  ].some((role) => session?.user?.roles?.includes(role));
 
   return (
     <>
@@ -178,10 +180,14 @@ function SidebarContent({
                   )}
                   title={collapsed ? "Admin Panel" : undefined}
                 >
-                  <ShieldUser className={cn(
-                    "h-4 w-4 shrink-0 transition-colors",
-                    pathname === "/admin" ? "text-accent" : "text-zinc-400 dark:text-zinc-500 group-hover:text-accent"
-                  )} />
+                  <ShieldUser
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-colors",
+                      pathname === "/admin"
+                        ? "text-accent"
+                        : "text-zinc-400 dark:text-zinc-500 group-hover:text-accent"
+                    )}
+                  />
                   {!collapsed && (
                     <span className="font-mono text-xs uppercase tracking-widest">
                       Admin Panel
@@ -201,10 +207,14 @@ function SidebarContent({
                   )}
                   title={collapsed ? "Op Management" : undefined}
                 >
-                  <ClipboardList className={cn(
-                    "h-4 w-4 shrink-0 transition-colors",
-                    pathname.startsWith("/dashboard/operations/management") ? "text-accent" : "text-zinc-400 dark:text-zinc-500 group-hover:text-accent"
-                  )} />
+                  <ClipboardList
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-colors",
+                      pathname.startsWith("/dashboard/operations/management")
+                        ? "text-accent"
+                        : "text-zinc-400 dark:text-zinc-500 group-hover:text-accent"
+                    )}
+                  />
                   {!collapsed && (
                     <span className="font-mono text-xs uppercase tracking-widest">
                       Op Management
@@ -232,7 +242,9 @@ function SidebarContent({
                 {session?.user?.name || "OPERATOR"}
               </p>
               <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 truncate">
-                {session?.user?.roles?.includes(UserRole.member) ? "MEMBER" : "GUEST"}
+                {session?.user?.roles?.includes(UserRole.member)
+                  ? "MEMBER"
+                  : "GUEST"}
               </p>
             </div>
           )}

@@ -15,7 +15,10 @@ import {
   Lock,
   FileText,
 } from "lucide-react";
-import { FileDropZone, type UploadQueuedFile } from "@/components/operations/upload/file-drop-zone";
+import {
+  FileDropZone,
+  type UploadQueuedFile,
+} from "@/components/operations/upload/file-drop-zone";
 
 type OperationOption = {
   id: string;
@@ -57,8 +60,12 @@ export function DocUploadClient({
   const [error, setError] = useState<string | null>(null);
   const [ops, setOps] = useState<OperationOption[]>([]);
   const [missions, setMissions] = useState<MissionOption[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState(initialCampaignId ?? "");
-  const [selectedMissionId, setSelectedMissionId] = useState(initialMissionId ?? "");
+  const [selectedCampaignId, setSelectedCampaignId] = useState(
+    initialCampaignId ?? ""
+  );
+  const [selectedMissionId, setSelectedMissionId] = useState(
+    initialMissionId ?? ""
+  );
   const [queuedFiles, setQueuedFiles] = useState<UploadQueuedFile[]>([]);
   const [form, setForm] = useState<DocFormState>(initialForm);
 
@@ -85,7 +92,7 @@ export function DocUploadClient({
               id: String(op.id),
               name: String(op.name ?? ""),
               codename: op.codename ?? null,
-            })),
+            }))
           );
         } else {
           setOps([]);
@@ -133,7 +140,9 @@ export function DocUploadClient({
       return;
     }
 
-    const stillExists = missions.some((mission) => mission.id === selectedMissionId);
+    const stillExists = missions.some(
+      (mission) => mission.id === selectedMissionId
+    );
     if (!stillExists) {
       const prefilledExists = initialMissionId
         ? missions.some((mission) => mission.id === initialMissionId)
@@ -156,7 +165,9 @@ export function DocUploadClient({
     setQueuedFiles((prev) => prev.filter((entry) => entry.id !== id));
   };
 
-  const uploadFileToStorage = async (file: File): Promise<{ key: string; fileType: string; fileSize: string }> => {
+  const uploadFileToStorage = async (
+    file: File
+  ): Promise<{ key: string; fileType: string; fileSize: string }> => {
     const presignRes = await fetch("/api/object-storage/generate-upload-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -196,10 +207,13 @@ export function DocUploadClient({
 
     setIsSubmitting(true);
     setError(null);
-    setQueuedFiles((prev) => prev.map((item) => ({ ...item, status: "uploading", error: undefined })));
+    setQueuedFiles((prev) =>
+      prev.map((item) => ({ ...item, status: "uploading", error: undefined }))
+    );
 
     try {
-      let uploaded: { key: string; fileType: string; fileSize: string } | null = null;
+      let uploaded: { key: string; fileType: string; fileSize: string } | null =
+        null;
       if (queuedFiles.length > 0) {
         uploaded = await uploadFileToStorage(queuedFiles[0].file);
       }
@@ -226,13 +240,21 @@ export function DocUploadClient({
         throw new Error(data.error || "Failed to create planning doc.");
       }
 
-      setQueuedFiles((prev) => prev.map((item) => ({ ...item, status: "done" })));
+      setQueuedFiles((prev) =>
+        prev.map((item) => ({ ...item, status: "done" }))
+      );
       setSubmitted(true);
       setTimeout(() => {
         router.push(`/dashboard/operations/${selectedCampaignId}`);
       }, 1600);
     } catch (submitError: any) {
-      setQueuedFiles((prev) => prev.map((item) => ({ ...item, status: "failed", error: "Upload failed" })));
+      setQueuedFiles((prev) =>
+        prev.map((item) => ({
+          ...item,
+          status: "failed",
+          error: "Upload failed",
+        }))
+      );
       setError(submitError?.message || "Upload failed.");
     } finally {
       setIsSubmitting(false);
@@ -248,7 +270,9 @@ export function DocUploadClient({
             <div className="absolute inset-0 animate-ping opacity-20 bg-emerald-500 rounded-full" />
             <CheckCircle2 className="h-20 w-20 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
           </div>
-          <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-[0.2em] mb-3">Document Registered</h2>
+          <h2 className="text-2xl font-black text-emerald-400 uppercase tracking-[0.2em] mb-3">
+            Document Registered
+          </h2>
           <p className="text-zinc-400 text-sm uppercase tracking-widest max-w-md">
             Planning document metadata has been added to the operation registry.
           </p>
@@ -265,7 +289,11 @@ export function DocUploadClient({
     <div className="space-y-4 max-w-4xl relative z-10">
       <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800/80">
         <Link
-          href={selectedCampaignId ? `/dashboard/operations/${selectedCampaignId}` : "/dashboard/operations"}
+          href={
+            selectedCampaignId
+              ? `/dashboard/operations/${selectedCampaignId}`
+              : "/dashboard/operations"
+          }
           className="inline-flex items-center text-[10px] font-bold text-zinc-500 hover:text-accent transition-colors uppercase tracking-widest"
         >
           <ChevronLeft className="h-3 w-3 mr-1" />
@@ -281,7 +309,8 @@ export function DocUploadClient({
             Docs Intake // Operations Registry
           </p>
           <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 leading-relaxed font-mono uppercase tracking-wider">
-            Upload a planning document and link it directly to the operation repository.
+            Upload a planning document and link it directly to the operation
+            repository.
           </p>
         </div>
       </div>
@@ -313,7 +342,9 @@ export function DocUploadClient({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Source Operation (Required)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Source Operation (Required)
+                </label>
                 <select
                   required
                   className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold tracking-wider rounded-lg px-3 py-2 h-10 flex items-center focus:border-accent/80 focus:ring-1 focus:ring-accent/50 outline-none transition-all appearance-none cursor-pointer"
@@ -323,15 +354,21 @@ export function DocUploadClient({
                     setSelectedMissionId("");
                   }}
                 >
-                  <option value="" disabled className="text-zinc-600">Assign Operation...</option>
+                  <option value="" disabled className="text-zinc-600">
+                    Assign Operation...
+                  </option>
                   {ops.map((op) => (
-                    <option key={op.id} value={op.id}>{op.codename || op.name}</option>
+                    <option key={op.id} value={op.id}>
+                      {op.codename || op.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Mission (Optional)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Mission (Optional)
+                </label>
                 <select
                   disabled={!selectedCampaignId}
                   className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-bold tracking-wider rounded-lg px-3 py-2 h-10 flex items-center focus:border-accent/80 focus:ring-1 focus:ring-accent/50 outline-none transition-all appearance-none cursor-pointer"
@@ -340,65 +377,92 @@ export function DocUploadClient({
                 >
                   <option value="">Campaign-level document</option>
                   {missions.map((mission) => (
-                    <option key={mission.id} value={mission.id}>{mission.name}</option>
+                    <option key={mission.id} value={mission.id}>
+                      {mission.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Document Title (Required)</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Document Title (Required)
+                </label>
                 <Input
                   required
                   value={form.title}
-                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   className="h-10 px-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 text-sm rounded-lg transition-colors"
                   placeholder="CONOP // Operation Trident"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Doc Type</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Doc Type
+                </label>
                 <Input
                   value={form.docType}
-                  onChange={(e) => setForm((prev) => ({ ...prev, docType: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, docType: e.target.value }))
+                  }
                   className="h-10 px-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 text-sm rounded-lg transition-colors"
                   placeholder="CONOP / WARNO / FRAGO"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Classification</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Classification
+                </label>
                 <Input
                   value={form.classification}
-                  onChange={(e) => setForm((prev) => ({ ...prev, classification: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      classification: e.target.value,
+                    }))
+                  }
                   className="h-10 px-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 text-sm rounded-lg transition-colors"
                   placeholder="UNCLASSIFIED / SECRET"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Date</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Date
+                </label>
                 <Input
                   type="date"
                   value={form.date}
-                  onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, date: e.target.value }))
+                  }
                   className="h-10 px-3 pr-2 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 focus:border-accent/80 text-sm rounded-lg transition-colors dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:mr-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Description</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Description
+              </label>
               <Textarea
                 value={form.description}
-                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, description: e.target.value }))
+                }
                 placeholder="Brief context for this planning document..."
                 className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-600 min-h-[100px] focus:border-accent/80 font-mono text-sm p-4 rounded-lg shadow-inner transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Attach Files (Optional)</label>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                Attach Files (Optional)
+              </label>
               <FileDropZone
                 files={queuedFiles}
                 onFilesAdded={handleFileInput}
@@ -416,16 +480,26 @@ export function DocUploadClient({
 
             <div className="pt-5 border-t border-zinc-200 dark:border-zinc-800/80 flex flex-col md:flex-row justify-end gap-3">
               <Link
-                href={selectedCampaignId ? `/dashboard/operations/${selectedCampaignId}` : "/dashboard/operations"}
+                href={
+                  selectedCampaignId
+                    ? `/dashboard/operations/${selectedCampaignId}`
+                    : "/dashboard/operations"
+                }
                 className="w-full md:w-auto"
               >
-                <Button type="button" variant="outline" className="w-full rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest h-10 px-8 transition-colors">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-lg border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest h-10 px-8 transition-colors"
+                >
                   CANCEL
                 </Button>
               </Link>
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedCampaignId || !form.title.trim()}
+                disabled={
+                  isSubmitting || !selectedCampaignId || !form.title.trim()
+                }
                 className="w-full md:w-auto rounded-lg bg-accent hover:bg-accent/80 text-black font-black uppercase tracking-widest h-10 px-8 shadow-[0_0_15px_rgba(var(--accent),0.2)] hover:shadow-[0_0_25px_rgba(var(--accent),0.6)] transition-all disabled:opacity-70 disabled:pointer-events-none"
               >
                 {isSubmitting ? (
@@ -433,7 +507,9 @@ export function DocUploadClient({
                     <Loader2 className="h-3 w-3 animate-spin" />
                     REGISTERING DOC...
                   </span>
-                ) : "REGISTER DOCUMENT"}
+                ) : (
+                  "REGISTER DOCUMENT"
+                )}
               </Button>
             </div>
           </form>

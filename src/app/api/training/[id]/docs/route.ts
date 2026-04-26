@@ -35,9 +35,14 @@ export async function GET(
 
   const { id: trainingId } = await params;
   const docs = await db.get.trainingDocuments(trainingId);
-  const allowlisted = await db.get.canUserAccessTraining(trainingId, userId, roles);
+  const allowlisted = await db.get.canUserAccessTraining(
+    trainingId,
+    userId,
+    roles
+  );
   const rsvpStatus = await db.get.userTrainingRsvpStatus(trainingId, userId);
-  const isAdmin = roles.includes(UserRole.admin) || roles.includes(UserRole.superAdmin);
+  const isAdmin =
+    roles.includes(UserRole.admin) || roles.includes(UserRole.superAdmin);
 
   const visible = [];
   for (const row of docs) {
@@ -78,7 +83,10 @@ export async function POST(
   const body = await request.json();
   const documentId = Number(body.documentId);
   if (Number.isNaN(documentId)) {
-    return NextResponse.json({ error: "documentId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "documentId is required" },
+      { status: 400 }
+    );
   }
 
   await db.post.attachDocumentToTraining(trainingId, documentId);

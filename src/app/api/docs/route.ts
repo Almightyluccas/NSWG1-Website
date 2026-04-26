@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     const missionId = request.nextUrl.searchParams.get("missionId");
 
     if (!campaignId && !missionId) {
-      return NextResponse.json({ error: "campaignId or missionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "campaignId or missionId is required" },
+        { status: 400 }
+      );
     }
 
     let rows: any[];
@@ -43,13 +46,20 @@ export async function GET(request: NextRequest) {
       }
       rows = await database.get.operationDocuments(cid, missionId);
     } else {
-      rows = await database.get.operationDocuments(campaignId!, undefined, true);
+      rows = await database.get.operationDocuments(
+        campaignId!,
+        undefined,
+        true
+      );
     }
 
     return NextResponse.json(rows.map(mapPlanningDoc));
   } catch (error) {
     console.error("Error loading planning docs:", error);
-    return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load documents" },
+      { status: 500 }
+    );
   }
 }
 
@@ -75,7 +85,10 @@ export async function POST(request: NextRequest) {
     if (!campaignId && missionId) {
       const cid = await database.get.missionCampaignId(missionId);
       if (!cid) {
-        return NextResponse.json({ error: "Mission not found" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Mission not found" },
+          { status: 400 }
+        );
       }
       campaignId = cid;
     }
@@ -96,7 +109,18 @@ export async function POST(request: NextRequest) {
     });
 
     const row = await database.get.operationDocumentById(docId);
-    const item = row ? mapPlanningDoc(row) : { id: String(docId), title, description: "", docType: "", classification: "", fileUrl: "", date: "", createdAt: new Date().toISOString() };
+    const item = row
+      ? mapPlanningDoc(row)
+      : {
+          id: String(docId),
+          title,
+          description: "",
+          docType: "",
+          classification: "",
+          fileUrl: "",
+          date: "",
+          createdAt: new Date().toISOString(),
+        };
 
     await postAdminAlert({
       label: "DOC UPLOADED",
@@ -107,6 +131,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, item }, { status: 201 });
   } catch (error) {
     console.error("Error creating planning doc:", error);
-    return NextResponse.json({ error: "Failed to create document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create document" },
+      { status: 500 }
+    );
   }
 }

@@ -3,10 +3,19 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, HelpCircle, XCircle, ExternalLink, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  HelpCircle,
+  XCircle,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createOrUpdateMissionRSVP, createOrUpdateTrainingRSVP } from "@/app/dashboard/calendar/action";
+import {
+  createOrUpdateMissionRSVP,
+  createOrUpdateTrainingRSVP,
+} from "@/app/dashboard/calendar/action";
 
 type RsvpStatus = "attending" | "not-attending" | "maybe" | null;
 
@@ -15,9 +24,14 @@ interface UpcomingOpsWidgetProps {
   currentUserId?: string;
 }
 
-export function UpcomingOpsWidget({ upcomingOps = [], currentUserId }: UpcomingOpsWidgetProps) {
+export function UpcomingOpsWidget({
+  upcomingOps = [],
+  currentUserId,
+}: UpcomingOpsWidgetProps) {
   const router = useRouter();
-  const [rsvpStatuses, setRsvpStatuses] = useState<Record<string, RsvpStatus>>({});
+  const [rsvpStatuses, setRsvpStatuses] = useState<Record<string, RsvpStatus>>(
+    {}
+  );
   const [isSubmitting, setIsSubmitting] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -82,7 +96,9 @@ export function UpcomingOpsWidget({ upcomingOps = [], currentUserId }: UpcomingO
             >
               <div
                 className={`absolute top-0 bottom-0 left-0 w-[2px] ${
-                  isMandatory ? "bg-accent/80" : "bg-zinc-400 dark:bg-zinc-600/50"
+                  isMandatory
+                    ? "bg-accent/80"
+                    : "bg-zinc-400 dark:bg-zinc-600/50"
                 }`}
               />
 

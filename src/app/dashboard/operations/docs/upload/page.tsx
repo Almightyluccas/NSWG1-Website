@@ -28,8 +28,15 @@ export default async function DocUploadPage({
         </p>
       </div>
 
-      <Suspense fallback={<Skeleton className="h-[600px] w-full max-w-4xl rounded-lg" />}>
-        <DocUploadClient initialCampaignId={params.campaignId} initialMissionId={params.missionId} />
+      <Suspense
+        fallback={
+          <Skeleton className="h-[600px] w-full max-w-4xl rounded-lg" />
+        }
+      >
+        <DocUploadClient
+          initialCampaignId={params.campaignId}
+          initialMissionId={params.missionId}
+        />
       </Suspense>
     </div>
   );

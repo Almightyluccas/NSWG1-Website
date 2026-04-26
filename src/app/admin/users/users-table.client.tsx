@@ -26,7 +26,7 @@ import { PaginationBar } from "@/components/ui/pagination";
 import RoleGuard from "@/components/auth/role-guard";
 import { RoleManager } from "@/app/admin/users/role-manager";
 import { NameManager } from "@/app/admin/users/name-manager";
-import {PerscomIdManager} from "@/app/admin/users/perscomIdManager";
+import { PerscomIdManager } from "@/app/admin/users/perscomIdManager";
 
 interface UserTableProps {
   users: User[];
@@ -61,7 +61,13 @@ export const UsersTable = ({ users }: UserTableProps) => {
     try {
       await navigator.clipboard.writeText(String(perscomId));
       setCopiedPerscomId(perscomId);
-      setTimeout(() => setCopiedPerscomId((current) => (current === perscomId ? null : current)), 1500);
+      setTimeout(
+        () =>
+          setCopiedPerscomId((current) =>
+            current === perscomId ? null : current
+          ),
+        1500
+      );
     } catch {
       // ignore clipboard errors
     }
@@ -202,7 +208,9 @@ export const UsersTable = ({ users }: UserTableProps) => {
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-gray-400 dark:text-zinc-500">—</span>
+                      <span className="text-gray-400 dark:text-zinc-500">
+                        —
+                      </span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -256,14 +264,14 @@ export const UsersTable = ({ users }: UserTableProps) => {
                         >
                           Edit Roles
                         </DropdownMenuItem>
-                          <DropdownMenuItem
-                              onClick={() => {
-                                  setSelectedUser(user);
-                                  setIsPerscomIdManagerOpen(true);
-                              }}
-                          >
-                              Edit Perscom ID
-                          </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsPerscomIdManagerOpen(true);
+                          }}
+                        >
+                          Edit Perscom ID
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedUser(user);
@@ -365,7 +373,9 @@ export const UsersTable = ({ users }: UserTableProps) => {
                               size="icon"
                               variant="ghost"
                               className="h-7 w-7"
-                              onClick={() => handleCopyPerscomId(selectedUser.perscom_id)}
+                              onClick={() =>
+                                handleCopyPerscomId(selectedUser.perscom_id)
+                              }
                               aria-label={`Copy Perscom ID ${selectedUser.perscom_id}`}
                             >
                               {copiedPerscomId === selectedUser.perscom_id ? (
@@ -440,7 +450,7 @@ export const UsersTable = ({ users }: UserTableProps) => {
           userName={selectedUser.name || ""}
         />
       )}
-        {selectedUser && isPerscomIdManagerOpen && (
+      {selectedUser && isPerscomIdManagerOpen && (
         <PerscomIdManager
           open={isPerscomIdManagerOpen}
           onOpenChangeAction={setIsPerscomIdManagerOpen}
@@ -448,7 +458,6 @@ export const UsersTable = ({ users }: UserTableProps) => {
           perscomId={selectedUser.perscom_id || 0}
         />
       )}
-
     </>
   );
 };

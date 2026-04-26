@@ -29,10 +29,28 @@ const REVIEW_ROLES = [
   UserRole.trainingAndDevelopment,
 ];
 
-const STATUS_STYLES: Record<string, { text: string; bg: string; border: string; label: string }> = {
-  draft: { text: "text-zinc-400", bg: "bg-zinc-500/10", border: "border-zinc-500/40", label: "DRAFT" },
-  submitted: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/40", label: "PENDING REVIEW" },
-  reviewed: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/40", label: "REVIEWED" },
+const STATUS_STYLES: Record<
+  string,
+  { text: string; bg: string; border: string; label: string }
+> = {
+  draft: {
+    text: "text-zinc-400",
+    bg: "bg-zinc-500/10",
+    border: "border-zinc-500/40",
+    label: "DRAFT",
+  },
+  submitted: {
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/40",
+    label: "PENDING REVIEW",
+  },
+  reviewed: {
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/40",
+    label: "REVIEWED",
+  },
 };
 
 export function AarSection({
@@ -59,7 +77,9 @@ export function AarSection({
 
   const userLevel = Math.max(0, ...userRoles.map((r) => roleHierarchy[r] || 0));
   const canSubmit = userLevel >= AAR_MIN_LEVEL;
-  const canReview = userRoles.some((r) => REVIEW_ROLES.some((allowed) => allowed === r));
+  const canReview = userRoles.some((r) =>
+    REVIEW_ROLES.some((allowed) => allowed === r)
+  );
 
   const loadAars = useCallback(async () => {
     setLoading(true);
@@ -145,7 +165,10 @@ export function AarSection({
           <h3 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
             After Action Reports
           </h3>
-          <Badge variant="outline" className="text-[9px] font-bold border-zinc-300 dark:border-zinc-700 text-zinc-500">
+          <Badge
+            variant="outline"
+            className="text-[9px] font-bold border-zinc-300 dark:border-zinc-700 text-zinc-500"
+          >
             {aars.length} {aars.length === 1 ? "Report" : "Reports"}
           </Badge>
         </div>
@@ -178,7 +201,9 @@ export function AarSection({
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Report Title</label>
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                Report Title
+              </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -189,7 +214,9 @@ export function AarSection({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Executive Summary</label>
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                Executive Summary
+              </label>
               <Textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
@@ -201,7 +228,9 @@ export function AarSection({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Key Outcomes</label>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                  Key Outcomes
+                </label>
                 <Textarea
                   value={keyOutcomes}
                   onChange={(e) => setKeyOutcomes(e.target.value)}
@@ -210,7 +239,9 @@ export function AarSection({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Lessons Learned</label>
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                  Lessons Learned
+                </label>
                 <Textarea
                   value={lessonsLearned}
                   onChange={(e) => setLessonsLearned(e.target.value)}
@@ -236,7 +267,9 @@ export function AarSection({
                 disabled={submitting || !title || !summary}
                 className="h-8 text-xs bg-accent hover:bg-accent/80 text-black font-bold uppercase tracking-wider"
               >
-                {submitting && <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />}
+                {submitting && (
+                  <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                )}
                 Submit Report
               </Button>
             </div>
@@ -307,7 +340,11 @@ export function AarSection({
                     </div>
                   </div>
                   <div className="shrink-0 text-zinc-400 group-hover:text-zinc-200 transition-colors">
-                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
                   </div>
                 </button>
 
@@ -349,7 +386,9 @@ export function AarSection({
                       <div className="flex items-center gap-2 text-xs text-emerald-500 dark:text-emerald-400">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Reviewed by {aar.reviewer_name || "Unknown"} on{" "}
-                        {aar.reviewed_at ? new Date(aar.reviewed_at).toLocaleDateString() : "—"}
+                        {aar.reviewed_at
+                          ? new Date(aar.reviewed_at).toLocaleDateString()
+                          : "—"}
                       </div>
                     )}
 

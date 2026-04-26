@@ -16,11 +16,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { getClassification, getOpStatus } from "@/lib/config/operations";
 import {
-  getClassification,
-  getOpStatus,
-} from "@/lib/config/operations";
-import { type OperationCampaign, type OperationMission } from "@/types/operations";
+  type OperationCampaign,
+  type OperationMission,
+} from "@/types/operations";
 import { TrainingCenter } from "./training-center";
 import { WorldMap } from "@/components/operations/world-map";
 
@@ -36,8 +36,11 @@ export function OperationsClient() {
   const [campaigns, setCampaigns] = useState<OperationCampaign[]>([]);
   const [campaignsLoading, setCampaignsLoading] = useState(true);
 
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
-  const [selectedCampaign, setSelectedCampaign] = useState<OperationCampaign | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
+    null
+  );
+  const [selectedCampaign, setSelectedCampaign] =
+    useState<OperationCampaign | null>(null);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
 
@@ -87,15 +90,16 @@ export function OperationsClient() {
           if (a.status !== "active" && b.status === "active") return 1;
           return 0;
         }),
-    [campaigns],
+    [campaigns]
   );
 
   const pastCampaigns = useMemo(
     () => campaigns.filter((c) => c.status === "completed"),
-    [campaigns],
+    [campaigns]
   );
 
-  const displayedCampaigns = opTab === "CURRENT" ? currentCampaigns : pastCampaigns;
+  const displayedCampaigns =
+    opTab === "CURRENT" ? currentCampaigns : pastCampaigns;
 
   useEffect(() => {
     if (!selectedCampaignId && displayedCampaigns.length > 0) {
@@ -127,7 +131,10 @@ export function OperationsClient() {
       <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 pb-0">
         <TabButton
           active={mainTab === "OPERATIONS"}
-          onClick={() => { setMainTab("OPERATIONS"); setTacticalStep("CAMPAIGNS"); }}
+          onClick={() => {
+            setMainTab("OPERATIONS");
+            setTacticalStep("CAMPAIGNS");
+          }}
         >
           Operations
         </TabButton>
@@ -181,7 +188,11 @@ export function OperationsClient() {
   );
 }
 
-function TabButton({ active, onClick, children }: {
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
@@ -283,9 +294,9 @@ function CampaignCard({
     "/images/160th/160th-lil-birds-day-loaded.png",
   ];
 
-  const imgIndex = campaign.id
-    .split("")
-    .reduce((acc, c) => acc + c.charCodeAt(0), 0) % FALLBACK_IMAGES.length;
+  const imgIndex =
+    campaign.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+    FALLBACK_IMAGES.length;
   const coverImage = campaign.cover_image_url || FALLBACK_IMAGES[imgIndex];
 
   return (
@@ -448,7 +459,9 @@ function MissionsView({
               {loading && (
                 <div className="flex items-center justify-center py-16 text-zinc-400 gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-xs uppercase tracking-wider">Loading&hellip;</span>
+                  <span className="text-xs uppercase tracking-wider">
+                    Loading&hellip;
+                  </span>
                 </div>
               )}
 
@@ -499,7 +512,7 @@ function MissionCard({
       ? "completed"
       : mission.status === "scheduled"
         ? campaign.status
-        : "active",
+        : "active"
   );
 
   const href = `/dashboard/operations/${campaign.id}`;
@@ -546,7 +559,9 @@ function MissionCard({
             </div>
             <div className="flex items-center gap-1.5 min-w-0">
               <Crosshair className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
-              <span className="truncate">{campaign.mission_type || "Direct Action"}</span>
+              <span className="truncate">
+                {campaign.mission_type || "Direct Action"}
+              </span>
             </div>
             {mission.max_personnel && (
               <div className="flex items-center gap-1.5">

@@ -59,7 +59,7 @@ function getMissionStatusFromDate(
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -138,7 +138,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.roles.includes(UserRole.admin)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -159,7 +159,14 @@ export async function POST(req: Request) {
     });
 
     // If operation fields are provided, set them immediately
-    if (data.codename || data.ao || data.brief || data.commander || data.forceComp || data.missionType) {
+    if (
+      data.codename ||
+      data.ao ||
+      data.brief ||
+      data.commander ||
+      data.forceComp ||
+      data.missionType
+    ) {
       await database.put.campaignOperationFields(id, {
         codename: data.codename,
         ao: data.ao,

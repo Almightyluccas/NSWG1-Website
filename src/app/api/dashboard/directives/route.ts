@@ -39,7 +39,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Support bulk assignment via userIds array
-    if (body.userIds && Array.isArray(body.userIds) && body.userIds.length > 0) {
+    if (
+      body.userIds &&
+      Array.isArray(body.userIds) &&
+      body.userIds.length > 0
+    ) {
       await database.post.bulkDirectives(
         {
           label: body.label,

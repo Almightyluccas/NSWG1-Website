@@ -45,17 +45,29 @@ export async function PUT(
   }
 
   const { id } = await params;
-  
+
   if (!id) {
-    return NextResponse.json({ error: "Mission ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mission ID is required" },
+      { status: 400 }
+    );
   }
 
   try {
     const data = await req.json();
-    
+
     // Validate required fields
-    if (!data.name || !data.description || !data.date || !data.time || !data.location) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !data.name ||
+      !data.description ||
+      !data.date ||
+      !data.time ||
+      !data.location
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     const status = getMissionStatusFromDate(data.date, data.time, "scheduled");
@@ -68,7 +80,7 @@ export async function PUT(
       location: data.location,
       maxPersonnel: data.maxPersonnel,
     });
-    
+
     await db.put.missionStatus(id, status);
 
     return NextResponse.json({ success: true, id });
@@ -90,7 +102,10 @@ export async function DELETE(
   const { id } = await params;
 
   if (!id) {
-    return NextResponse.json({ error: "Mission ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Mission ID is required" },
+      { status: 400 }
+    );
   }
 
   try {

@@ -23,11 +23,15 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
   const [docxHtml, setDocxHtml] = useState<string>("");
   const [sheetNames, setSheetNames] = useState<string[]>([]);
   const [activeSheet, setActiveSheet] = useState<string>("");
-  const [sheetRowsByName, setSheetRowsByName] = useState<Record<string, string[][]>>({});
+  const [sheetRowsByName, setSheetRowsByName] = useState<
+    Record<string, string[][]>
+  >({});
   const [textPreview, setTextPreview] = useState<string>("");
   const [csvRows, setCsvRows] = useState<string[][]>([]);
 
-  const normalizedPath = documentPath.replace(/^\/+/, "").replace(/^documents\//i, "");
+  const normalizedPath = documentPath
+    .replace(/^\/+/, "")
+    .replace(/^documents\//i, "");
   const encodedPath = normalizedPath
     .split("/")
     .filter(Boolean)
@@ -76,7 +80,8 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
   useEffect(() => {
     const checkDocument = async () => {
       const isValidFileResponse = (response: Response) => {
-        const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+        const contentType =
+          response.headers.get("content-type")?.toLowerCase() ?? "";
         const isHtmlResponse = contentType.includes("text/html");
         const isPdfType =
           fileExtension === "pdf"
@@ -93,7 +98,10 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
       try {
         let exists = false;
 
-        const headResponse = await fetch(fullPath, { method: "HEAD", cache: "no-store" });
+        const headResponse = await fetch(fullPath, {
+          method: "HEAD",
+          cache: "no-store",
+        });
         exists = isValidFileResponse(headResponse);
 
         // Some environments/proxies handle HEAD poorly for static files.
@@ -163,12 +171,16 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
 
           names.forEach((name) => {
             const sheet = workbook.Sheets[name];
-            const rows = XLSX.utils.sheet_to_json<(string | number | boolean | null)[]>(sheet, {
+            const rows = XLSX.utils.sheet_to_json<
+              (string | number | boolean | null)[]
+            >(sheet, {
               header: 1,
               raw: false,
               defval: "",
             });
-            rowsByName[name] = rows.map((row) => row.map((cell) => String(cell ?? "")));
+            rowsByName[name] = rows.map((row) =>
+              row.map((cell) => String(cell ?? ""))
+            );
           });
 
           setSheetNames(names);
@@ -182,7 +194,9 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           const workbook = XLSX.read(text, { type: "string" });
           const firstSheetName = workbook.SheetNames[0];
           const firstSheet = workbook.Sheets[firstSheetName];
-          const rows = XLSX.utils.sheet_to_json<(string | number | boolean | null)[]>(firstSheet, {
+          const rows = XLSX.utils.sheet_to_json<
+            (string | number | boolean | null)[]
+          >(firstSheet, {
             header: 1,
             raw: false,
             defval: "",
@@ -197,7 +211,9 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
         }
       } catch (error) {
         console.error("Error loading document preview:", error);
-        setPreviewError("Preview failed to load. Please download the file to view it.");
+        setPreviewError(
+          "Preview failed to load. Please download the file to view it."
+        );
       } finally {
         setPreviewLoading(false);
       }
@@ -208,7 +224,9 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
 
   const renderTable = (rows: string[][]) => {
     if (!rows.length) {
-      return <p className="text-sm text-muted-foreground">No table data found.</p>;
+      return (
+        <p className="text-sm text-muted-foreground">No table data found.</p>
+      );
     }
 
     const header = rows[0] ?? [];
@@ -231,7 +249,10 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           </thead>
           <tbody>
             {body.map((row, rowIndex) => (
-              <tr key={`row-${rowIndex}`} className="odd:bg-white even:bg-zinc-50 dark:odd:bg-zinc-950 dark:even:bg-zinc-900">
+              <tr
+                key={`row-${rowIndex}`}
+                className="odd:bg-white even:bg-zinc-50 dark:odd:bg-zinc-950 dark:even:bg-zinc-900"
+              >
                 {header.map((_, cellIndex) => (
                   <td
                     key={`cell-${rowIndex}-${cellIndex}`}
@@ -296,8 +317,8 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              The document &quot;{fileName}&quot; could not be found or is no longer
-              available.
+              The document &quot;{fileName}&quot; could not be found or is no
+              longer available.
             </p>
             <Button
               variant="outline"
@@ -369,13 +390,20 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
             <div className="w-full min-h-[70vh] h-[calc(100vh-260px)] border rounded-lg bg-white overflow-auto">
               {previewLoading ? (
                 <div className="h-full w-full flex items-center justify-center p-6">
-                  <p className="text-sm text-muted-foreground">Rendering Word document...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Rendering Word document...
+                  </p>
                 </div>
               ) : previewError ? (
                 <div className="h-full w-full flex items-center justify-center p-6 text-center">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-3">{previewError}</p>
-                    <Button onClick={handleDownload} className="flex items-center gap-2 mx-auto">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {previewError}
+                    </p>
+                    <Button
+                      onClick={handleDownload}
+                      className="flex items-center gap-2 mx-auto"
+                    >
                       <Download className="h-4 w-4" />
                       Download to View
                     </Button>
@@ -394,7 +422,9 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
                   {sheetNames.map((sheetName) => (
                     <Button
                       key={sheetName}
-                      variant={activeSheet === sheetName ? "default" : "outline"}
+                      variant={
+                        activeSheet === sheetName ? "default" : "outline"
+                      }
                       size="sm"
                       onClick={() => setActiveSheet(sheetName)}
                     >
@@ -406,13 +436,20 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
               <div className="flex-1 overflow-auto p-4">
                 {previewLoading ? (
                   <div className="h-full w-full flex items-center justify-center p-6">
-                    <p className="text-sm text-muted-foreground">Rendering spreadsheet...</p>
+                    <p className="text-sm text-muted-foreground">
+                      Rendering spreadsheet...
+                    </p>
                   </div>
                 ) : previewError ? (
                   <div className="h-full w-full flex items-center justify-center p-6 text-center">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-3">{previewError}</p>
-                      <Button onClick={handleDownload} className="flex items-center gap-2 mx-auto">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {previewError}
+                      </p>
+                      <Button
+                        onClick={handleDownload}
+                        className="flex items-center gap-2 mx-auto"
+                      >
                         <Download className="h-4 w-4" />
                         Download to View
                       </Button>
@@ -421,7 +458,9 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
                 ) : activeSheet ? (
                   renderTable(sheetRowsByName[activeSheet] ?? [])
                 ) : (
-                  <p className="text-sm text-muted-foreground">No worksheet data found.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No worksheet data found.
+                  </p>
                 )}
               </div>
             </div>
@@ -429,13 +468,20 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
             <div className="w-full min-h-[70vh] h-[calc(100vh-260px)] border rounded-lg bg-white dark:bg-zinc-950 overflow-auto p-4">
               {previewLoading ? (
                 <div className="h-full w-full flex items-center justify-center p-6">
-                  <p className="text-sm text-muted-foreground">Rendering CSV table...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Rendering CSV table...
+                  </p>
                 </div>
               ) : previewError ? (
                 <div className="h-full w-full flex items-center justify-center p-6 text-center">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-3">{previewError}</p>
-                    <Button onClick={handleDownload} className="flex items-center gap-2 mx-auto">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {previewError}
+                    </p>
+                    <Button
+                      onClick={handleDownload}
+                      className="flex items-center gap-2 mx-auto"
+                    >
                       <Download className="h-4 w-4" />
                       Download to View
                     </Button>
@@ -449,13 +495,18 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
             <div className="w-full min-h-[70vh] h-[calc(100vh-260px)] border rounded-lg overflow-auto bg-zinc-950 p-4">
               {previewLoading ? (
                 <div className="h-full w-full flex items-center justify-center p-6">
-                  <p className="text-sm text-zinc-300">Loading text preview...</p>
+                  <p className="text-sm text-zinc-300">
+                    Loading text preview...
+                  </p>
                 </div>
               ) : previewError ? (
                 <div className="h-full w-full flex items-center justify-center p-6 text-center">
                   <div>
                     <p className="text-sm text-zinc-300 mb-3">{previewError}</p>
-                    <Button onClick={handleDownload} className="flex items-center gap-2 mx-auto">
+                    <Button
+                      onClick={handleDownload}
+                      className="flex items-center gap-2 mx-auto"
+                    >
                       <Download className="h-4 w-4" />
                       Download to View
                     </Button>
@@ -480,19 +531,26 @@ export default function DocumentViewer({ documentPath }: DocumentViewerProps) {
               ) : (
                 <div className="text-center py-12 border rounded-lg">
                   <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">PPTX Preview Unavailable Locally</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    PPTX Preview Unavailable Locally
+                  </h3>
                   <p className="text-muted-foreground mb-4 max-w-2xl mx-auto">
-                    PowerPoint web preview needs a publicly reachable file URL. On localhost,
-                    please use download or open in a new tab.
+                    PowerPoint web preview needs a publicly reachable file URL.
+                    On localhost, please use download or open in a new tab.
                   </p>
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="outline"
-                      onClick={() => window.open(fullPath, "_blank", "noopener,noreferrer")}
+                      onClick={() =>
+                        window.open(fullPath, "_blank", "noopener,noreferrer")
+                      }
                     >
                       Open Raw File
                     </Button>
-                    <Button onClick={handleDownload} className="flex items-center gap-2">
+                    <Button
+                      onClick={handleDownload}
+                      className="flex items-center gap-2"
+                    >
                       <Download className="h-4 w-4" />
                       Download to View
                     </Button>

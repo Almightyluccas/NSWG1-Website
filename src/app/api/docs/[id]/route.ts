@@ -36,7 +36,10 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error loading planning doc:", error);
-    return NextResponse.json({ error: "Failed to load document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load document" },
+      { status: 500 }
+    );
   }
 }
 
@@ -74,10 +77,13 @@ export async function PUT(
     if (body.title !== undefined) patch.name = String(body.title);
     else if (body.name !== undefined) patch.name = String(body.name);
 
-    if (body.description !== undefined) patch.description = String(body.description);
+    if (body.description !== undefined)
+      patch.description = String(body.description);
     if (body.docType !== undefined) patch.docType = String(body.docType);
-    if (body.classification !== undefined) patch.classification = String(body.classification);
-    if (body.minimumRole !== undefined) patch.minimumRole = String(body.minimumRole);
+    if (body.classification !== undefined)
+      patch.classification = String(body.classification);
+    if (body.minimumRole !== undefined)
+      patch.minimumRole = String(body.minimumRole);
 
     if (body.date !== undefined) {
       patch.docDate = body.date ? String(body.date).slice(0, 10) : null;
@@ -95,7 +101,10 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating planning doc:", error);
-    return NextResponse.json({ error: "Failed to update document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update document" },
+      { status: 500 }
+    );
   }
 }
 
@@ -130,6 +139,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting planning doc:", error);
-    return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete document" },
+      { status: 500 }
+    );
   }
 }

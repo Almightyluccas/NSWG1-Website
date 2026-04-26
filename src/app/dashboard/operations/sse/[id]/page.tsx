@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import { SseDetailClient } from "./sse-detail-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function SseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SseDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
   return (
@@ -16,9 +20,7 @@ export default async function SseDetailPage({ params }: { params: Promise<{ id: 
         </p>
       </div>
 
-      <Suspense
-        fallback={<Skeleton className="h-[600px] w-full rounded-lg" />}
-      >
+      <Suspense fallback={<Skeleton className="h-[600px] w-full rounded-lg" />}>
         <SseDetailClient id={id} />
       </Suspense>
     </div>
