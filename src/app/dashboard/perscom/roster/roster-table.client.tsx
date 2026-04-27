@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { PerscomUserResponse, Rank } from "@/types/api/perscomApi";
 import Image from "next/image";
@@ -16,7 +16,7 @@ interface Personnel {
 }
 
 interface Section {
-  id: number;
+  id: string;
   name: string;
   personnel: Personnel[];
 }
@@ -33,71 +33,56 @@ interface RosterTableProps {
 }
 
 export const RosterTable = ({ members, ranks }: RosterTableProps) => {
-  const [selectedMainUnit, setSelectedMainUnit] = useState<string>("tacdevron");
-  const [mainUnits, setMainUnits] = useState<MainUnit[]>([]);
+  const [selectedMainUnit, setSelectedMainUnit] = useState<string>("");
 
-  useEffect(() => {
-    const tacdevronUnit: MainUnit = {
-      id: "tacdevron",
-      name: "Tacdevron 2 A Troop",
-      sections: [],
-    };
+  const mainUnits = useMemo(() => {
+    if (!members || members.length === 0) return [];
 
-    const soarUnit: MainUnit = {
-      id: "160th",
-      name: "1st Battalion 160th SOAR",
-      sections: [],
-    };
+    const dynamicUnits = new Map<string, MainUnit>();
 
-    const dischargedUnit: MainUnit = {
-      id: "discharged",
-      name: "Personnel On Leave",
-      sections: [],
-    };
-    const supportUnit: MainUnit = {
-      id: "support",
-      name: "Joint Support Units",
-      sections: [],
-    };
+    members.forEach((member) => {
+      const statusName = member.status?.name?.toLowerCase() || "";
 
-    const tacdevronSections = new Map<number, Section>();
-    const soarSections = new Map<number, Section>();
-    const dischargedSections = new Map<number, Section>();
-    const supportSections = new Map<number, Section>();
+      const isLeave = statusName.includes("leave");
+      const isDischarged = statusName.includes("discharge") || statusName.includes("inactive");
 
-    members?.forEach((member) => {
-      if (!member.unit?.id || !member.unit?.name) return;
+      if (!member.unit?.name && !isLeave && !isDischarged) return;
 
-      const unitId = member.unit.id;
-      const unitName = member.unit.name;
+      let mainUnitName = member.unit?.name || "";
+      let sectionName = "";
 
-      let targetSectionsMap: Map<number, Section>;
-
-      if (
-        unitName.toLowerCase().includes("tacdevron") ||
-        unitName.toLowerCase().includes("green team")
-      ) {
-        targetSectionsMap = tacdevronSections;
-      } else if (unitName.toLowerCase().includes("160th")) {
-        targetSectionsMap = soarSections;
-      } else if (
-        unitName.toLowerCase().includes("discharge") &&
-        member.status?.name.toLowerCase() === "leave of absence"
-      ) {
-        targetSectionsMap = dischargedSections;
+      if (isLeave) {
+        mainUnitName = "Leave of Absence";
+        sectionName = member.status?.name || "Leave of Absence";
+      } else if (isDischarged) {
+        mainUnitName = "Discharge";
+        sectionName = member.status?.name || "Previous Members";
+      } else if (mainUnitName.includes(",")) {
+        const parts = mainUnitName.split(",");
+        mainUnitName = parts[0].trim();
+        sectionName = parts.slice(1).join(",").trim();
       } else {
-        targetSectionsMap = supportSections;
+        sectionName = mainUnitName.trim();
       }
 
-      if (!targetSectionsMap.has(unitId)) {
-        targetSectionsMap.set(unitId, {
-          id: unitId,
-          name: unitName,
-          personnel: [],
+      const mainUnitId = mainUnitName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const sectionId = `${mainUnitId}-${sectionName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+
+      if (!dynamicUnits.has(mainUnitId)) {
+        dynamicUnits.set(mainUnitId, {
+          id: mainUnitId,
+          name: mainUnitName,
+          sections: [],
         });
       }
 
-      const section = targetSectionsMap.get(unitId)!;
+      const mainUnit = dynamicUnits.get(mainUnitId)!;
+
+      let section = mainUnit.sections.find((s) => s.id === sectionId);
+      if (!section) {
+        section = { id: sectionId, name: sectionName, personnel: [] };
+        mainUnit.sections.push(section);
+      }
 
       section.personnel.push({
         id: member.id,
@@ -105,70 +90,57 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         rank: member.rank?.name || "Unknown",
         rankImage: member.rank?.id
           ? ranks.find((r) => r.id === member.rank?.id)?.image?.image_url ||
-            `/ranks/${member.rank.abbreviation}.svg`
+          `/ranks/${member.rank?.abbreviation}.svg`
           : undefined,
         position: member.position?.name || "Unknown",
         status: member.status?.name || "Unknown",
       });
     });
 
-    const sortSections = (sections: Section[]): Section[] => {
-      return sections.sort((a, b) => {
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
-
-        const aIsGreenTeam = aName.includes("green team");
-        const bIsGreenTeam = bName.includes("green team");
-
-        const aHasCommand = aName.includes("command");
-        const bHasCommand = bName.includes("command");
-
-        const aHasEnable = aName.includes("enable");
-        const bHasEnable = bName.includes("enable");
-
-        if (aHasCommand && !bHasCommand) return -1;
-        if (!aHasCommand && bHasCommand) return 1;
-
-        if (aHasEnable && !bHasEnable) return -1;
-        if (!aHasEnable && bHasEnable) return 1;
-
-        if (aIsGreenTeam && !bIsGreenTeam) return 1;
-        if (!aIsGreenTeam && bIsGreenTeam) return -1;
-
-        return aName.localeCompare(bName);
-      });
+    const getUnitWeight = (name: string) => {
+      const lower = name.toLowerCase();
+      if (lower.includes("tacdevron")) return 1; // TACDEVRON First
+      if (lower.includes("160th")) return 2;     // 160th Second
+      if (lower.includes("discharge")) return 6; // Discharge strictly LAST
+      if (lower.includes("leave")) return 5;     // Leave right before Discharge
+      if (lower.includes("green team") || lower.includes("green platoon")) return 4;
+      return 3;
     };
 
-    tacdevronUnit.sections = sortSections(
-      Array.from(tacdevronSections.values())
-    );
-    soarUnit.sections = sortSections(Array.from(soarSections.values()));
-    dischargedUnit.sections = sortSections(
-      Array.from(dischargedSections.values())
-    );
-    supportUnit.sections = sortSections(Array.from(supportSections.values()));
+    const compiledUnits = Array.from(dynamicUnits.values()).map((unit) => {
+      unit.sections.sort((a, b) => {
+        if (a.name === unit.name && b.name !== unit.name) return -1;
+        if (a.name !== unit.name && b.name === unit.name) return 1;
 
-    const unitsWithPersonnel: MainUnit[] = [];
-    if (tacdevronUnit.sections.length > 0)
-      unitsWithPersonnel.push(tacdevronUnit);
-    if (soarUnit.sections.length > 0) unitsWithPersonnel.push(soarUnit);
-    if (dischargedUnit.sections.length > 0)
-      unitsWithPersonnel.push(dischargedUnit);
-    if (supportUnit.sections.length > 0) unitsWithPersonnel.push(supportUnit);
+        const aCmd = a.name.toLowerCase().includes("command") || a.name.toLowerCase().includes("hq");
+        const bCmd = b.name.toLowerCase().includes("command") || b.name.toLowerCase().includes("hq");
 
-    setMainUnits(unitsWithPersonnel);
+        if (aCmd && !bCmd) return -1;
+        if (!aCmd && bCmd) return 1;
 
-    if (
-      unitsWithPersonnel.length > 0 &&
-      !unitsWithPersonnel.some((unit) => unit.id === selectedMainUnit)
-    ) {
-      setSelectedMainUnit(unitsWithPersonnel[0].id);
+        return a.name.localeCompare(b.name);
+      });
+      return unit;
+    });
+
+    compiledUnits.sort((a, b) => {
+      const weightA = getUnitWeight(a.name);
+      const weightB = getUnitWeight(b.name);
+
+      if (weightA !== weightB) return weightA - weightB;
+      return a.name.localeCompare(b.name);
+    });
+
+    return compiledUnits;
+  }, [members, ranks]);
+
+  useEffect(() => {
+    if (mainUnits.length > 0 && !mainUnits.some((u) => u.id === selectedMainUnit)) {
+      setSelectedMainUnit(mainUnits[0].id);
     }
-  }, [members, ranks, selectedMainUnit]);
+  }, [mainUnits, selectedMainUnit]);
 
-  const currentMainUnit = mainUnits.find(
-    (unit) => unit.id === selectedMainUnit
-  );
+  const currentMainUnit = mainUnits.find((unit) => unit.id === selectedMainUnit);
 
   const getStatusColor = (status: string) => {
     const lower = status.toLowerCase();
@@ -181,9 +153,10 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
     return "bg-zinc-700/30 text-zinc-400 border-zinc-600/30";
   };
 
+  if (!currentMainUnit) return null;
+
   return (
     <>
-      {/* Unit Selection Tabs */}
       <div className="flex flex-wrap gap-1 mb-6 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/60 rounded-lg p-1">
         {mainUnits.map((unit) => (
           <button
@@ -202,7 +175,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
       {/* Sections */}
       <div className="space-y-6">
-        {currentMainUnit?.sections.map((section) => (
+        {currentMainUnit.sections.map((section) => (
           <div
             key={section.id}
             className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/60 rounded-lg overflow-hidden shadow-lg"
@@ -257,7 +230,9 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
 
                   {/* Status Badge */}
                   <span
-                    className={`shrink-0 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-lg border ${getStatusColor(person.status)}`}
+                    className={`shrink-0 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-lg border ${getStatusColor(
+                      person.status
+                    )}`}
                   >
                     {person.status}
                   </span>
