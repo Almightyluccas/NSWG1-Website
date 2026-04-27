@@ -35,21 +35,21 @@ interface RosterTableProps {
 export const RosterTable = ({ members, ranks }: RosterTableProps) => {
   const [selectedMainUnit, setSelectedMainUnit] = useState<string>("");
 
-  const mainUnits = useMemo(() => {
+  const mainUnits: MainUnit[] = useMemo<MainUnit[]>(() => {
     if (!members || members.length === 0) return [];
 
-    const dynamicUnits = new Map<string, MainUnit>();
+    const dynamicUnits: Map<string, MainUnit> = new Map<string, MainUnit>();
 
-    members.forEach((member) => {
-      const statusName = member.status?.name?.toLowerCase() || "";
+    members.forEach((member: PerscomUserResponse) => {
+      const statusName: string = member.status?.name?.toLowerCase() || "";
 
-      const isLeave = statusName.includes("leave");
-      const isDischarged = statusName.includes("discharge") || statusName.includes("inactive");
+      const isLeave: boolean = statusName.includes("leave");
+      const isDischarged: boolean = statusName.includes("discharge") || statusName.includes("inactive");
 
       if (!member.unit?.name && !isLeave && !isDischarged) return;
 
-      let mainUnitName = member.unit?.name || "";
-      let sectionName = "";
+      let mainUnitName: string = member.unit?.name || "";
+      let sectionName: string;
 
       if (isLeave) {
         mainUnitName = "Leave of Absence";
@@ -58,15 +58,27 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         mainUnitName = "Discharge";
         sectionName = member.status?.name || "Previous Members";
       } else if (mainUnitName.includes(",")) {
-        const parts = mainUnitName.split(",");
-        mainUnitName = parts[0].trim();
-        sectionName = parts.slice(1).join(",").trim();
+        const parts: string[] = mainUnitName.split(",");
+        const baseTab: string = parts[0].trim();
+        const restOfName: string = parts.slice(1).join(",").trim();
+
+        const troopMatch: RegExpMatchArray | null = restOfName.match(/(\d+(?:st|nd|rd|th)\s+Troop)/i);
+
+        if (troopMatch) {
+          mainUnitName = `${baseTab} - ${troopMatch[1]}`;
+          sectionName = restOfName.replace(troopMatch[1], "").trim();
+
+          if (!sectionName) sectionName = mainUnitName;
+        } else {
+          mainUnitName = baseTab;
+          sectionName = restOfName;
+        }
       } else {
         sectionName = mainUnitName.trim();
       }
 
-      const mainUnitId = mainUnitName.toLowerCase().replace(/[^a-z0-9]/g, "-");
-      const sectionId = `${mainUnitId}-${sectionName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+      const mainUnitId: string = mainUnitName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const sectionId: string = `${mainUnitId}-${sectionName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
 
       if (!dynamicUnits.has(mainUnitId)) {
         dynamicUnits.set(mainUnitId, {
@@ -76,9 +88,9 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         });
       }
 
-      const mainUnit = dynamicUnits.get(mainUnitId)!;
+      const mainUnit: MainUnit = dynamicUnits.get(mainUnitId)!;
 
-      let section = mainUnit.sections.find((s) => s.id === sectionId);
+      let section: Section | undefined = mainUnit.sections.find((s: Section) => s.id === sectionId);
       if (!section) {
         section = { id: sectionId, name: sectionName, personnel: [] };
         mainUnit.sections.push(section);
@@ -89,7 +101,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         name: member.name,
         rank: member.rank?.name || "Unknown",
         rankImage: member.rank?.id
-          ? ranks.find((r) => r.id === member.rank?.id)?.image?.image_url ||
+          ? ranks.find((r: Rank) => r.id === member.rank?.id)?.image?.image_url ||
           `/ranks/${member.rank?.abbreviation}.svg`
           : undefined,
         position: member.position?.name || "Unknown",
@@ -97,23 +109,37 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       });
     });
 
-    const getUnitWeight = (name: string) => {
-      const lower = name.toLowerCase();
-      if (lower.includes("tacdevron")) return 1; // TACDEVRON First
-      if (lower.includes("160th")) return 2;     // 160th Second
-      if (lower.includes("discharge")) return 6; // Discharge strictly LAST
-      if (lower.includes("leave")) return 5;     // Leave right before Discharge
+    const getUnitWeight = (name: string): number => {
+      const lower: string = name.toLowerCase();
+      if (lower.includes("tacdevron")) return 1;
+      if (lower.includes("160th")) return 2;
+      if (lower.includes("discharge")) return 6;
+      if (lower.includes("leave")) return 5;
       if (lower.includes("green team") || lower.includes("green platoon")) return 4;
       return 3;
     };
 
-    const compiledUnits = Array.from(dynamicUnits.values()).map((unit) => {
-      unit.sections.sort((a, b) => {
-        if (a.name === unit.name && b.name !== unit.name) return -1;
-        if (a.name !== unit.name && b.name === unit.name) return 1;
+    const compiledUnits: MainUnit[] = Array.from(dynamicUnits.values()).map((unit: MainUnit) => {
+      unit.sections.sort((a: Section, b: Section): number => {
+        if (unit.id === "discharge") {
+          const getDischargeSectionWeight = (secName: string): number => {
+            const lower: string = secName.toLowerCase();
+            if (lower.includes("honorable") && !lower.includes("dishonorable")) return 1;
+            if (lower.includes("dishonorable")) return 2;
+            if (lower === "discharge") return 4;
+            return 5;
+          };
+          const weightA: number = getDischargeSectionWeight(a.name);
+          const weightB: number = getDischargeSectionWeight(b.name);
+          if (weightA !== weightB) return weightA - weightB;
+        }
+        else {
+          if (a.name === unit.name && b.name !== unit.name) return -1;
+          if (a.name !== unit.name && b.name === unit.name) return 1;
+        }
 
-        const aCmd = a.name.toLowerCase().includes("command") || a.name.toLowerCase().includes("hq");
-        const bCmd = b.name.toLowerCase().includes("command") || b.name.toLowerCase().includes("hq");
+        const aCmd: boolean = a.name.toLowerCase().includes("command") || a.name.toLowerCase().includes("hq");
+        const bCmd: boolean = b.name.toLowerCase().includes("command") || b.name.toLowerCase().includes("hq");
 
         if (aCmd && !bCmd) return -1;
         if (!aCmd && bCmd) return 1;
@@ -123,9 +149,9 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
       return unit;
     });
 
-    compiledUnits.sort((a, b) => {
-      const weightA = getUnitWeight(a.name);
-      const weightB = getUnitWeight(b.name);
+    compiledUnits.sort((a: MainUnit, b: MainUnit): number => {
+      const weightA: number = getUnitWeight(a.name);
+      const weightB: number = getUnitWeight(b.name);
 
       if (weightA !== weightB) return weightA - weightB;
       return a.name.localeCompare(b.name);
@@ -135,15 +161,15 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
   }, [members, ranks]);
 
   useEffect(() => {
-    if (mainUnits.length > 0 && !mainUnits.some((u) => u.id === selectedMainUnit)) {
+    if (mainUnits.length > 0 && !mainUnits.some((u: MainUnit) => u.id === selectedMainUnit)) {
       setSelectedMainUnit(mainUnits[0].id);
     }
   }, [mainUnits, selectedMainUnit]);
 
-  const currentMainUnit = mainUnits.find((unit) => unit.id === selectedMainUnit);
+  const currentMainUnit: MainUnit | undefined = mainUnits.find((unit: MainUnit) => unit.id === selectedMainUnit);
 
-  const getStatusColor = (status: string) => {
-    const lower = status.toLowerCase();
+  const getStatusColor = (status: string): string => {
+    const lower: string = status.toLowerCase();
     if (lower === "active duty")
       return "bg-green-500/20 text-green-400 border-green-500/30";
     if (lower.includes("leave"))
@@ -158,7 +184,7 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
   return (
     <>
       <div className="flex flex-wrap gap-1 mb-6 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/60 rounded-lg p-1">
-        {mainUnits.map((unit) => (
+        {mainUnits.map((unit: MainUnit) => (
           <button
             key={unit.id}
             onClick={() => setSelectedMainUnit(unit.id)}
@@ -173,14 +199,12 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
         ))}
       </div>
 
-      {/* Sections */}
       <div className="space-y-6">
-        {currentMainUnit.sections.map((section) => (
+        {currentMainUnit.sections.map((section: Section) => (
           <div
             key={section.id}
             className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/60 rounded-lg overflow-hidden shadow-lg"
           >
-            {/* Section Header */}
             <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-700/40">
               <Users className="h-4 w-4 text-accent shrink-0" />
               <h3 className="text-sm font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200 font-semibold">
@@ -191,15 +215,13 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
               </span>
             </div>
 
-            {/* Personnel List */}
             <div className="divide-y divide-zinc-200 dark:divide-zinc-800/50">
-              {section.personnel.map((person) => (
+              {section.personnel.map((person: Personnel) => (
                 <Link
                   key={person.id}
                   href={`/dashboard/perscom/user/${person.id}`}
                   className="group flex items-center gap-4 px-5 py-3.5 transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800/40 hover:border-l-2 hover:border-l-accent/60 border-l-2 border-l-transparent"
                 >
-                  {/* Rank Insignia */}
                   <div className="relative h-8 w-8 shrink-0 flex items-center justify-center bg-zinc-100 dark:bg-black/30 rounded-lg border border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
                     <Image
                       src={person.rankImage || "/placeholder.svg"}
@@ -209,7 +231,6 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
                     />
                   </div>
 
-                  {/* Name & Rank */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white truncate">
@@ -221,14 +242,12 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
                     </span>
                   </div>
 
-                  {/* Position */}
                   <div className="hidden md:block text-right min-w-[160px]">
                     <span className="text-xs font-mono text-zinc-400 tracking-wider uppercase">
                       {person.position}
                     </span>
                   </div>
 
-                  {/* Status Badge */}
                   <span
                     className={`shrink-0 px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest rounded-lg border ${getStatusColor(
                       person.status
@@ -237,7 +256,6 @@ export const RosterTable = ({ members, ranks }: RosterTableProps) => {
                     {person.status}
                   </span>
 
-                  {/* Arrow */}
                   <ChevronRight className="h-4 w-4 text-zinc-600 group-hover:text-accent transition-colors shrink-0" />
                 </Link>
               ))}
